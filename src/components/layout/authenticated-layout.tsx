@@ -13,6 +13,11 @@ import {
 } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
+import { Header } from '@/components/layout/header'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
@@ -58,6 +63,14 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               '@container/content'
             )}
           >
+            <Header fixed>
+              <div className='ms-auto flex items-center space-x-4'>
+                <Search />
+                <ThemeSwitch />
+                <ConfigDrawer />
+                <ProfileDropdown />
+              </div>
+            </Header>
             {children ?? <Outlet />}
           </SidebarInset>
         </LayoutProvider>
