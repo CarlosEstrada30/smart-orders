@@ -28,6 +28,8 @@ import { Route as AuthenticatedUsersRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedProductsRouteRouteImport } from './routes/_authenticated/products/route'
 import { Route as AuthenticatedOrdersRouteRouteImport } from './routes/_authenticated/orders/route'
+import { Route as AuthenticatedNewOrderRouteRouteImport } from './routes/_authenticated/new-order/route'
+import { Route as AuthenticatedNewClientRouteRouteImport } from './routes/_authenticated/new-client/route'
 import { Route as AuthenticatedClientsRouteRouteImport } from './routes/_authenticated/clients/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
@@ -43,6 +45,7 @@ import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedEditClientClientIdRouteRouteImport } from './routes/_authenticated/edit-client/$clientId/route'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -139,6 +142,18 @@ const AuthenticatedOrdersRouteRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedNewOrderRouteRoute =
+  AuthenticatedNewOrderRouteRouteImport.update({
+    id: '/new-order',
+    path: '/new-order',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNewClientRouteRoute =
+  AuthenticatedNewClientRouteRouteImport.update({
+    id: '/new-client',
+    path: '/new-client',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientsRouteRoute =
   AuthenticatedClientsRouteRouteImport.update({
     id: '/clients',
@@ -223,10 +238,18 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEditClientClientIdRouteRoute =
+  AuthenticatedEditClientClientIdRouteRouteImport.update({
+    id: '/edit-client/$clientId',
+    path: '/edit-client/$clientId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/clients': typeof AuthenticatedClientsRouteRoute
+  '/new-client': typeof AuthenticatedNewClientRouteRoute
+  '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -243,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/edit-client/$clientId': typeof AuthenticatedEditClientClientIdRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -260,6 +284,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRouteRoute
+  '/new-client': typeof AuthenticatedNewClientRouteRoute
+  '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -274,6 +300,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/edit-client/$clientId': typeof AuthenticatedEditClientClientIdRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -294,6 +321,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/clerk': typeof ClerkRouteRouteWithChildren
   '/_authenticated/clients': typeof AuthenticatedClientsRouteRoute
+  '/_authenticated/new-client': typeof AuthenticatedNewClientRouteRoute
+  '/_authenticated/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteRoute
   '/_authenticated/products': typeof AuthenticatedProductsRouteRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -311,6 +340,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/edit-client/$clientId': typeof AuthenticatedEditClientClientIdRouteRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -331,6 +361,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/clerk'
     | '/clients'
+    | '/new-client'
+    | '/new-order'
     | '/orders'
     | '/products'
     | '/settings'
@@ -347,6 +379,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/edit-client/$clientId'
     | '/errors/$error'
     | '/settings/account'
     | '/settings/appearance'
@@ -364,6 +397,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clients'
+    | '/new-client'
+    | '/new-order'
     | '/orders'
     | '/products'
     | '/clerk'
@@ -378,6 +413,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/edit-client/$clientId'
     | '/errors/$error'
     | '/settings/account'
     | '/settings/appearance'
@@ -397,6 +433,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/clerk'
     | '/_authenticated/clients'
+    | '/_authenticated/new-client'
+    | '/_authenticated/new-order'
     | '/_authenticated/orders'
     | '/_authenticated/products'
     | '/_authenticated/settings'
@@ -414,6 +452,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/edit-client/$clientId'
     | '/_authenticated/errors/$error'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
@@ -580,6 +619,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/new-order': {
+      id: '/_authenticated/new-order'
+      path: '/new-order'
+      fullPath: '/new-order'
+      preLoaderRoute: typeof AuthenticatedNewOrderRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/new-client': {
+      id: '/_authenticated/new-client'
+      path: '/new-client'
+      fullPath: '/new-client'
+      preLoaderRoute: typeof AuthenticatedNewClientRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients': {
       id: '/_authenticated/clients'
       path: '/clients'
@@ -685,6 +738,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/edit-client/$clientId': {
+      id: '/_authenticated/edit-client/$clientId'
+      path: '/edit-client/$clientId'
+      fullPath: '/edit-client/$clientId'
+      preLoaderRoute: typeof AuthenticatedEditClientClientIdRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -727,11 +787,14 @@ const AuthenticatedUsersRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsRouteRoute: typeof AuthenticatedClientsRouteRoute
+  AuthenticatedNewClientRouteRoute: typeof AuthenticatedNewClientRouteRoute
+  AuthenticatedNewOrderRouteRoute: typeof AuthenticatedNewOrderRouteRoute
   AuthenticatedOrdersRouteRoute: typeof AuthenticatedOrdersRouteRoute
   AuthenticatedProductsRouteRoute: typeof AuthenticatedProductsRouteRoute
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedUsersRouteRoute: typeof AuthenticatedUsersRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedEditClientClientIdRouteRoute: typeof AuthenticatedEditClientClientIdRouteRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
@@ -741,11 +804,15 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientsRouteRoute: AuthenticatedClientsRouteRoute,
+  AuthenticatedNewClientRouteRoute: AuthenticatedNewClientRouteRoute,
+  AuthenticatedNewOrderRouteRoute: AuthenticatedNewOrderRouteRoute,
   AuthenticatedOrdersRouteRoute: AuthenticatedOrdersRouteRoute,
   AuthenticatedProductsRouteRoute: AuthenticatedProductsRouteRoute,
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedUsersRouteRoute: AuthenticatedUsersRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedEditClientClientIdRouteRoute:
+    AuthenticatedEditClientClientIdRouteRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,

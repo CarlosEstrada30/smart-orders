@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,134 +17,204 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, Building2, MapPin, Phone } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Phone } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
-// Datos de ejemplo para clientes de quesería
-const mockClients = [
-  {
-    id: 1,
-    name: 'Restaurante El Bueno',
-    type: 'Restaurante',
-    contactPerson: 'Carlos Rodríguez',
-    email: 'carlos.rodriguez@elbueno.com',
-    phone: '+34 123 456 789',
-    address: 'Calle Mayor 123, Madrid',
-    status: 'Activo',
-    totalOrders: 45,
-    totalSpent: 2340.50,
-    lastOrder: '2024-02-15',
-    createdAt: '2023-06-15',
-  },
-  {
-    id: 2,
-    name: 'Hotel Plaza Mayor',
-    type: 'Hotel',
-    contactPerson: 'Luis Martínez',
-    email: 'compras@plazamayor.com',
-    phone: '+34 987 654 321',
-    address: 'Plaza Mayor 1, Madrid',
-    status: 'Activo',
-    totalOrders: 32,
-    totalSpent: 1890.75,
-    lastOrder: '2024-02-14',
-    createdAt: '2023-08-20',
-  },
-  {
-    id: 3,
-    name: 'Catering Delicias',
-    type: 'Catering',
-    contactPerson: 'Elena Sánchez',
-    email: 'pedidos@delicias.com',
-    phone: '+34 555 123 456',
-    address: 'Avenida de la Paz 45, Barcelona',
-    status: 'Activo',
-    totalOrders: 67,
-    totalSpent: 4567.80,
-    lastOrder: '2024-02-16',
-    createdAt: '2023-05-10',
-  },
-  {
-    id: 4,
-    name: 'Tienda Gourmet',
-    type: 'Tienda',
-    contactPerson: 'Ana López',
-    email: 'compras@gourmet.com',
-    phone: '+34 777 888 999',
-    address: 'Calle Gourmet 78, Valencia',
-    status: 'Activo',
-    totalOrders: 28,
-    totalSpent: 1234.90,
-    lastOrder: '2024-02-12',
-    createdAt: '2023-09-05',
-  },
-  {
-    id: 5,
-    name: 'Restaurante La Taberna',
-    type: 'Restaurante',
-    contactPerson: 'Pedro Fernández',
-    email: 'pedidos@lataberna.com',
-    phone: '+34 111 222 333',
-    address: 'Calle de la Taberna 12, Sevilla',
-    status: 'Inactivo',
-    totalOrders: 15,
-    totalSpent: 890.25,
-    lastOrder: '2024-01-20',
-    createdAt: '2023-10-15',
-  },
-  {
-    id: 6,
-    name: 'Hotel Mediterráneo',
-    type: 'Hotel',
-    contactPerson: 'María González',
-    email: 'compras@mediterraneo.com',
-    phone: '+34 444 555 666',
-    address: 'Paseo Marítimo 34, Málaga',
-    status: 'Activo',
-    totalOrders: 41,
-    totalSpent: 2789.60,
-    lastOrder: '2024-02-13',
-    createdAt: '2023-07-22',
-  },
-]
+// Interfaz para los datos del cliente de la API
+interface Client {
+  id: number
+  name: string
+  email: string
+  phone: string
+  address: string
+  is_active: boolean
+  created_at: string
+  updated_at: string | null
+}
 
 export function ClientsPage() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const [clients] = useState(mockClients)
+  const [clients, setClients] = useState<Client[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.type.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Función para navegar a editar cliente
+  const handleEditClient = (clientId: number) => {
+    navigate({ to: `/edit-client/${clientId}` })
+  }
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Activo':
-        return 'default'
-      case 'Inactivo':
-        return 'destructive'
-      default:
-        return 'outline'
+  // Función para obtener los clientes de la API
+  const fetchClients = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch('http://localhost:8000/api/v1/clients/?skip=0&limit=100&active_only=true')
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener clientes: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      setClients(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'Restaurante':
-        return <Building2 className="h-4 w-4" />
-      case 'Hotel':
-        return <Building2 className="h-4 w-4" />
-      case 'Catering':
-        return <UserCheck className="h-4 w-4" />
-      case 'Tienda':
-        return <UserCheck className="h-4 w-4" />
-      default:
-        return <UserCheck className="h-4 w-4" />
+  // Función para eliminar cliente
+  const handleDeleteClient = async () => {
+    if (!clientToDelete) return
+
+    try {
+      setDeleting(true)
+      
+      const response = await fetch(`http://localhost:8000/api/v1/clients/${clientToDelete.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al eliminar cliente: ${response.status}`)
+      }
+
+      // Cliente eliminado exitosamente
+      toast.success('Cliente eliminado exitosamente')
+      
+      // Actualizar la lista de clientes
+      setClients(clients.filter(client => client.id !== clientToDelete.id))
+      
+      // Cerrar diálogo
+      setDeleteDialogOpen(false)
+      setClientToDelete(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al eliminar el cliente')
+    } finally {
+      setDeleting(false)
     }
+  }
+
+  // Función para abrir diálogo de eliminación
+  const openDeleteDialog = (client: Client) => {
+    setClientToDelete(client)
+    setDeleteDialogOpen(true)
+  }
+
+  // Cargar clientes al montar el componente
+  useEffect(() => {
+    fetchClients()
+  }, [])
+
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.address.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const getStatusBadgeVariant = (isActive: boolean) => {
+    return isActive ? 'default' : 'destructive'
+  }
+
+  if (loading) {
+    return (
+      <Main>
+        <div className="container mx-auto py-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
+              <p className="text-muted-foreground">
+                Gestiona los clientes de la quesería
+              </p>
+            </div>
+            <Button disabled asChild>
+              <Link to="/new-client">
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Cliente
+              </Link>
+            </Button>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Cargando clientes...</CardTitle>
+              <CardDescription>
+                Obteniendo datos de la API
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-muted-foreground">Cargando...</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Main>
+    )
+  }
+
+  if (error) {
+    return (
+      <Main>
+        <div className="container mx-auto py-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
+              <p className="text-muted-foreground">
+                Gestiona los clientes de la quesería
+              </p>
+            </div>
+            <Button disabled asChild>
+              <Link to="/new-client">
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Cliente
+              </Link>
+            </Button>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Error al cargar clientes</CardTitle>
+              <CardDescription>
+                No se pudieron obtener los datos de la API
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">{error}</p>
+                  <Button onClick={fetchClients}>
+                    Reintentar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Main>
+    )
   }
 
   return (
@@ -157,9 +227,11 @@ export function ClientsPage() {
               Gestiona los clientes de la quesería
             </p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Cliente
+          <Button asChild>
+            <Link to="/new-client">
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Cliente
+            </Link>
           </Button>
         </div>
 
@@ -185,15 +257,11 @@ export function ClientsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Contacto</TableHead>
+                  <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Teléfono</TableHead>
+                  <TableHead>Dirección</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Pedidos</TableHead>
-                  <TableHead>Total Gastado</TableHead>
-                  <TableHead>Último Pedido</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -201,21 +269,11 @@ export function ClientsPage() {
                 {filteredClients.map((client) => (
                   <TableRow key={client.id}>
                     <TableCell className="font-medium">
-                      <div className="flex flex-col">
-                        <span>{client.name}</span>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          <span className="truncate max-w-[200px]">{client.address}</span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
                       <div className="flex items-center space-x-2">
-                        {getTypeIcon(client.type)}
-                        <span>{client.type}</span>
+                        <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        <span>{client.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{client.contactPerson}</TableCell>
                     <TableCell>{client.email}</TableCell>
                     <TableCell>
                       <div className="flex items-center">
@@ -224,13 +282,16 @@ export function ClientsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(client.status)}>
-                        {client.status}
+                      <div className="flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        <span className="truncate max-w-[200px]">{client.address}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(client.is_active)}>
+                        {client.is_active ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">{client.totalOrders}</TableCell>
-                    <TableCell className="font-medium">€{client.totalSpent.toFixed(2)}</TableCell>
-                    <TableCell>{client.lastOrder}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -246,11 +307,14 @@ export function ClientsPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditClient(client.id)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => openDeleteDialog(client)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                           </DropdownMenuItem>
@@ -264,6 +328,29 @@ export function ClientsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Diálogo de confirmación para eliminar */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el cliente{' '}
+              <span className="font-semibold">{clientToDelete?.name}</span> de la base de datos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteClient}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Main>
   )
 } 

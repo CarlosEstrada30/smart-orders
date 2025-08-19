@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, ShoppingCart, Package, Truck, CheckCircle } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 
 // Datos de ejemplo para pedidos de quesería
 const mockOrders = [
@@ -181,10 +182,12 @@ export function OrdersPage() {
               Gestiona los pedidos de quesos y productos lácteos
             </p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Pedido
-          </Button>
+          <Link to="/new-order">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Pedido
+            </Button>
+          </Link>
         </div>
 
         <Card>
