@@ -1,4 +1,5 @@
 import { API_CONFIG, ApiError } from './config'
+import { useAuthStore } from '@/stores/auth-store'
 
 // Cliente HTTP base
 class ApiClient {
@@ -10,6 +11,15 @@ class ApiClient {
     this.defaultHeaders = API_CONFIG.HEADERS
   }
 
+  // Método para obtener headers con token
+  private getHeaders(): HeadersInit {
+    const token = useAuthStore.getState().auth.accessToken
+    return {
+      ...this.defaultHeaders,
+      ...(token && { Authorization: `Bearer ${token}` }),
+    }
+  }
+
   // Método genérico para hacer peticiones
   private async request<T>(
     endpoint: string,
@@ -19,7 +29,7 @@ class ApiClient {
     
     const config: RequestInit = {
       headers: {
-        ...this.defaultHeaders,
+        ...this.getHeaders(),
         ...options.headers,
       },
       ...options,
