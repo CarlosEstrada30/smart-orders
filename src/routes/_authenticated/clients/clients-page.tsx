@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Table,
   TableBody,
@@ -27,27 +29,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Phone } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Phone, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-
-// Interfaz para los datos del cliente de la API
-interface Client {
-  id: number
-  name: string
-  email: string
-  phone: string
-  address: string
-  is_active: boolean
-  created_at: string
-  updated_at: string | null
-}
+import { clientsService, type Client, type CreateClientRequest, type UpdateClientRequest } from '@/services/clients'
+import { ApiError } from '@/services/api/config'
 
 export function ClientsPage() {
-  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,10 +53,79 @@ export function ClientsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
+  
+  // Estado para el modal de nuevo cliente
+  const [newClientDialogOpen, setNewClientDialogOpen] = useState(false)
+  const [newClientForm, setNewClientForm] = useState<CreateClientRequest>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  })
+  const [creatingClient, setCreatingClient] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
-  // Función para navegar a editar cliente
-  const handleEditClient = (clientId: number) => {
-    navigate({ to: `/edit-client/${clientId}` })
+  // Estado para el modal de editar cliente
+  const [editClientDialogOpen, setEditClientDialogOpen] = useState(false)
+  const [editClientForm, setEditClientForm] = useState<UpdateClientRequest>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  })
+  const [editingClient, setEditingClient] = useState(false)
+  const [editFormError, setEditFormError] = useState<string | null>(null)
+  const [clientToEdit, setClientToEdit] = useState<Client | null>(null)
+
+  // Función para abrir modal de editar cliente
+  const handleEditClient = (client: Client) => {
+    setClientToEdit(client)
+    setEditClientForm({
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      address: client.address,
+    })
+    setEditFormError(null)
+    setEditClientDialogOpen(true)
+  }
+
+  // Función para actualizar cliente
+  const handleUpdateClient = async () => {
+    if (!clientToEdit) return
+
+    // Validación básica
+    if (!editClientForm.name.trim() || !editClientForm.email.trim() || !editClientForm.phone.trim() || !editClientForm.address.trim()) {
+      setEditFormError('Todos los campos son obligatorios')
+      return
+    }
+
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(editClientForm.email)) {
+      setEditFormError('Por favor ingresa un email válido')
+      return
+    }
+
+    try {
+      setEditingClient(true)
+      setEditFormError(null)
+
+      await clientsService.updateClient(clientToEdit.id, editClientForm)
+
+      // Cliente actualizado exitosamente
+      toast.success('Cliente actualizado exitosamente')
+      setEditClientDialogOpen(false)
+      
+      // Recargar la lista de clientes
+      fetchClients()
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.detail : 'Error desconocido al actualizar el cliente'
+      setEditFormError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setEditingClient(false)
+    }
   }
 
   // Función para obtener los clientes de la API
@@ -67,16 +134,11 @@ export function ClientsPage() {
       setLoading(true)
       setError(null)
       
-      const response = await fetch('http://localhost:8000/api/v1/clients/?skip=0&limit=100&active_only=true')
-      
-      if (!response.ok) {
-        throw new Error(`Error al obtener clientes: ${response.status}`)
-      }
-      
-      const data = await response.json()
+      const data = await clientsService.getClients({ skip: 0, limit: 100, active_only: true })
       setClients(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      const errorMessage = err instanceof ApiError ? err.detail : 'Error desconocido'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -89,13 +151,7 @@ export function ClientsPage() {
     try {
       setDeleting(true)
       
-      const response = await fetch(`http://localhost:8000/api/v1/clients/${clientToDelete.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error al eliminar cliente: ${response.status}`)
-      }
+      await clientsService.deleteClient(clientToDelete.id)
 
       // Cliente eliminado exitosamente
       toast.success('Cliente eliminado exitosamente')
@@ -107,7 +163,8 @@ export function ClientsPage() {
       setDeleteDialogOpen(false)
       setClientToDelete(null)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al eliminar el cliente')
+      const errorMessage = err instanceof ApiError ? err.detail : 'Error al eliminar el cliente'
+      toast.error(errorMessage)
     } finally {
       setDeleting(false)
     }
@@ -117,6 +174,48 @@ export function ClientsPage() {
   const openDeleteDialog = (client: Client) => {
     setClientToDelete(client)
     setDeleteDialogOpen(true)
+  }
+
+  // Función para abrir modal de nuevo cliente
+  const handleNewClient = () => {
+    setNewClientDialogOpen(true)
+    setNewClientForm({ name: '', email: '', phone: '', address: '' })
+    setFormError(null)
+  }
+
+  // Función para crear nuevo cliente
+  const handleCreateClient = async () => {
+    // Validación básica
+    if (!newClientForm.name.trim() || !newClientForm.email.trim() || !newClientForm.phone.trim() || !newClientForm.address.trim()) {
+      setFormError('Todos los campos son obligatorios')
+      return
+    }
+
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newClientForm.email)) {
+      setFormError('Por favor ingresa un email válido')
+      return
+    }
+
+    try {
+      setCreatingClient(true)
+      setFormError(null)
+
+      await clientsService.createClient(newClientForm)
+
+      // Cliente creado exitosamente
+      toast.success('Cliente creado exitosamente')
+      setNewClientDialogOpen(false)
+      
+      // Recargar la lista de clientes
+      fetchClients()
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.detail : 'Error desconocido al crear el cliente'
+      setFormError(errorMessage)
+    } finally {
+      setCreatingClient(false)
+    }
   }
 
   // Cargar clientes al montar el componente
@@ -146,11 +245,9 @@ export function ClientsPage() {
                 Gestiona los clientes de la quesería
               </p>
             </div>
-            <Button disabled asChild>
-              <Link to="/new-client">
-                <Plus className="mr-2 h-4 w-4" />
-                Nuevo Cliente
-              </Link>
+            <Button onClick={handleNewClient}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Cliente
             </Button>
           </div>
 
@@ -186,11 +283,9 @@ export function ClientsPage() {
                 Gestiona los clientes de la quesería
               </p>
             </div>
-            <Button disabled asChild>
-              <Link to="/new-client">
-                <Plus className="mr-2 h-4 w-4" />
-                Nuevo Cliente
-              </Link>
+            <Button onClick={handleNewClient}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Cliente
             </Button>
           </div>
 
@@ -227,11 +322,9 @@ export function ClientsPage() {
               Gestiona los clientes de la quesería
             </p>
           </div>
-          <Button asChild>
-            <Link to="/new-client">
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Cliente
-            </Link>
+          <Button onClick={handleNewClient}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Cliente
           </Button>
         </div>
 
@@ -307,7 +400,7 @@ export function ClientsPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditClient(client.id)}>
+                          <DropdownMenuItem onClick={() => handleEditClient(client)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
@@ -351,6 +444,202 @@ export function ClientsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal para crear nuevo cliente */}
+      <Dialog open={newClientDialogOpen} onOpenChange={setNewClientDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Nuevo Cliente</DialogTitle>
+            <DialogDescription>
+              Completa los datos del nuevo cliente
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="modal-name">Nombre *</Label>
+                <Input
+                  id="modal-name"
+                  type="text"
+                  placeholder="Nombre completo del cliente"
+                  value={newClientForm.name}
+                  onChange={(e) => setNewClientForm(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="modal-email">Email *</Label>
+                <Input
+                  id="modal-email"
+                  type="email"
+                  placeholder="cliente@ejemplo.com"
+                  value={newClientForm.email}
+                  onChange={(e) => setNewClientForm(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="modal-phone">Teléfono *</Label>
+                <Input
+                  id="modal-phone"
+                  type="tel"
+                  placeholder="+34 123 456 789"
+                  value={newClientForm.phone}
+                  onChange={(e) => setNewClientForm(prev => ({ ...prev, phone: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="modal-address">Dirección *</Label>
+                <Textarea
+                  id="modal-address"
+                  placeholder="Dirección completa del cliente"
+                  value={newClientForm.address}
+                  onChange={(e) => setNewClientForm(prev => ({ ...prev, address: e.target.value }))}
+                  rows={3}
+                  required
+                />
+              </div>
+            </div>
+            
+            {/* Mensaje de Error */}
+            {formError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{formError}</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setNewClientDialogOpen(false)}
+              disabled={creatingClient}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleCreateClient}
+              disabled={creatingClient}
+            >
+              {creatingClient ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Crear Cliente
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para editar cliente */}
+      <Dialog open={editClientDialogOpen} onOpenChange={setEditClientDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+            <DialogDescription>
+              Modifica los datos del cliente
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nombre *</Label>
+                <Input
+                  id="edit-name"
+                  type="text"
+                  placeholder="Nombre completo del cliente"
+                  value={editClientForm.name}
+                  onChange={(e) => setEditClientForm(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email *</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  placeholder="cliente@ejemplo.com"
+                  value={editClientForm.email}
+                  onChange={(e) => setEditClientForm(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Teléfono *</Label>
+                <Input
+                  id="edit-phone"
+                  type="tel"
+                  placeholder="+34 123 456 789"
+                  value={editClientForm.phone}
+                  onChange={(e) => setEditClientForm(prev => ({ ...prev, phone: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-address">Dirección *</Label>
+                <Textarea
+                  id="edit-address"
+                  placeholder="Dirección completa del cliente"
+                  value={editClientForm.address}
+                  onChange={(e) => setEditClientForm(prev => ({ ...prev, address: e.target.value }))}
+                  rows={3}
+                  required
+                />
+              </div>
+            </div>
+            
+            {/* Mensaje de Error */}
+            {editFormError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{editFormError}</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setEditClientDialogOpen(false)}
+              disabled={editingClient}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleUpdateClient}
+              disabled={editingClient}
+            >
+              {editingClient ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Guardar Cambios
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Main>
   )
 } 

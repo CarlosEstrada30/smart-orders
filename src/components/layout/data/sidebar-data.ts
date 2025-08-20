@@ -21,7 +21,7 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: 'Quesos Artesanos',
+      name: 'Lacteos Bethel',
       logo: Command,
       plan: 'Sistema de Gestión',
     },

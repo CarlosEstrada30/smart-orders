@@ -27,7 +27,7 @@ interface Client {
 }
 
 export function EditClientPage() {
-  const { clientId } = useParams({ from: '/_authenticated/edit-client/$clientId' })
+  const { clientId } = useParams({ from: '/_authenticated/clients/edit-client/$clientId' })
   const navigate = useNavigate()
   const [client, setClient] = useState<Client | null>(null)
   const [formData, setFormData] = useState({
