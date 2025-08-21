@@ -17,7 +17,7 @@ export function RecentSales() {
             </p>
           </div>
           <div className='flex flex-col items-end space-y-1'>
-            <div className='font-medium'>€66.73</div>
+            <div className='font-medium'>Q66.73</div>
             <Badge variant="secondary" className="text-xs">Pendiente</Badge>
           </div>
         </div>
@@ -35,7 +35,7 @@ export function RecentSales() {
             </p>
           </div>
           <div className='flex flex-col items-end space-y-1'>
-            <div className='font-medium'>€89.95</div>
+            <div className='font-medium'>Q89.95</div>
             <Badge variant="default" className="text-xs">En Proceso</Badge>
           </div>
         </div>
@@ -53,7 +53,7 @@ export function RecentSales() {
             </p>
           </div>
           <div className='flex flex-col items-end space-y-1'>
-            <div className='font-medium'>€156.72</div>
+            <div className='font-medium'>Q156.72</div>
             <Badge variant="outline" className="text-xs">Enviado</Badge>
           </div>
         </div>
@@ -70,7 +70,7 @@ export function RecentSales() {
             <p className='text-muted-foreground text-sm'>PED-004</p>
           </div>
           <div className='flex flex-col items-end space-y-1'>
-            <div className='font-medium'>€234.88</div>
+            <div className='font-medium'>Q234.88</div>
             <Badge variant="default" className="text-xs">Entregado</Badge>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function RecentSales() {
             </p>
           </div>
           <div className='flex flex-col items-end space-y-1'>
-            <div className='font-medium'>€98.45</div>
+            <div className='font-medium'>Q98.45</div>
             <Badge variant="destructive" className="text-xs">Cancelado</Badge>
           </div>
         </div>

@@ -40,7 +40,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Package, Save, Loader2, Euro, Hash } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Package, Save, Loader2, Hash } from 'lucide-react'
 import { toast } from 'sonner'
 import { productsService, type Product, type CreateProductRequest, type UpdateProductRequest } from '@/services/products'
 import { ApiError } from '@/services/api/config'
@@ -391,7 +391,7 @@ export function ProductsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        <Euro className="h-3 w-3 mr-1" />
+                        <span className="text-sm font-medium mr-1">Q</span>
                         {product.price.toFixed(2)}
                       </div>
                     </TableCell>

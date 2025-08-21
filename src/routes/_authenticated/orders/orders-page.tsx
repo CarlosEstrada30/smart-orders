@@ -230,7 +230,7 @@ export function OrdersPage() {
                     <TableCell className="font-medium">{order.customer}</TableCell>
                     <TableCell>{order.customerEmail}</TableCell>
                     <TableCell>{order.items}</TableCell>
-                    <TableCell className="font-medium">€{order.total.toFixed(2)}</TableCell>
+                    <TableCell className="font-medium">Q{order.total.toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(order.status)}>
                         <div className="flex items-center space-x-1">

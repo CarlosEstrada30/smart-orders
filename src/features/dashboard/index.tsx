@@ -50,7 +50,7 @@ export function Dashboard() {
                 <TrendingUp className='text-muted-foreground h-4 w-4' />
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold'>€8,456.23</div>
+                <div className='text-2xl font-bold'>Q8,456.23</div>
                 <p className='text-muted-foreground text-xs'>
                   +15.3% desde el mes pasado
                 </p>

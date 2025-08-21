@@ -202,7 +202,7 @@ export function NewOrderPage() {
                     <SelectContent>
                       {mockProducts.map((product) => (
                         <SelectItem key={product.id} value={product.id.toString()}>
-                          {product.name} - €{product.price}
+                          {product.name} - Q{product.price}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -236,7 +236,7 @@ export function NewOrderPage() {
                         <div className="flex-1">
                           <div className="font-medium">{item.productName}</div>
                           <div className="text-sm text-muted-foreground">
-                            €{item.price} x {item.quantity}
+                            Q{item.price} x {item.quantity}
                           </div>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -251,7 +251,7 @@ export function NewOrderPage() {
                               className="w-20"
                             />
                           </div>
-                          <div className="font-medium">€{item.subtotal.toFixed(2)}</div>
+                          <div className="font-medium">Q{item.subtotal.toFixed(2)}</div>
                           <Button
                             type="button"
                             variant="ghost"
@@ -272,7 +272,7 @@ export function NewOrderPage() {
                 <div className="flex justify-end">
                   <div className="text-right">
                     <div className="text-lg font-bold">
-                      Total: €{total.toFixed(2)}
+                      Total: Q{total.toFixed(2)}
                     </div>
                   </div>
                 </div>
