@@ -22,6 +22,7 @@ import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
+import { useTokenExpiration } from '@/hooks/use-token-expiration'
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode
@@ -29,6 +30,10 @@ type AuthenticatedLayoutProps = {
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie('sidebar_state') !== 'false'
+  
+  // Verificar expiración del token
+  useTokenExpiration()
+  
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>

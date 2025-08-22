@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,159 +17,154 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, ShoppingCart, Package, Truck, CheckCircle } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-
-// Datos de ejemplo para pedidos de quesería
-const mockOrders = [
-  {
-    id: 'PED-001',
-    customer: 'María González',
-    customerEmail: 'maria.gonzalez@quesosartesanos.com',
-    items: 3,
-    total: 66.73,
-    status: 'Pendiente',
-    paymentStatus: 'Pagado',
-    createdAt: '2024-02-15',
-    updatedAt: '2024-02-15',
-  },
-  {
-    id: 'PED-002',
-    customer: 'Carlos Rodríguez',
-    customerEmail: 'carlos.rodriguez@restaurante.com',
-    items: 5,
-    total: 89.95,
-    status: 'En Proceso',
-    paymentStatus: 'Pagado',
-    createdAt: '2024-02-14',
-    updatedAt: '2024-02-15',
-  },
-  {
-    id: 'PED-003',
-    customer: 'Luis Martínez',
-    customerEmail: 'luis.martinez@hotel.com',
-    items: 8,
-    total: 156.72,
-    status: 'Enviado',
-    paymentStatus: 'Pagado',
-    createdAt: '2024-02-13',
-    updatedAt: '2024-02-14',
-  },
-  {
-    id: 'PED-004',
-    customer: 'Elena Sánchez',
-    customerEmail: 'elena.sanchez@catering.com',
-    items: 12,
-    total: 234.88,
-    status: 'Entregado',
-    paymentStatus: 'Pagado',
-    createdAt: '2024-02-12',
-    updatedAt: '2024-02-13',
-  },
-  {
-    id: 'PED-005',
-    customer: 'Restaurante El Bueno',
-    customerEmail: 'pedidos@elbueno.com',
-    items: 6,
-    total: 98.45,
-    status: 'Cancelado',
-    paymentStatus: 'Reembolsado',
-    createdAt: '2024-02-11',
-    updatedAt: '2024-02-12',
-  },
-  {
-    id: 'PED-006',
-    customer: 'Hotel Plaza Mayor',
-    customerEmail: 'compras@plazamayor.com',
-    items: 4,
-    total: 67.24,
-    status: 'Pendiente',
-    paymentStatus: 'Pendiente',
-    createdAt: '2024-02-16',
-    updatedAt: '2024-02-16',
-  },
-  {
-    id: 'PED-007',
-    customer: 'Catering Delicias',
-    customerEmail: 'pedidos@delicias.com',
-    items: 15,
-    total: 298.75,
-    status: 'En Proceso',
-    paymentStatus: 'Pagado',
-    createdAt: '2024-02-15',
-    updatedAt: '2024-02-16',
-  },
-  {
-    id: 'PED-008',
-    customer: 'Tienda Gourmet',
-    customerEmail: 'compras@gourmet.com',
-    items: 10,
-    total: 187.50,
-    status: 'Enviado',
-    paymentStatus: 'Pagado',
-    createdAt: '2024-02-14',
-    updatedAt: '2024-02-15',
-  },
-]
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, ShoppingCart, Package, Truck, CheckCircle, X, User, MapPin } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { ordersService, type Order, type OrderStatus } from '@/services/orders'
 
 export function OrdersPage() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const [orders] = useState(mockOrders)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null)
 
-  const filteredOrders = orders.filter(order =>
-    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  useEffect(() => {
+    loadOrders()
+  }, [])
 
-  const getStatusBadgeVariant = (status: string) => {
+  const loadOrders = async () => {
+    try {
+      setLoading(true)
+      const ordersData = await ordersService.getOrders()
+      setOrders(ordersData)
+    } catch (_err) {
+      setError('Error al cargar las órdenes')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return
+
+    try {
+      await ordersService.deleteOrder(orderToDelete.id!)
+      setOrders(orders.filter(order => order.id !== orderToDelete.id))
+      setIsDeleteDialogOpen(false)
+      setOrderToDelete(null)
+    } catch (_err) {
+      setError('Error al eliminar la orden')
+    }
+  }
+
+  const handleViewOrder = (orderId: number) => {
+    navigate({ to: '/order-detail/$orderId', params: { orderId: orderId.toString() } })
+  }
+
+  const getStatusLabel = (status: OrderStatus) => {
     switch (status) {
-      case 'Pendiente':
+      case 'pending':
+        return 'Pendiente'
+      case 'confirmed':
+        return 'Confirmado'
+      case 'in_progress':
+        return 'En Proceso'
+      case 'shipped':
+        return 'Enviado'
+      case 'delivered':
+        return 'Entregado'
+      case 'cancelled':
+        return 'Cancelado'
+      default:
+        return status
+    }
+  }
+
+  const filteredOrders = orders.filter(order => {
+    const searchLower = searchTerm.toLowerCase()
+    
+    // Búsqueda por número de orden
+    if (order.order_number?.toLowerCase().includes(searchLower)) return true
+    if (order.id?.toString().includes(searchTerm)) return true
+    
+    // Búsqueda por cliente
+    if (order.client?.name?.toLowerCase().includes(searchLower)) return true
+    if (order.client?.email?.toLowerCase().includes(searchLower)) return true
+    
+    // Búsqueda por dirección
+    if (order.client?.address?.toLowerCase().includes(searchLower)) return true
+    
+    // Búsqueda por estado
+    const statusLabel = getStatusLabel(order.status)
+    if (statusLabel.toLowerCase().includes(searchLower)) return true
+    
+    return false
+  })
+
+  const getStatusBadgeVariant = (status: OrderStatus) => {
+    switch (status) {
+      case 'pending':
         return 'secondary'
-      case 'En Proceso':
+      case 'confirmed':
         return 'default'
-      case 'Enviado':
+      case 'in_progress':
         return 'outline'
-      case 'Entregado':
+      case 'shipped':
         return 'default'
-      case 'Cancelado':
+      case 'delivered':
+        return 'default'
+      case 'cancelled':
         return 'destructive'
       default:
         return 'outline'
     }
   }
 
-  const getPaymentStatusBadgeVariant = (status: string) => {
+  const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
-      case 'Pagado':
-        return 'default'
-      case 'Pendiente':
-        return 'secondary'
-      case 'Reembolsado':
-        return 'destructive'
-      default:
-        return 'outline'
-    }
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Pendiente':
+      case 'pending':
         return <Package className="h-4 w-4" />
-      case 'En Proceso':
+      case 'confirmed':
         return <ShoppingCart className="h-4 w-4" />
-      case 'Enviado':
+      case 'in_progress':
+        return <ShoppingCart className="h-4 w-4" />
+      case 'shipped':
         return <Truck className="h-4 w-4" />
-      case 'Entregado':
+      case 'delivered':
         return <CheckCircle className="h-4 w-4" />
-      case 'Cancelado':
-        return <Trash2 className="h-4 w-4" />
+      case 'cancelled':
+        return <X className="h-4 w-4" />
       default:
         return <Package className="h-4 w-4" />
     }
+  }
+
+  if (loading) {
+    return (
+      <Main>
+        <div className="container mx-auto py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2">Cargando órdenes...</p>
+            </div>
+          </div>
+        </div>
+      </Main>
+    )
   }
 
   return (
@@ -177,33 +172,41 @@ export function OrdersPage() {
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Pedidos</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Órdenes</h1>
             <p className="text-muted-foreground">
-              Gestiona los pedidos de quesos y productos lácteos
+              Gestiona las órdenes de la aplicación
             </p>
           </div>
           <Link to="/new-order">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Nuevo Pedido
+              Nueva Orden
             </Button>
           </Link>
         </div>
 
+        {error && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <p className="text-red-600">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
-            <CardTitle>Lista de Pedidos</CardTitle>
+            <CardTitle>Lista de Órdenes</CardTitle>
             <CardDescription>
-              {filteredOrders.length} pedidos encontrados
+              {filteredOrders.length} órdenes encontradas
             </CardDescription>
             <div className="flex items-center space-x-2">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar pedidos..."
+                  placeholder="Buscar órdenes por número, cliente, email, dirección o estado..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-[300px]"
+                  className="pl-8 w-[400px]"
                 />
               </div>
             </div>
@@ -212,13 +215,12 @@ export function OrdersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID Pedido</TableHead>
+                  <TableHead>Número de Orden</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>Dirección</TableHead>
                   <TableHead>Items</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Pago</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
@@ -226,25 +228,76 @@ export function OrdersPage() {
               <TableBody>
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-mono font-medium">{order.id}</TableCell>
-                    <TableCell className="font-medium">{order.customer}</TableCell>
-                    <TableCell>{order.customerEmail}</TableCell>
-                    <TableCell>{order.items}</TableCell>
-                    <TableCell className="font-medium">Q{order.total.toFixed(2)}</TableCell>
+                    <TableCell className="font-mono font-medium">
+                      {order.order_number || `#${order.id}`}
+                    </TableCell>
+                    <TableCell>
+                      {order.client ? (
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="font-medium">{order.client.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.client.phone}
+                            </div>
+                            {!order.client.is_active && (
+                              <Badge variant="secondary" className="text-xs mt-1">Inactivo</Badge>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="font-medium">Cliente #{order.client_id}</div>
+                            <div className="text-sm text-muted-foreground">
+                              Información no disponible
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {order.client?.address ? (
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm max-w-[200px] truncate" title={order.client.address}>
+                            {order.client.address}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Sin dirección</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-center">
+                        <span className="font-medium">{order.items?.length || 0}</span>
+                        <div className="text-xs text-muted-foreground">
+                          {order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0} unidades
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      Q{order.total_amount?.toFixed(2) || '0.00'}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(order.status)}>
                         <div className="flex items-center space-x-1">
                           {getStatusIcon(order.status)}
-                          <span>{order.status}</span>
+                          <span>{getStatusLabel(order.status)}</span>
                         </div>
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getPaymentStatusBadgeVariant(order.paymentStatus)}>
-                        {order.paymentStatus}
-                      </Badge>
+                      <div className="text-sm">
+                        <div>{order.created_at ? new Date(order.created_at).toLocaleDateString() : '-'}</div>
+                        {order.updated_at && order.updated_at !== order.created_at && (
+                          <div className="text-xs text-muted-foreground">
+                            Actualizado: {new Date(order.updated_at).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell>{order.createdAt}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -256,17 +309,23 @@ export function OrdersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewOrder(order.id!)}>
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewOrder(order.id!)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => {
+                              setOrderToDelete(order)
+                              setIsDeleteDialogOpen(true)
+                            }}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Cancelar
+                            Eliminar
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -277,6 +336,36 @@ export function OrdersPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Dialog de confirmación de eliminación */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>¿Eliminar orden?</DialogTitle>
+              <DialogDescription>
+                Esta acción no se puede deshacer. La orden será eliminada permanentemente.
+                {orderToDelete && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded">
+                    <p className="text-sm">
+                      <strong>Orden:</strong> {orderToDelete.order_number || `#${orderToDelete.id}`}<br />
+                      <strong>Cliente:</strong> {orderToDelete.client?.name || `Cliente #${orderToDelete.client_id}`}<br />
+                      <strong>Email:</strong> {orderToDelete.client?.email || 'No disponible'}<br />
+                      <strong>Total:</strong> Q{orderToDelete.total_amount?.toFixed(2) || '0.00'}
+                    </p>
+                  </div>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteOrder}>
+                Eliminar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Main>
   )

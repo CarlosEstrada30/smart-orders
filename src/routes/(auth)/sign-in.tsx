@@ -59,7 +59,7 @@ function SignInPage() {
       toast.success('Inicio de sesión exitoso')
 
       // Redirigir a la página original o al dashboard
-      const redirectTo = (search as { redirect?: string }).redirect || '/_authenticated/'
+      const redirectTo = (search as { redirect?: string }).redirect || '/'
       window.location.href = redirectTo
 
     } catch (err) {

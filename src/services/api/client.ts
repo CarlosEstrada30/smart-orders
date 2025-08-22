@@ -1,5 +1,6 @@
 import { API_CONFIG, ApiError } from './config'
 import { useAuthStore } from '@/stores/auth-store'
+import { toast } from 'sonner'
 
 // Cliente HTTP base
 class ApiClient {
@@ -18,6 +19,24 @@ class ApiClient {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
     }
+  }
+
+  // Método para manejar errores de autenticación
+  private handleAuthError(status: number) {
+    if (status === 401) {
+      // Token expirado o inválido
+      toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+      
+      // Limpiar el store de autenticación
+      useAuthStore.getState().auth.reset()
+      
+      // Redirigir al login
+      const currentPath = window.location.pathname
+      window.location.href = `/sign-in?redirect=${encodeURIComponent(currentPath)}`
+      
+      return true // Indica que el error fue manejado
+    }
+    return false
   }
 
   // Método genérico para hacer peticiones
@@ -39,6 +58,15 @@ class ApiClient {
       const response = await fetch(url, config)
 
       if (!response.ok) {
+        // Manejar errores de autenticación
+        if (this.handleAuthError(response.status)) {
+          throw new ApiError(
+            response.status,
+            'Sesión expirada',
+            'Token de autenticación inválido o expirado'
+          )
+        }
+
         const errorData = await response.json().catch(() => ({
           detail: `HTTP ${response.status}: ${response.statusText}`,
         }))
