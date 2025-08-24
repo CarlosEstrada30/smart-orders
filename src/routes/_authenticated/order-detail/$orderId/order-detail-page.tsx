@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,7 +32,6 @@ import { Badge } from '@/components/ui/badge'
 import { Main } from '@/components/layout/main'
 import { 
   ArrowLeft, 
-  Edit, 
   Trash2, 
   ShoppingCart, 
   Package, 
@@ -51,11 +50,7 @@ export function OrderDetailPage() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [newStatus, setNewStatus] = useState<OrderStatus>('pending')
 
-  useEffect(() => {
-    loadOrder()
-  }, [orderId])
-
-  const loadOrder = async () => {
+  const loadOrder = useCallback(async () => {
     try {
       setLoading(true)
       const orderData = await ordersService.getOrder(parseInt(orderId))
@@ -65,7 +60,11 @@ export function OrderDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [orderId])
+
+  useEffect(() => {
+    loadOrder()
+  }, [loadOrder])
 
   const handleDelete = async () => {
     if (!order) return
@@ -75,7 +74,7 @@ export function OrderDetailPage() {
       // Redirigir a la lista de órdenes
       window.location.href = '/orders'
     } catch (_err) {
-      setError('Error al eliminar la orden')
+      setError('Error al cancelar la orden')
     }
   }
 
@@ -214,36 +213,33 @@ export function OrderDetailPage() {
             >
               Cambiar Estado
             </Button>
-            <Link to="/edit-order/$orderId" params={{ orderId }}>
-              <Button variant="outline">
-                <Edit className="h-4 w-4 mr-2" />
-                Editar Orden
-              </Button>
-            </Link>
-            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Eliminar
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>¿Eliminar orden?</DialogTitle>
-                  <DialogDescription>
-                    Esta acción no se puede deshacer. La orden será eliminada permanentemente.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+
+            {order.status !== 'cancelled' && (
+              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Cancelar
                   </Button>
-                  <Button variant="destructive" onClick={handleDelete}>
-                    Eliminar
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>¿Cancelar orden?</DialogTitle>
+                    <DialogDescription>
+                      Esta acción no se puede deshacer. La orden será cancelada permanentemente.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button variant="destructive" onClick={handleDelete}>
+                      Cancelar
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
 

@@ -28,7 +28,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, ShoppingCart, Package, Truck, CheckCircle, X, User, MapPin } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Trash2, Eye, ShoppingCart, Package, Truck, CheckCircle, X, User, MapPin } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ordersService, type Order, type OrderStatus } from '@/services/orders'
 
@@ -66,7 +66,7 @@ export function OrdersPage() {
       setIsDeleteDialogOpen(false)
       setOrderToDelete(null)
     } catch (_err) {
-      setError('Error al eliminar la orden')
+      setError('Error al cancelar la orden')
     }
   }
 
@@ -313,20 +313,19 @@ export function OrdersPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleViewOrder(order.id!)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => {
-                              setOrderToDelete(order)
-                              setIsDeleteDialogOpen(true)
-                            }}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
+
+                          {order.status !== 'cancelled' && (
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => {
+                                setOrderToDelete(order)
+                                setIsDeleteDialogOpen(true)
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Cancelar
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -341,9 +340,9 @@ export function OrdersPage() {
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>¿Eliminar orden?</DialogTitle>
+              <DialogTitle>¿Cancelar orden?</DialogTitle>
               <DialogDescription>
-                Esta acción no se puede deshacer. La orden será eliminada permanentemente.
+                Esta acción no se puede deshacer. La orden será cancelada permanentemente.
                 {orderToDelete && (
                   <div className="mt-2 p-2 bg-gray-50 rounded">
                     <p className="text-sm">
@@ -361,7 +360,7 @@ export function OrdersPage() {
                 Cancelar
               </Button>
               <Button variant="destructive" onClick={handleDeleteOrder}>
-                Eliminar
+                Cancelar
               </Button>
             </DialogFooter>
           </DialogContent>

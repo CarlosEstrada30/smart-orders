@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -20,74 +20,73 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react'
-
-// Datos de ejemplo para usuarios de quesería
-const mockUsers = [
-  {
-    id: 1,
-    name: 'María González',
-    email: 'maria.gonzalez@quesosartesanos.com',
-    role: 'Cliente',
-    status: 'Activo',
-    phone: '+34 123 456 789',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: 'Carlos Rodríguez',
-    email: 'carlos.rodriguez@restaurante.com',
-    role: 'Cliente',
-    status: 'Activo',
-    phone: '+34 987 654 321',
-    createdAt: '2024-01-20',
-  },
-  {
-    id: 3,
-    name: 'Ana López',
-    email: 'ana.lopez@quesosartesanos.com',
-    role: 'Admin',
-    status: 'Activo',
-    phone: '+34 555 123 456',
-    createdAt: '2024-01-10',
-  },
-  {
-    id: 4,
-    name: 'Luis Martínez',
-    email: 'luis.martinez@hotel.com',
-    role: 'Cliente',
-    status: 'Activo',
-    phone: '+34 777 888 999',
-    createdAt: '2024-01-25',
-  },
-  {
-    id: 5,
-    name: 'Elena Sánchez',
-    email: 'elena.sanchez@catering.com',
-    role: 'Cliente',
-    status: 'Activo',
-    phone: '+34 111 222 333',
-    createdAt: '2024-02-01',
-  },
-  {
-    id: 6,
-    name: 'Pedro Fernández',
-    email: 'pedro.fernandez@quesosartesanos.com',
-    role: 'Empleado',
-    status: 'Activo',
-    phone: '+34 444 555 666',
-    createdAt: '2024-01-30',
-  },
-]
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Shield, User as UserIcon } from 'lucide-react'
+import { usersService, type User } from '@/services/users'
+import { UsersCreateDialog, UsersEditDialog, UsersDeleteDialog } from '@/features/users/components'
+import { toast } from 'sonner'
 
 export function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [users] = useState(mockUsers)
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
+  // Load users from API
+  useEffect(() => {
+    loadUsers()
+  }, [])
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const usersData = await usersService.getUsers()
+      setUsers(usersData)
+    } catch (err) {
+      console.error('Error loading users:', err)
+      setError('Error al cargar los usuarios')
+      toast.error('Error al cargar los usuarios')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleEdit = (user: User) => {
+    setSelectedUser(user)
+    setEditDialogOpen(true)
+  }
+
+  const handleDelete = (user: User) => {
+    setSelectedUser(user)
+    setDeleteDialogOpen(true)
+  }
+
+  if (loading) {
+    return (
+      <Main>
+        <div className="container mx-auto py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2">Cargando usuarios...</p>
+            </div>
+          </div>
+        </div>
+      </Main>
+    )
+  }
 
   return (
     <Main>
@@ -96,14 +95,22 @@ export function UsersPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
             <p className="text-muted-foreground">
-              Gestiona los usuarios del sistema de la quesería
+              Gestiona los usuarios del sistema
             </p>
           </div>
-          <Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Usuario
           </Button>
         </div>
+
+        {error && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <p className="text-red-600">{error}</p>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -115,10 +122,10 @@ export function UsersPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar usuarios..."
+                  placeholder="Buscar usuarios por nombre, email o usuario..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-[300px]"
+                  className="pl-8 w-[400px]"
                 />
               </div>
             </div>
@@ -127,11 +134,10 @@ export function UsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nombre</TableHead>
+                  <TableHead>Usuario</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Rol</TableHead>
+                  <TableHead>Tipo</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Teléfono</TableHead>
                   <TableHead>Fecha de Registro</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
@@ -139,20 +145,34 @@ export function UsersPage() {
               <TableBody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <div className="font-medium">{user.full_name}</div>
+                          <div className="text-sm text-muted-foreground">@{user.username}</div>
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant={user.role === 'Admin' ? 'default' : user.role === 'Empleado' ? 'secondary' : 'outline'}>
-                        {user.role}
+                      <Badge variant={user.is_superuser ? 'default' : 'secondary'}>
+                        <div className="flex items-center space-x-1">
+                          {user.is_superuser && <Shield className="h-3 w-3" />}
+                          <span>{user.is_superuser ? 'Super Usuario' : 'Usuario'}</span>
+                        </div>
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.status === 'Activo' ? 'default' : 'destructive'}>
-                        {user.status}
+                      <Badge variant={user.is_active ? 'default' : 'destructive'}>
+                        {user.is_active ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{user.phone}</TableCell>
-                    <TableCell>{user.createdAt}</TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -164,15 +184,14 @@ export function UsersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver detalles
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDelete(user)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                           </DropdownMenuItem>
@@ -185,6 +204,27 @@ export function UsersPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Dialogs */}
+        <UsersCreateDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onUserCreated={loadUsers}
+        />
+        
+        <UsersEditDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          user={selectedUser}
+          onUserUpdated={loadUsers}
+        />
+        
+        <UsersDeleteDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          user={selectedUser}
+          onUserDeleted={loadUsers}
+        />
       </div>
     </Main>
   )
