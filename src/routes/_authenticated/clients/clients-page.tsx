@@ -60,6 +60,7 @@ export function ClientsPage() {
     name: '',
     email: '',
     phone: '',
+    nit: '',
     address: '',
   })
   const [creatingClient, setCreatingClient] = useState(false)
@@ -71,6 +72,7 @@ export function ClientsPage() {
     name: '',
     email: '',
     phone: '',
+    nit: '',
     address: '',
   })
   const [editingClient, setEditingClient] = useState(false)
@@ -82,9 +84,10 @@ export function ClientsPage() {
     setClientToEdit(client)
     setEditClientForm({
       name: client.name,
-      email: client.email,
-      phone: client.phone,
-      address: client.address,
+      email: client.email || '',
+      phone: client.phone || '',
+      nit: client.nit || '',
+      address: client.address || '',
     })
     setEditFormError(null)
     setEditClientDialogOpen(true)
@@ -95,14 +98,13 @@ export function ClientsPage() {
     if (!clientToEdit) return
 
     // Validación básica
-    if (!editClientForm.name.trim() || !editClientForm.email.trim() || !editClientForm.phone.trim() || !editClientForm.address.trim()) {
-      setEditFormError('Todos los campos son obligatorios')
+    if (!editClientForm.name || !editClientForm.name.trim()) {
+      setEditFormError('El nombre es obligatorio')
       return
     }
 
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(editClientForm.email)) {
+    // Validación de email (solo si se proporciona)
+    if (editClientForm.email && editClientForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editClientForm.email)) {
       setEditFormError('Por favor ingresa un email válido')
       return
     }
@@ -179,21 +181,20 @@ export function ClientsPage() {
   // Función para abrir modal de nuevo cliente
   const handleNewClient = () => {
     setNewClientDialogOpen(true)
-    setNewClientForm({ name: '', email: '', phone: '', address: '' })
+    setNewClientForm({ name: '', email: '', phone: '', nit: '', address: '' })
     setFormError(null)
   }
 
   // Función para crear nuevo cliente
   const handleCreateClient = async () => {
     // Validación básica
-    if (!newClientForm.name.trim() || !newClientForm.email.trim() || !newClientForm.phone.trim() || !newClientForm.address.trim()) {
-      setFormError('Todos los campos son obligatorios')
+    if (!newClientForm.name.trim()) {
+      setFormError('El nombre es obligatorio')
       return
     }
 
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(newClientForm.email)) {
+    // Validación de email (solo si se proporciona)
+    if (newClientForm.email && newClientForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newClientForm.email)) {
       setFormError('Por favor ingresa un email válido')
       return
     }
@@ -225,9 +226,10 @@ export function ClientsPage() {
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.address.toLowerCase().includes(searchTerm.toLowerCase())
+    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (client.nit && client.nit.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (client.phone && client.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (client.address && client.address.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
   const getStatusBadgeVariant = (isActive: boolean) => {
@@ -352,6 +354,7 @@ export function ClientsPage() {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>NIT</TableHead>
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Dirección</TableHead>
                   <TableHead>Estado</TableHead>
@@ -367,17 +370,18 @@ export function ClientsPage() {
                         <span>{client.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{client.email}</TableCell>
+                    <TableCell>{client.email || '-'}</TableCell>
+                    <TableCell>{client.nit || '-'}</TableCell>
                     <TableCell>
                       <div className="flex items-center">
                         <Phone className="h-3 w-3 mr-1" />
-                        {client.phone}
+                        {client.phone || '-'}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
                         <MapPin className="h-3 w-3 mr-1" />
-                        <span className="truncate max-w-[200px]">{client.address}</span>
+                        <span className="truncate max-w-[200px]">{client.address || '-'}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -469,38 +473,45 @@ export function ClientsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="modal-email">Email *</Label>
+                <Label htmlFor="modal-email">Email</Label>
                 <Input
                   id="modal-email"
                   type="email"
                   placeholder="cliente@ejemplo.com"
-                  value={newClientForm.email}
+                  value={newClientForm.email || ''}
                   onChange={(e) => setNewClientForm(prev => ({ ...prev, email: e.target.value }))}
-                  required
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="modal-phone">Teléfono *</Label>
+                <Label htmlFor="modal-nit">NIT</Label>
+                <Input
+                  id="modal-nit"
+                  type="text"
+                  placeholder="123456789-0"
+                  value={newClientForm.nit || ''}
+                  onChange={(e) => setNewClientForm(prev => ({ ...prev, nit: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="modal-phone">Teléfono</Label>
                 <Input
                   id="modal-phone"
                   type="tel"
                   placeholder="+34 123 456 789"
-                  value={newClientForm.phone}
+                  value={newClientForm.phone || ''}
                   onChange={(e) => setNewClientForm(prev => ({ ...prev, phone: e.target.value }))}
-                  required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="modal-address">Dirección *</Label>
+                <Label htmlFor="modal-address">Dirección</Label>
                 <Textarea
                   id="modal-address"
                   placeholder="Dirección completa del cliente"
-                  value={newClientForm.address}
+                  value={newClientForm.address || ''}
                   onChange={(e) => setNewClientForm(prev => ({ ...prev, address: e.target.value }))}
                   rows={3}
-                  required
                 />
               </div>
             </div>
@@ -561,44 +572,51 @@ export function ClientsPage() {
                   id="edit-name"
                   type="text"
                   placeholder="Nombre completo del cliente"
-                  value={editClientForm.name}
+                  value={editClientForm.name || ''}
                   onChange={(e) => setEditClientForm(prev => ({ ...prev, name: e.target.value }))}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-email">Email *</Label>
+                <Label htmlFor="edit-email">Email</Label>
                 <Input
                   id="edit-email"
                   type="email"
                   placeholder="cliente@ejemplo.com"
-                  value={editClientForm.email}
+                  value={editClientForm.email || ''}
                   onChange={(e) => setEditClientForm(prev => ({ ...prev, email: e.target.value }))}
-                  required
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-phone">Teléfono *</Label>
+                <Label htmlFor="edit-nit">NIT</Label>
+                <Input
+                  id="edit-nit"
+                  type="text"
+                  placeholder="123456789-0"
+                  value={editClientForm.nit || ''}
+                  onChange={(e) => setEditClientForm(prev => ({ ...prev, nit: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Teléfono</Label>
                 <Input
                   id="edit-phone"
                   type="tel"
                   placeholder="+34 123 456 789"
-                  value={editClientForm.phone}
+                  value={editClientForm.phone || ''}
                   onChange={(e) => setEditClientForm(prev => ({ ...prev, phone: e.target.value }))}
-                  required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-address">Dirección *</Label>
+                <Label htmlFor="edit-address">Dirección</Label>
                 <Textarea
                   id="edit-address"
                   placeholder="Dirección completa del cliente"
-                  value={editClientForm.address}
+                  value={editClientForm.address || ''}
                   onChange={(e) => setEditClientForm(prev => ({ ...prev, address: e.target.value }))}
                   rows={3}
-                  required
                 />
               </div>
             </div>

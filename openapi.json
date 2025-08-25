@@ -1742,8 +1742,15 @@
             "title": "Name"
           },
           "email": {
-            "type": "string",
-            "format": "email",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email"
           },
           "phone": {
@@ -1756,6 +1763,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "nit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nit"
           },
           "address": {
             "anyOf": [
@@ -1776,8 +1794,7 @@
         },
         "type": "object",
         "required": [
-          "name",
-          "email"
+          "name"
         ],
         "title": "ClientCreate"
       },
@@ -1788,8 +1805,15 @@
             "title": "Name"
           },
           "email": {
-            "type": "string",
-            "format": "email",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email"
           },
           "phone": {
@@ -1802,6 +1826,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "nit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nit"
           },
           "address": {
             "anyOf": [
@@ -1844,7 +1879,6 @@
         "type": "object",
         "required": [
           "name",
-          "email",
           "id",
           "created_at"
         ],
@@ -1885,6 +1919,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "nit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nit"
           },
           "address": {
             "anyOf": [

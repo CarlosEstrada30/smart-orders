@@ -15,12 +15,13 @@ export interface OrderItem {
 export interface Client {
   id: number
   name: string
-  email: string
-  phone?: string
-  address?: string
+  email: string | null
+  phone: string | null
+  nit: string | null
+  address: string | null
   is_active: boolean
   created_at: string
-  updated_at?: string
+  updated_at: string | null
 }
 
 export interface Order {

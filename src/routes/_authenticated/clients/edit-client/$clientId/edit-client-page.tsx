@@ -18,9 +18,10 @@ import { toast } from 'sonner'
 interface Client {
   id: number
   name: string
-  email: string
-  phone: string
-  address: string
+  email: string | null
+  phone: string | null
+  nit: string | null
+  address: string | null
   is_active: boolean
   created_at: string
   updated_at: string | null
@@ -34,6 +35,7 @@ export function EditClientPage() {
     name: '',
     email: '',
     phone: '',
+    nit: '',
     address: '',
   })
   const [loading, setLoading] = useState(true)
@@ -57,9 +59,10 @@ export function EditClientPage() {
         setClient(data)
         setFormData({
           name: data.name,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
+          email: data.email || '',
+          phone: data.phone || '',
+          nit: data.nit || '',
+          address: data.address || '',
         })
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido')
@@ -83,14 +86,13 @@ export function EditClientPage() {
     e.preventDefault()
     
     // Validación básica
-    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.address.trim()) {
-      setError('Todos los campos son obligatorios')
+    if (!formData.name.trim()) {
+      setError('El nombre es obligatorio')
       return
     }
 
-    // Validación de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
+    // Validación de email (solo si se proporciona)
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       setError('Por favor ingresa un email válido')
       return
     }
@@ -255,38 +257,45 @@ export function EditClientPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="cliente@ejemplo.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Teléfono *</Label>
+                  <Label htmlFor="phone">Teléfono</Label>
                   <Input
                     id="phone"
                     type="tel"
                     placeholder="+34 123 456 789"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">Dirección *</Label>
+                  <Label htmlFor="nit">NIT</Label>
+                  <Input
+                    id="nit"
+                    type="text"
+                    placeholder="123456789-0"
+                    value={formData.nit}
+                    onChange={(e) => handleInputChange('nit', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Dirección</Label>
                   <Textarea
                     id="address"
                     placeholder="Dirección completa del cliente"
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     rows={3}
-                    required
                   />
                 </div>
               </div>

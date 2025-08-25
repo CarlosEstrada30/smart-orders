@@ -133,10 +133,10 @@ export function NewOrderPage() {
         items: apiItems
       }
 
-      const newOrder = await ordersService.createOrder(orderData)
+      await ordersService.createOrder(orderData)
       
-      // Redirigir a la página de detalle de la orden creada
-      navigate({ to: `/orders/${newOrder.id}` })
+      // Redirigir a la lista de órdenes después de crear exitosamente
+      navigate({ to: '/orders' })
     } catch (err) {
       setError('Error al crear la orden')
       console.warn(err)
@@ -148,7 +148,7 @@ export function NewOrderPage() {
   // Preparar opciones para los comboboxes
   const clientOptions = clients.map(client => ({
     value: client.id.toString(),
-    label: `${client.name} (${client.email})`,
+    label: `${client.name}${client.email ? ` (${client.email})` : ''}`,
     disabled: !client.is_active
   }))
 
