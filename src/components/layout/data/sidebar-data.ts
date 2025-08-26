@@ -9,6 +9,7 @@ import {
   Bell,
   Monitor,
   UserCheck,
+  Route,
 } from 'lucide-react'
 import { Command } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -44,6 +45,11 @@ export const sidebarData: SidebarData = {
           title: 'Productos',
           url: '/products',
           icon: Package,
+        },
+        {
+          title: 'Rutas',
+          url: '/routes',
+          icon: Route,
         },
         {
           title: 'Pedidos',

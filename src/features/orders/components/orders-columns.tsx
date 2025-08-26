@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LongText } from '@/components/long-text'
-import { User, MapPin, MoreHorizontal, Eye, Trash2 } from 'lucide-react'
+import { User, MapPin, Route, MoreHorizontal, Eye, Trash2 } from 'lucide-react'
 import { type Order } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
@@ -110,6 +110,31 @@ export const ordersColumns: ColumnDef<Order>[] = [
         </div>
       ) : (
         <span className="text-sm text-muted-foreground">Sin dirección</span>
+      )
+    },
+    enableSorting: false,
+  },
+  {
+    id: 'route',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Ruta' />
+    ),
+    cell: ({ row }) => {
+      const { route } = row.original
+      return route ? (
+        <div className="flex items-center space-x-2">
+          <Route className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <div className="font-medium">{route.name}</div>
+            {!route.is_active && (
+              <Badge variant="secondary" className="text-xs mt-1">
+                Inactiva
+              </Badge>
+            )}
+          </div>
+        </div>
+      ) : (
+        <span className="text-sm text-muted-foreground">Sin ruta asignada</span>
       )
     },
     enableSorting: false,

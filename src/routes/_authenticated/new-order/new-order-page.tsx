@@ -17,6 +17,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { ordersService, type OrderItem } from '@/services/orders'
 import { clientsService, type Client } from '@/services/clients'
 import { productsService, type Product } from '@/services/products'
+import { routesService, type Route } from '@/services'
 
 interface OrderItemForm {
   product_id: number
@@ -29,6 +30,7 @@ interface OrderItemForm {
 export function NewOrderPage() {
   const navigate = useNavigate()
   const [selectedClient, setSelectedClient] = useState('')
+  const [selectedRoute, setSelectedRoute] = useState('')
   const [notes, setNotes] = useState('')
   const [orderItems, setOrderItems] = useState<OrderItemForm[]>([])
   const [selectedProduct, setSelectedProduct] = useState('')
@@ -40,13 +42,16 @@ export function NewOrderPage() {
   // Estados para datos de la API
   const [clients, setClients] = useState<Client[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [routes, setRoutes] = useState<Route[]>([])
   const [loadingClients, setLoadingClients] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
+  const [loadingRoutes, setLoadingRoutes] = useState(true)
 
-  // Cargar clientes y productos al montar el componente
+  // Cargar clientes, productos y rutas al montar el componente
   useEffect(() => {
     loadClients()
     loadProducts()
+    loadRoutes()
   }, [])
 
   const loadClients = async () => {
@@ -56,7 +61,6 @@ export function NewOrderPage() {
       setClients(clientsData)
     } catch (err) {
       setError('Error al cargar los clientes')
-      console.warn(err)
     } finally {
       setLoadingClients(false)
     }
@@ -69,9 +73,20 @@ export function NewOrderPage() {
       setProducts(productsData)
     } catch (err) {
       setError('Error al cargar los productos')
-      console.warn(err)
     } finally {
       setLoadingProducts(false)
+    }
+  }
+
+  const loadRoutes = async () => {
+    try {
+      setLoadingRoutes(true)
+      const routesData = await routesService.getRoutes({ active_only: true })
+      setRoutes(routesData)
+    } catch (err) {
+      setError('Error al cargar las rutas')
+    } finally {
+      setLoadingRoutes(false)
     }
   }
 
@@ -174,6 +189,7 @@ export function NewOrderPage() {
 
       const orderData = {
         client_id: parseInt(selectedClient),
+        route_id: selectedRoute ? parseInt(selectedRoute) : undefined,
         notes: notes || undefined,
         items: apiItems
       }
@@ -184,7 +200,6 @@ export function NewOrderPage() {
       navigate({ to: '/orders' })
     } catch (err) {
       setError('Error al crear la orden')
-      console.warn(err)
     } finally {
       setLoading(false)
     }
@@ -201,6 +216,12 @@ export function NewOrderPage() {
     value: product.id.toString(),
     label: `${product.name} - Q${product.price.toFixed(2)} (Stock: ${product.stock})`,
     disabled: product.stock <= 0 || !product.is_active
+  }))
+
+  const routeOptions = routes.map(route => ({
+    value: route.id.toString(),
+    label: route.name,
+    disabled: !route.is_active
   }))
 
   return (
@@ -236,9 +257,9 @@ export function NewOrderPage() {
           {/* Información del Cliente */}
           <Card>
             <CardHeader>
-              <CardTitle>Información del Cliente</CardTitle>
+              <CardTitle>Información de la Orden</CardTitle>
               <CardDescription>
-                Selecciona el cliente para esta orden
+                Selecciona el cliente y la ruta de entrega para esta orden
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -259,15 +280,30 @@ export function NewOrderPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Notas</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Notas adicionales de la orden..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
+                  <Label htmlFor="route">Ruta de Entrega (Opcional)</Label>
+                  <Combobox
+                    options={routeOptions}
+                    value={selectedRoute}
+                    onValueChange={setSelectedRoute}
+                    placeholder="Selecciona una ruta"
+                    searchPlaceholder="Buscar ruta por nombre..."
+                    emptyMessage="No se encontraron rutas."
+                    disabled={loadingRoutes}
                   />
+                  {loadingRoutes && (
+                    <p className="text-sm text-muted-foreground">Cargando rutas...</p>
+                  )}
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notas</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Notas adicionales de la orden..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                />
               </div>
             </CardContent>
           </Card>
@@ -402,7 +438,7 @@ export function NewOrderPage() {
             </Link>
             <Button 
               type="submit" 
-              disabled={!selectedClient || orderItems.length === 0 || loading || loadingClients || loadingProducts}
+              disabled={!selectedClient || orderItems.length === 0 || loading || loadingClients || loadingProducts || loadingRoutes}
             >
               <Save className="h-4 w-4 mr-2" />
               {loading ? 'Creando...' : 'Crear Orden'}
