@@ -35,6 +35,7 @@ export function NewOrderPage() {
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [stockError, setStockError] = useState<string | null>(null)
 
   // Estados para datos de la API
   const [clients, setClients] = useState<Client[]>([])
@@ -80,30 +81,74 @@ export function NewOrderPage() {
     const product = products.find(p => p.id === parseInt(selectedProduct))
     if (!product) return
 
-    const newItem: OrderItemForm = {
-      product_id: product.id,
-      product_name: product.name,
-      price: product.price,
-      quantity: quantity,
-      subtotal: product.price * quantity
+    // Verificar si el producto ya existe en la orden
+    const existingItem = orderItems.find(item => item.product_id === product.id)
+    const existingQuantity = existingItem ? existingItem.quantity : 0
+    const totalQuantity = existingQuantity + quantity
+
+    // Validar stock disponible
+    if (totalQuantity > product.stock) {
+      const availableStock = product.stock - existingQuantity
+      if (availableStock <= 0) {
+        setStockError(`El producto "${product.name}" ya no tiene stock disponible`)
+      } else {
+        setStockError(`Stock insuficiente. Solo quedan ${availableStock} unidades disponibles de "${product.name}"`)
+      }
+      return
     }
 
-    setOrderItems([...orderItems, newItem])
+    // Si existe el producto, actualizar la cantidad; si no, agregar nuevo item
+    if (existingItem) {
+      const updatedItems = orderItems.map(item => 
+        item.product_id === product.id 
+          ? { ...item, quantity: totalQuantity, subtotal: product.price * totalQuantity }
+          : item
+      )
+      setOrderItems(updatedItems)
+    } else {
+      const newItem: OrderItemForm = {
+        product_id: product.id,
+        product_name: product.name,
+        price: product.price,
+        quantity: quantity,
+        subtotal: product.price * quantity
+      }
+      setOrderItems([...orderItems, newItem])
+    }
+
+    // Limpiar estados al agregar exitosamente
+    setStockError(null)
     setSelectedProduct('')
     setQuantity(1)
   }
 
   const removeItem = (index: number) => {
     setOrderItems(orderItems.filter((_, i) => i !== index))
+    // Limpiar error de stock al remover item
+    setStockError(null)
   }
 
   const updateItemQuantity = (index: number, newQuantity: number) => {
     if (newQuantity <= 0) return
 
+    const item = orderItems[index]
+    const product = products.find(p => p.id === item.product_id)
+    
+    if (!product) return
+
+    // Validar stock disponible
+    if (newQuantity > product.stock) {
+      setStockError(`Stock insuficiente. Solo hay ${product.stock} unidades disponibles de "${product.name}"`)
+      return
+    }
+
     const updatedItems = [...orderItems]
     updatedItems[index].quantity = newQuantity
     updatedItems[index].subtotal = updatedItems[index].price * newQuantity
     setOrderItems(updatedItems)
+    
+    // Limpiar error de stock si la actualización es exitosa
+    setStockError(null)
   }
 
   const total = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
@@ -243,7 +288,10 @@ export function NewOrderPage() {
                   <Combobox
                     options={productOptions}
                     value={selectedProduct}
-                    onValueChange={setSelectedProduct}
+                    onValueChange={(value) => {
+                      setSelectedProduct(value)
+                      setStockError(null) // Limpiar error al cambiar producto
+                    }}
                     placeholder="Selecciona un producto"
                     searchPlaceholder="Buscar producto por nombre..."
                     emptyMessage="No se encontraron productos."
@@ -251,6 +299,11 @@ export function NewOrderPage() {
                   />
                   {loadingProducts && (
                     <p className="text-sm text-muted-foreground">Cargando productos...</p>
+                  )}
+                  {selectedProduct && (
+                    <p className="text-sm text-muted-foreground">
+                      Stock disponible: {products.find(p => p.id === parseInt(selectedProduct))?.stock || 0} unidades
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -260,7 +313,10 @@ export function NewOrderPage() {
                     type="number"
                     min="1"
                     value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                    onChange={(e) => {
+                      setQuantity(parseInt(e.target.value) || 1)
+                      setStockError(null) // Limpiar error al cambiar cantidad
+                    }}
                   />
                 </div>
                 <div className="flex items-end">
@@ -275,6 +331,13 @@ export function NewOrderPage() {
                   </Button>
                 </div>
               </div>
+
+              {/* Mensaje de Error de Stock */}
+              {stockError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-600 text-sm">{stockError}</p>
+                </div>
+              )}
 
               {/* Lista de Productos */}
               {orderItems.length > 0 && (
