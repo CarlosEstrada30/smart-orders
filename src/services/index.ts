@@ -9,6 +9,7 @@ export { authService } from './auth'
 export { ordersService } from './orders'
 export { usersService } from './users'
 export { routesService } from './routes'
+export { inventoryService } from './inventory'
 
 // Exportar tipos
 export type { Client, CreateClientRequest, UpdateClientRequest, ClientsListParams } from './clients'
@@ -16,4 +17,5 @@ export type { Product, CreateProductRequest, UpdateProductRequest, ProductsListP
 export type { LoginRequest, LoginResponse, AuthUser } from './auth'
 export type { Order, OrderCreate, OrderUpdate, OrderItem, OrderStatus } from './orders'
 export type { User, UserCreate, UserUpdate, UsersListParams } from './users'
-export type { Route, CreateRouteRequest, UpdateRouteRequest, RoutesListParams } from './routes' 
+export type { Route, CreateRouteRequest, UpdateRouteRequest, RoutesListParams } from './routes'
+export type { InventoryEntry, InventoryEntryCreate, InventoryEntryUpdate, EntryType, EntryStatus } from './inventory' 

@@ -1,4 +1,6 @@
 import { apiClient } from '../api/client'
+import { API_CONFIG } from '../api/config'
+import { useAuthStore } from '@/stores/auth-store'
 
 // Tipos basados en la API de Smart Orders
 export interface OrderItem {
@@ -50,6 +52,29 @@ export interface OrderUpdate {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'in_progress' | 'shipped' | 'delivered' | 'cancelled'
+
+// Tipos para respuestas de receipt/comprobante
+export interface ReceiptGenerateResponse {
+  message: string
+  pdf_path?: string
+  success: boolean
+}
+
+export interface ReceiptDownloadResponse {
+  file: Blob
+  filename: string
+}
+
+export interface ReceiptPreviewConfig {
+  orderId: number
+  previewUrl: string
+  downloadUrl: string
+}
+
+export interface ReceiptPreviewBlob {
+  url: string
+  cleanup: () => void
+}
 
 // Servicio de órdenes
 export const ordersService = {
@@ -147,6 +172,95 @@ export const ordersService = {
     } : undefined
     
     return apiClient.get<Order[]>(`/orders/client/${clientId}`, queryParams)
+  },
+
+  // ===== FUNCIONES DE COMPROBANTES/RECEIPTS =====
+  
+  // Descargar comprobante de orden como PDF
+  async downloadReceipt(orderId: number): Promise<void> {
+    try {
+      const token = useAuthStore.getState().auth.accessToken
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/receipt`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al descargar el comprobante: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `order-${orderId}-receipt.pdf`)
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      throw new Error('Error al descargar el comprobante')
+    }
+  },
+
+  // Obtener blob del comprobante para preview
+  async getReceiptPreviewBlob(orderId: number): Promise<string> {
+    try {
+      const token = useAuthStore.getState().auth.accessToken
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/receipt/preview`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener vista previa: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      return url
+    } catch (error) {
+      throw new Error('Error al obtener vista previa del comprobante')
+    }
+  },
+
+  // Obtener URL para previsualizar en ventana nueva (fallback)
+  getReceiptPreviewUrl(orderId: number): string {
+    // Esta función ahora abre en ventana nueva con manejo de auth
+    return `${API_CONFIG.BASE_URL}/orders/${orderId}/receipt/preview`
+  },
+
+  // Generar archivo PDF del comprobante
+  async generateReceipt(orderId: number): Promise<ReceiptGenerateResponse> {
+    const response = await apiClient.post<any>(`/orders/${orderId}/receipt/generate`)
+    return {
+      message: response?.message || 'Comprobante generado exitosamente',
+      pdf_path: response?.pdf_path,
+      success: true
+    }
+  },
+
+  // Verificar si un comprobante existe para una orden
+  async checkReceiptExists(orderId: number): Promise<boolean> {
+    try {
+      // Intentar obtener información del comprobante
+      const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/receipt`, {
+        method: 'HEAD', // Solo verificar headers, no descargar contenido
+        headers: {
+          'Authorization': `Bearer ${useAuthStore.getState().auth.accessToken}`,
+        }
+      })
+      return response.ok
+    } catch {
+      return false
+    }
   }
 }
 
@@ -169,6 +283,13 @@ export const useOrders = () => {
     removeOrderItem: (orderId: number, itemId: number) => 
       ordersService.removeOrderItem(orderId, itemId),
     getOrdersByClient: (clientId: number, params?: Parameters<typeof ordersService.getOrdersByClient>[1]) => 
-      ordersService.getOrdersByClient(clientId, params)
+      ordersService.getOrdersByClient(clientId, params),
+    
+    // Receipt functions
+    downloadReceipt: (orderId: number) => ordersService.downloadReceipt(orderId),
+    getReceiptPreviewUrl: (orderId: number) => ordersService.getReceiptPreviewUrl(orderId),
+    getReceiptPreviewBlob: (orderId: number) => ordersService.getReceiptPreviewBlob(orderId),
+    generateReceipt: (orderId: number) => ordersService.generateReceipt(orderId),
+    checkReceiptExists: (orderId: number) => ordersService.checkReceiptExists(orderId)
   }
 } 

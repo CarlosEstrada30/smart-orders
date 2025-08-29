@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -29,11 +29,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MoreHorizontal, Eye, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Eye, Trash2, Download, FileText } from 'lucide-react'
 import { type Order } from '../data/schema'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 import { ordersColumns as columns } from './orders-columns'
+import { ordersService } from '@/services/orders'
+import { toast } from 'sonner'
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -53,24 +55,82 @@ export function OrdersTable({ data, onViewOrder, onDeleteOrder }: OrdersTablePro
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<any[]>([])
+  const [columnFilters, setColumnFilters] = useState<Array<{ id: string; value: unknown }>>([])
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   })
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Receipt handlers
+  const handlePreviewReceipt = async (order: Order) => {
+    try {
+      setIsLoading(true)
+      const url = await ordersService.getReceiptPreviewBlob(order.id!)
+      // Abrir en nueva ventana
+      const newWindow = window.open('', '_blank', 'width=800,height=600')
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head><title>Comprobante - ${order.order_number || `Orden ${order.id}`}</title></head>
+            <body style="margin:0;">
+              <iframe src="${url}" style="width:100%;height:100vh;border:none;"></iframe>
+            </body>
+          </html>
+        `)
+        newWindow.document.close()
+        
+        // Cleanup cuando se cierre la ventana
+        newWindow.addEventListener('beforeunload', () => {
+          window.URL.revokeObjectURL(url)
+        })
+      }
+      toast.success('Vista previa abierta en nueva ventana')
+    } catch (_error) {
+      toast.error('Error al abrir vista previa')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDownloadReceipt = async (order: Order) => {
+    try {
+      setIsLoading(true)
+      await ordersService.downloadReceipt(order.id!)
+      toast.success(`Comprobante de orden ${order.order_number || order.id} descargado`)
+    } catch (_error) {
+      toast.error('Error al descargar el comprobante')
+      // Error downloading receipt
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGenerateReceipt = async (order: Order) => {
+    try {
+      setIsLoading(true)
+      await ordersService.generateReceipt(order.id!)
+      toast.success(`Comprobante de orden ${order.order_number || order.id} generado`)
+    } catch (_error) {
+      toast.error('Error al generar el comprobante')
+      // Error generating receipt
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Create columns with handlers
   const columnsWithHandlers = columns.map((column) => {
     if (column.id === 'actions') {
       return {
         ...column,
-        cell: ({ row }: { row: any }) => {
+        cell: ({ row }: { row: { original: Order } }) => {
           const order = row.original
           
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
                   <span className="sr-only">Abrir menú</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -82,14 +142,30 @@ export function OrdersTable({ data, onViewOrder, onDeleteOrder }: OrdersTablePro
                   <Eye className="mr-2 h-4 w-4" />
                   Ver detalles
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={async () => await handlePreviewReceipt(order)} disabled={isLoading}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver comprobante
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleDownloadReceipt(order)} disabled={isLoading}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Descargar comprobante
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleGenerateReceipt(order)} disabled={isLoading}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generar comprobante
+                </DropdownMenuItem>
                 {order.status !== 'cancelled' && (
-                  <DropdownMenuItem 
-                    className="text-red-600"
-                    onClick={() => onDeleteOrder?.(order)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Cancelar
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-red-600"
+                      onClick={() => onDeleteOrder?.(order)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Cancelar
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

@@ -40,6 +40,7 @@ import {
   X
 } from 'lucide-react'
 import { ordersService, type Order, type OrderStatus } from '@/services/orders'
+import { OrderReceiptActions, OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
 
 export function OrderDetailPage() {
   const { orderId } = useParams({ from: '/_authenticated/order-detail/$orderId' })
@@ -207,6 +208,13 @@ export function OrderDetailPage() {
                 <span>{getStatusLabel(order.status)}</span>
               </div>
             </Badge>
+            
+            {/* Acciones de comprobante */}
+            <OrderReceiptActions 
+              orderId={order.id!} 
+              orderNumber={order.order_number || `#${order.id}`} 
+            />
+            
             <Button
               variant="outline"
               onClick={() => setIsStatusDialogOpen(true)}
@@ -373,6 +381,24 @@ export function OrderDetailPage() {
                     <span>Q{order.total_amount?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* Sección de Comprobante */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Comprobante</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-sm text-muted-foreground mb-4">
+                  Descargar o visualizar el comprobante de esta orden
+                </div>
+                <OrderReceiptButtons 
+                  orderId={order.id!} 
+                  variant="outline"
+                  size="sm"
+                  showLabels={true}
+                />
               </CardContent>
             </Card>
           </div>

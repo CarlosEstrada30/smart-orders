@@ -30,11 +30,13 @@ import { Route as AuthenticatedRoutesRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProductsRouteRouteImport } from './routes/_authenticated/products/route'
 import { Route as AuthenticatedOrdersRouteRouteImport } from './routes/_authenticated/orders/route'
 import { Route as AuthenticatedNewOrderRouteRouteImport } from './routes/_authenticated/new-order/route'
+import { Route as AuthenticatedInventoryRouteRouteImport } from './routes/_authenticated/inventory/route'
 import { Route as AuthenticatedClientsRouteRouteImport } from './routes/_authenticated/clients/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutesIndexRouteImport } from './routes/_authenticated/routes/index'
+import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
@@ -47,6 +49,8 @@ import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedOrderDetailOrderIdRouteRouteImport } from './routes/_authenticated/order-detail/$orderId/route'
+import { Route as AuthenticatedInventoryNewEntryRouteRouteImport } from './routes/_authenticated/inventory/new-entry/route'
+import { Route as AuthenticatedInventoryDetailEntryIdRouteRouteImport } from './routes/_authenticated/inventory-detail/$entryId/route'
 import { Route as AuthenticatedClientsNewClientRouteRouteImport } from './routes/_authenticated/clients/new-client/route'
 import { Route as AuthenticatedClientsEditClientClientIdRouteRouteImport } from './routes/_authenticated/clients/edit-client/$clientId/route'
 
@@ -157,6 +161,12 @@ const AuthenticatedNewOrderRouteRoute =
     path: '/new-order',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInventoryRouteRoute =
+  AuthenticatedInventoryRouteRouteImport.update({
+    id: '/inventory',
+    path: '/inventory',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientsRouteRoute =
   AuthenticatedClientsRouteRouteImport.update({
     id: '/clients',
@@ -184,6 +194,12 @@ const AuthenticatedRoutesIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedRoutesRouteRoute,
+  } as any)
+const AuthenticatedInventoryIndexRoute =
+  AuthenticatedInventoryIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedInventoryRouteRoute,
   } as any)
 const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
@@ -253,6 +269,18 @@ const AuthenticatedOrderDetailOrderIdRouteRoute =
     path: '/order-detail/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInventoryNewEntryRouteRoute =
+  AuthenticatedInventoryNewEntryRouteRouteImport.update({
+    id: '/new-entry',
+    path: '/new-entry',
+    getParentRoute: () => AuthenticatedInventoryRouteRoute,
+  } as any)
+const AuthenticatedInventoryDetailEntryIdRouteRoute =
+  AuthenticatedInventoryDetailEntryIdRouteRouteImport.update({
+    id: '/inventory-detail/$entryId',
+    path: '/inventory-detail/$entryId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientsNewClientRouteRoute =
   AuthenticatedClientsNewClientRouteRouteImport.update({
     id: '/new-client',
@@ -269,6 +297,7 @@ const AuthenticatedClientsEditClientClientIdRouteRoute =
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/clients': typeof AuthenticatedClientsRouteRouteWithChildren
+  '/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
@@ -288,6 +317,8 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/clients/new-client': typeof AuthenticatedClientsNewClientRouteRoute
+  '/inventory-detail/$entryId': typeof AuthenticatedInventoryDetailEntryIdRouteRoute
+  '/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -300,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/routes/': typeof AuthenticatedRoutesIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -324,6 +356,8 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/clients/new-client': typeof AuthenticatedClientsNewClientRouteRoute
+  '/inventory-detail/$entryId': typeof AuthenticatedInventoryDetailEntryIdRouteRoute
+  '/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -336,6 +370,7 @@ export interface FileRoutesByTo {
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/routes': typeof AuthenticatedRoutesIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -347,6 +382,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/clerk': typeof ClerkRouteRouteWithChildren
   '/_authenticated/clients': typeof AuthenticatedClientsRouteRouteWithChildren
+  '/_authenticated/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/_authenticated/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteRoute
   '/_authenticated/products': typeof AuthenticatedProductsRouteRoute
@@ -367,6 +403,8 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/new-client': typeof AuthenticatedClientsNewClientRouteRoute
+  '/_authenticated/inventory-detail/$entryId': typeof AuthenticatedInventoryDetailEntryIdRouteRoute
+  '/_authenticated/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/_authenticated/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -379,6 +417,7 @@ export interface FileRoutesById {
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/routes/': typeof AuthenticatedRoutesIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -390,6 +429,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/clerk'
     | '/clients'
+    | '/inventory'
     | '/new-order'
     | '/orders'
     | '/products'
@@ -409,6 +449,8 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/clients/new-client'
+    | '/inventory-detail/$entryId'
+    | '/inventory/new-entry'
     | '/order-detail/$orderId'
     | '/errors/$error'
     | '/settings/account'
@@ -421,6 +463,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/chats'
     | '/help-center'
+    | '/inventory/'
     | '/routes/'
     | '/settings/'
     | '/tasks'
@@ -445,6 +488,8 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/clients/new-client'
+    | '/inventory-detail/$entryId'
+    | '/inventory/new-entry'
     | '/order-detail/$orderId'
     | '/errors/$error'
     | '/settings/account'
@@ -457,6 +502,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/chats'
     | '/help-center'
+    | '/inventory'
     | '/routes'
     | '/settings'
     | '/tasks'
@@ -467,6 +513,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/clerk'
     | '/_authenticated/clients'
+    | '/_authenticated/inventory'
     | '/_authenticated/new-order'
     | '/_authenticated/orders'
     | '/_authenticated/products'
@@ -487,6 +534,8 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/'
     | '/_authenticated/clients/new-client'
+    | '/_authenticated/inventory-detail/$entryId'
+    | '/_authenticated/inventory/new-entry'
     | '/_authenticated/order-detail/$orderId'
     | '/_authenticated/errors/$error'
     | '/_authenticated/settings/account'
@@ -499,6 +548,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/inventory/'
     | '/_authenticated/routes/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
@@ -670,6 +720,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewOrderRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inventory': {
+      id: '/_authenticated/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AuthenticatedInventoryRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients': {
       id: '/_authenticated/clients'
       path: '/clients'
@@ -704,6 +761,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/routes/'
       preLoaderRoute: typeof AuthenticatedRoutesIndexRouteImport
       parentRoute: typeof AuthenticatedRoutesRouteRoute
+    }
+    '/_authenticated/inventory/': {
+      id: '/_authenticated/inventory/'
+      path: '/'
+      fullPath: '/inventory/'
+      preLoaderRoute: typeof AuthenticatedInventoryIndexRouteImport
+      parentRoute: typeof AuthenticatedInventoryRouteRoute
     }
     '/_authenticated/help-center/': {
       id: '/_authenticated/help-center/'
@@ -789,6 +853,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrderDetailOrderIdRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inventory/new-entry': {
+      id: '/_authenticated/inventory/new-entry'
+      path: '/new-entry'
+      fullPath: '/inventory/new-entry'
+      preLoaderRoute: typeof AuthenticatedInventoryNewEntryRouteRouteImport
+      parentRoute: typeof AuthenticatedInventoryRouteRoute
+    }
+    '/_authenticated/inventory-detail/$entryId': {
+      id: '/_authenticated/inventory-detail/$entryId'
+      path: '/inventory-detail/$entryId'
+      fullPath: '/inventory-detail/$entryId'
+      preLoaderRoute: typeof AuthenticatedInventoryDetailEntryIdRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients/new-client': {
       id: '/_authenticated/clients/new-client'
       path: '/new-client'
@@ -822,6 +900,23 @@ const AuthenticatedClientsRouteRouteChildren: AuthenticatedClientsRouteRouteChil
 const AuthenticatedClientsRouteRouteWithChildren =
   AuthenticatedClientsRouteRoute._addFileChildren(
     AuthenticatedClientsRouteRouteChildren,
+  )
+
+interface AuthenticatedInventoryRouteRouteChildren {
+  AuthenticatedInventoryNewEntryRouteRoute: typeof AuthenticatedInventoryNewEntryRouteRoute
+  AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
+}
+
+const AuthenticatedInventoryRouteRouteChildren: AuthenticatedInventoryRouteRouteChildren =
+  {
+    AuthenticatedInventoryNewEntryRouteRoute:
+      AuthenticatedInventoryNewEntryRouteRoute,
+    AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
+  }
+
+const AuthenticatedInventoryRouteRouteWithChildren =
+  AuthenticatedInventoryRouteRoute._addFileChildren(
+    AuthenticatedInventoryRouteRouteChildren,
   )
 
 interface AuthenticatedRoutesRouteRouteChildren {
@@ -877,6 +972,7 @@ const AuthenticatedUsersRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsRouteRoute: typeof AuthenticatedClientsRouteRouteWithChildren
+  AuthenticatedInventoryRouteRoute: typeof AuthenticatedInventoryRouteRouteWithChildren
   AuthenticatedNewOrderRouteRoute: typeof AuthenticatedNewOrderRouteRoute
   AuthenticatedOrdersRouteRoute: typeof AuthenticatedOrdersRouteRoute
   AuthenticatedProductsRouteRoute: typeof AuthenticatedProductsRouteRoute
@@ -884,6 +980,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedUsersRouteRoute: typeof AuthenticatedUsersRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedInventoryDetailEntryIdRouteRoute: typeof AuthenticatedInventoryDetailEntryIdRouteRoute
   AuthenticatedOrderDetailOrderIdRouteRoute: typeof AuthenticatedOrderDetailOrderIdRouteRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
@@ -894,6 +991,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientsRouteRoute: AuthenticatedClientsRouteRouteWithChildren,
+  AuthenticatedInventoryRouteRoute:
+    AuthenticatedInventoryRouteRouteWithChildren,
   AuthenticatedNewOrderRouteRoute: AuthenticatedNewOrderRouteRoute,
   AuthenticatedOrdersRouteRoute: AuthenticatedOrdersRouteRoute,
   AuthenticatedProductsRouteRoute: AuthenticatedProductsRouteRoute,
@@ -901,6 +1000,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedUsersRouteRoute: AuthenticatedUsersRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedInventoryDetailEntryIdRouteRoute:
+    AuthenticatedInventoryDetailEntryIdRouteRoute,
   AuthenticatedOrderDetailOrderIdRouteRoute:
     AuthenticatedOrderDetailOrderIdRouteRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,

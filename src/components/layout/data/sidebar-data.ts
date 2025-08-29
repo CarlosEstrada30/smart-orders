@@ -10,6 +10,7 @@ import {
   Monitor,
   UserCheck,
   Route,
+  Archive,
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -55,6 +56,11 @@ export const sidebarData: SidebarData = {
           title: 'Pedidos',
           url: '/orders',
           icon: ShoppingCart,
+        },
+        {
+          title: 'Inventario',
+          url: '/inventory',
+          icon: Archive,
         },
         {
           title: 'Dashboard',
