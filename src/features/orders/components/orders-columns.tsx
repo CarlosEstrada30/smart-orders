@@ -11,8 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LongText } from '@/components/long-text'
-import { User, MapPin, Route, MoreHorizontal, Eye, Trash2 } from 'lucide-react'
+import { User, Route, MoreHorizontal, Eye, Trash2 } from 'lucide-react'
 import { type Order } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
@@ -95,24 +94,6 @@ export const ordersColumns: ColumnDef<Order>[] = [
       )
     },
     meta: { className: 'w-48' },
-  },
-  {
-    id: 'address',
-    header: 'Dirección',
-    cell: ({ row }) => {
-      const { client } = row.original
-      return client?.address ? (
-        <div className="flex items-center space-x-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <LongText className="max-w-[200px]" title={client.address}>
-            {client.address}
-          </LongText>
-        </div>
-      ) : (
-        <span className="text-sm text-muted-foreground">Sin dirección</span>
-      )
-    },
-    enableSorting: false,
   },
   {
     id: 'route',

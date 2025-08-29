@@ -11,19 +11,19 @@ import {
   UserCheck,
   Route,
 } from 'lucide-react'
-import { Command } from 'lucide-react'
+
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'Quesos Artesanos',
-    email: 'admin@quesosartesanos.com',
+    name: 'Bethel',
+    email: 'admin@bethel.com',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
     {
       name: 'Lacteos Bethel',
-      logo: Command,
+      logo: '/images/bethel.jpeg',
       plan: 'Sistema de Gestión',
     },
   ],

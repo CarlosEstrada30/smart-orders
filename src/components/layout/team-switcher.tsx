@@ -19,7 +19,7 @@ import {
 type TeamSwitcherProps = {
   teams: {
     name: string
-    logo: React.ElementType
+    logo: React.ElementType | string
     plan: string
   }[]
 }
@@ -37,8 +37,16 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
               size='lg'
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
             >
-              <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg'>
-                <activeTeam.logo className='size-4' />
+              <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden'>
+                {typeof activeTeam.logo === 'string' ? (
+                  <img 
+                    src={activeTeam.logo} 
+                    alt={`${activeTeam.name} logo`}
+                    className='size-full object-cover'
+                  />
+                ) : (
+                  <activeTeam.logo className='size-4' />
+                )}
               </div>
               <div className='grid flex-1 text-start text-sm leading-tight'>
                 <span className='truncate font-semibold'>
@@ -64,8 +72,16 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
                 onClick={() => setActiveTeam(team)}
                 className='gap-2 p-2'
               >
-                <div className='flex size-6 items-center justify-center rounded-sm border'>
-                  <team.logo className='size-4 shrink-0' />
+                <div className='flex size-6 items-center justify-center rounded-sm border overflow-hidden'>
+                  {typeof team.logo === 'string' ? (
+                    <img 
+                      src={team.logo} 
+                      alt={`${team.name} logo`}
+                      className='size-full object-cover'
+                    />
+                  ) : (
+                    <team.logo className='size-4 shrink-0' />
+                  )}
                 </div>
                 {team.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
