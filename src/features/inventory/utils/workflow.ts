@@ -1,4 +1,5 @@
 import type { EntryStatus } from '@/services/inventory'
+import { UserRole } from '@/services/auth/permissions.service'
 
 // Definición de transiciones permitidas según la especificación
 export const ALLOWED_TRANSITIONS: Record<EntryStatus, EntryStatus[]> = {
@@ -168,8 +169,7 @@ export function getConfirmationConfig(action: WorkflowAction, entryNumber: strin
   }
 }
 
-// Roles y permisos (simulado - en producción vendría del backend)
-export type UserRole = 'operario' | 'supervisor' | 'gerente' | 'admin'
+// Roles y permisos
 
 // Configuración de permisos por rol
 export const ROLE_PERMISSIONS: Record<UserRole, {
@@ -182,13 +182,33 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
   canDelete: string[] // Estados en los que puede eliminar
   canViewAll: boolean // Ver todas las entradas o solo las propias
 }> = {
-  operario: {
+  employee: {
     canCreate: true,
     canEdit: ['draft'],
     canSubmit: true,
     canApprove: false,
     canComplete: false,
     canCancel: ['draft'], // Solo sus propias entradas en draft
+    canDelete: [],
+    canViewAll: false
+  },
+  sales: {
+    canCreate: false, // Los vendedores no manejan inventario
+    canEdit: [],
+    canSubmit: false,
+    canApprove: false,
+    canComplete: false,
+    canCancel: [],
+    canDelete: [],
+    canViewAll: false
+  },
+  driver: {
+    canCreate: false, // Los repartidores no manejan inventario
+    canEdit: [],
+    canSubmit: false,
+    canApprove: false,
+    canComplete: false,
+    canCancel: [],
     canDelete: [],
     canViewAll: false
   },
@@ -202,7 +222,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
     canDelete: ['draft'],
     canViewAll: true
   },
-  gerente: {
+  manager: {
     canCreate: true,
     canEdit: ['draft', 'pending', 'approved'],
     canSubmit: true,
@@ -224,6 +244,22 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
   }
 }
 
+// Validar si un rol existe en el sistema de permisos
+export function isValidRole(userRole: UserRole | string | null | undefined): userRole is UserRole {
+  return userRole != null && typeof userRole === 'string' && userRole in ROLE_PERMISSIONS
+}
+
+// Obtener rol válido con fallback seguro
+export function getValidRole(userRole: UserRole | string | null | undefined): UserRole {
+  if (isValidRole(userRole)) {
+    return userRole
+  }
+  
+  // Log para debugging
+  console.warn(`Rol inválido recibido: ${userRole}, usando 'employee' como fallback`)
+  return 'employee' // Rol más restrictivo como fallback
+}
+
 // Filtrar acciones disponibles según el rol del usuario
 export function getAvailableActionsForUser(
   entryStatus: EntryStatus,
@@ -231,7 +267,16 @@ export function getAvailableActionsForUser(
   isOwner: boolean = false
 ): WorkflowAction[] {
   const allActions = WORKFLOW_ACTIONS[entryStatus] || []
-  const permissions = ROLE_PERMISSIONS[userRole]
+  
+  // Validar y normalizar el rol usando la función helper
+  const validRole = getValidRole(userRole)
+  const permissions = ROLE_PERMISSIONS[validRole]
+
+  // Esta verificación adicional es por si acaso, pero debería ser redundante ahora
+  if (!permissions) {
+    console.error(`Error crítico: permisos no encontrados para el rol validado: ${validRole}`)
+    return []
+  }
 
   return allActions.filter(action => {
     switch (action.id) {
@@ -275,6 +320,9 @@ export function canUserPerformAction(
   userRole: UserRole,
   isOwner: boolean = false
 ): boolean {
-  const availableActions = getAvailableActionsForUser(entryStatus, userRole, isOwner)
+  // Validar el rol usando la función helper
+  const validRole = getValidRole(userRole)
+  
+  const availableActions = getAvailableActionsForUser(entryStatus, validRole, isOwner)
   return availableActions.some(a => a.id === action)
 }

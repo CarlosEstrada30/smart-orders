@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { isTokenExpired } from '@/utils/jwt'
 import type { AuthUser } from '@/services/auth'
+import type { UserPermissions } from '@/services/auth/permissions.service'
 
 const ACCESS_TOKEN = 'smart_orders_auth_token'
 
@@ -9,6 +10,8 @@ interface AuthState {
   auth: {
     user: AuthUser | null
     setUser: (user: AuthUser | null) => void
+    permissions: UserPermissions | null
+    setPermissions: (permissions: UserPermissions | null) => void
     accessToken: string
     setAccessToken: (accessToken: string) => void
     resetAccessToken: () => void
@@ -29,6 +32,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
         user: null,
         setUser: (user) =>
           set((state) => ({ ...state, auth: { ...state.auth, user } })),
+        permissions: null,
+        setPermissions: (permissions) =>
+          set((state) => ({ ...state, auth: { ...state.auth, permissions } })),
         accessToken: '',
         setAccessToken: (accessToken) =>
           set((state) => {
@@ -45,7 +51,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
             removeCookie(ACCESS_TOKEN)
             return {
               ...state,
-              auth: { ...state.auth, user: null, accessToken: '' },
+              auth: { ...state.auth, user: null, permissions: null, accessToken: '' },
             }
           }),
         checkTokenExpiration: () => {
@@ -65,6 +71,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
       user: null,
       setUser: (user) =>
         set((state) => ({ ...state, auth: { ...state.auth, user } })),
+      permissions: null,
+      setPermissions: (permissions) =>
+        set((state) => ({ ...state, auth: { ...state.auth, permissions } })),
       accessToken: initToken,
       setAccessToken: (accessToken) =>
         set((state) => {
@@ -81,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           removeCookie(ACCESS_TOKEN)
           return {
             ...state,
-            auth: { ...state.auth, user: null, accessToken: '' },
+            auth: { ...state.auth, user: null, permissions: null, accessToken: '' },
           }
         }),
       checkTokenExpiration: () => {

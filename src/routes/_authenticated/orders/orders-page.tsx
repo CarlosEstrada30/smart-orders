@@ -14,6 +14,7 @@ import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ordersService, type Order } from '@/services/orders'
 import { OrdersTable } from '@/features/orders/components/orders-table'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function OrdersPage() {
   const navigate = useNavigate()
@@ -88,12 +89,14 @@ export function OrdersPage() {
               Gestiona las órdenes de la aplicación
             </p>
           </div>
-          <Link to="/new-order">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Nueva Orden
-            </Button>
-          </Link>
+          <PermissionGuard orderPermission="can_create">
+            <Link to="/new-order">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nueva Orden
+              </Button>
+            </Link>
+          </PermissionGuard>
         </div>
 
         {error && (

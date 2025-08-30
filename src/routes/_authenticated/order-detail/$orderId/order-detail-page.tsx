@@ -41,6 +41,7 @@ import {
 } from 'lucide-react'
 import { ordersService, type Order, type OrderStatus } from '@/services/orders'
 import { OrderReceiptActions, OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function OrderDetailPage() {
   const { orderId } = useParams({ from: '/_authenticated/order-detail/$orderId' })
@@ -215,21 +216,24 @@ export function OrderDetailPage() {
               orderNumber={order.order_number || `#${order.id}`} 
             />
             
-            <Button
-              variant="outline"
-              onClick={() => setIsStatusDialogOpen(true)}
-            >
-              Cambiar Estado
-            </Button>
+            <PermissionGuard orderPermission="can_update_delivery">
+              <Button
+                variant="outline"
+                onClick={() => setIsStatusDialogOpen(true)}
+              >
+                Cambiar Estado
+              </Button>
+            </PermissionGuard>
 
             {order.status !== 'cancelled' && (
-              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Cancelar
-                  </Button>
-                </DialogTrigger>
+              <PermissionGuard orderPermission="can_manage">
+                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>¿Cancelar orden?</DialogTitle>
@@ -247,6 +251,7 @@ export function OrderDetailPage() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+              </PermissionGuard>
             )}
           </div>
         </div>

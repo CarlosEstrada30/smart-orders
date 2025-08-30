@@ -44,6 +44,7 @@ import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Package, Save, Loader2
 import { toast } from 'sonner'
 import { productsService, type Product, type CreateProductRequest, type UpdateProductRequest } from '@/services/products'
 import { ApiError } from '@/services/api/config'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -340,10 +341,12 @@ export function ProductsPage() {
               Gestiona el catálogo de productos
             </p>
           </div>
-          <Button onClick={handleNewProduct}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Producto
-          </Button>
+          <PermissionGuard productPermission="can_manage">
+            <Button onClick={handleNewProduct}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Producto
+            </Button>
+          </PermissionGuard>
         </div>
 
         <Card>
@@ -370,7 +373,9 @@ export function ProductsPage() {
                 <TableRow>
                   <TableHead>Producto</TableHead>
                   <TableHead>SKU</TableHead>
-                  <TableHead>Precio</TableHead>
+                  <PermissionGuard productPermission="can_view_prices">
+                    <TableHead>Precio</TableHead>
+                  </PermissionGuard>
                   <TableHead>Stock</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Descripción</TableHead>
@@ -389,12 +394,14 @@ export function ProductsPage() {
                     <TableCell>
                       <span className="font-mono text-sm">{product.sku}</span>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium mr-1">Q</span>
-                        {product.price.toFixed(2)}
-                      </div>
-                    </TableCell>
+                    <PermissionGuard productPermission="can_view_prices">
+                      <TableCell>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-1">Q</span>
+                          {product.price.toFixed(2)}
+                        </div>
+                      </TableCell>
+                    </PermissionGuard>
                     <TableCell>
                       <div className="flex items-center">
                         <Hash className="h-3 w-3 mr-1" />
@@ -424,17 +431,21 @@ export function ProductsPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditProduct(product)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => openDeleteDialog(product)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
+                          <PermissionGuard productPermission="can_manage">
+                            <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
+                          </PermissionGuard>
+                          <PermissionGuard productPermission="can_manage">
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => openDeleteDialog(product)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </PermissionGuard>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

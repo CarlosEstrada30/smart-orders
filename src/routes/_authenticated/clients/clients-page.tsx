@@ -44,6 +44,7 @@ import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Pho
 import { toast } from 'sonner'
 import { clientsService, type Client, type CreateClientRequest, type UpdateClientRequest } from '@/services/clients'
 import { ApiError } from '@/services/api/config'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -247,10 +248,12 @@ export function ClientsPage() {
                 Gestiona los clientes de la quesería
               </p>
             </div>
-            <Button onClick={handleNewClient}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Cliente
-            </Button>
+            <PermissionGuard clientPermission="can_manage">
+              <Button onClick={handleNewClient}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Cliente
+              </Button>
+            </PermissionGuard>
           </div>
 
           <Card>
@@ -285,10 +288,12 @@ export function ClientsPage() {
                 Gestiona los clientes de la quesería
               </p>
             </div>
-            <Button onClick={handleNewClient}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Cliente
-            </Button>
+            <PermissionGuard clientPermission="can_manage">
+              <Button onClick={handleNewClient}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Cliente
+              </Button>
+            </PermissionGuard>
           </div>
 
           <Card>
@@ -404,17 +409,21 @@ export function ClientsPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditClient(client)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => openDeleteDialog(client)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
+                          <PermissionGuard clientPermission="can_manage">
+                            <DropdownMenuItem onClick={() => handleEditClient(client)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
+                          </PermissionGuard>
+                          <PermissionGuard clientPermission="can_manage">
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => openDeleteDialog(client)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </PermissionGuard>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

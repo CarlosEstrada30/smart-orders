@@ -3,6 +3,7 @@ import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
+import { useAutoLoadPermissions } from '@/hooks/use-permissions'
 import {
   SidebarContent,
   SidebarFooter,
@@ -19,6 +20,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { sidebarData } from './data/sidebar-data'
+import { useFilteredSidebarData } from './protected-sidebar'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
@@ -34,6 +36,12 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   // Verificar expiración del token
   useTokenExpiration()
   
+  // Cargar permisos automáticamente al montar el layout
+  useAutoLoadPermissions()
+  
+  // Obtener datos del sidebar filtrados por permisos
+  const filteredSidebarData = useFilteredSidebarData()
+  
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
@@ -41,15 +49,15 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
           <SkipToMain />
           <AppSidebar>
             <SidebarHeader>
-              <TeamSwitcher teams={sidebarData.teams} />
+              <TeamSwitcher teams={filteredSidebarData.teams} />
             </SidebarHeader>
             <SidebarContent>
-              {sidebarData.navGroups.map((props) => (
+              {filteredSidebarData.navGroups.map((props) => (
                 <NavGroup key={props.title} {...props} />
               ))}
             </SidebarContent>
             <SidebarFooter>
-              <NavUser user={sidebarData.user} />
+              <NavUser user={filteredSidebarData.user} />
             </SidebarFooter>
             <SidebarRail />
           </AppSidebar>

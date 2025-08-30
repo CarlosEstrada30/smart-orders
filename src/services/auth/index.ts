@@ -5,5 +5,18 @@ export type {
   AuthUser,
 } from './types'
 
-// Exportar servicio
-export { authService } from './auth.service' 
+export type {
+  UserRole,
+  UserPermissions,
+  InventoryPermissions,
+  OrdersPermissions,
+  ProductsPermissions,
+  ClientsPermissions,
+  RoutesPermissions,
+  ReportsPermissions,
+  UsersPermissions,
+} from './permissions.service'
+
+// Exportar servicios
+export { authService } from './auth.service'
+export { permissionsService } from './permissions.service' 

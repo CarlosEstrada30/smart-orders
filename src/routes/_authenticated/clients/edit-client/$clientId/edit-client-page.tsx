@@ -14,6 +14,7 @@ import { Main } from '@/components/layout/main'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { Link, useParams, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import { apiClient } from '@/services/api/client'
 
 interface Client {
   id: number
@@ -49,13 +50,7 @@ export function EditClientPage() {
         setLoading(true)
         setError(null)
         
-        const response = await fetch(`http://localhost:8000/api/v1/clients/${clientId}`)
-        
-        if (!response.ok) {
-          throw new Error(`Error al obtener cliente: ${response.status}`)
-        }
-        
-        const data = await response.json()
+        const data = await apiClient.get(`/clients/${clientId}`)
         setClient(data)
         setFormData({
           name: data.name,
@@ -101,18 +96,7 @@ export function EditClientPage() {
       setSaving(true)
       setError(null)
 
-      const response = await fetch(`http://localhost:8000/api/v1/clients/${clientId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || `Error al actualizar cliente: ${response.status}`)
-      }
+      await apiClient.put(`/clients/${clientId}`, formData)
 
       // Cliente actualizado exitosamente
       toast.success('Cliente actualizado exitosamente')

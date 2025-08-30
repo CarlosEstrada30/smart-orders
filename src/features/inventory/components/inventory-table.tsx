@@ -91,7 +91,7 @@ export function InventoryTable({
   onCompleteEntry,
   onCancelEntry,
   onSubmitEntry,
-  userRole = 'operario'
+  userRole = 'employee' // Usar 'employee' como fallback más seguro
 }: InventoryTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})

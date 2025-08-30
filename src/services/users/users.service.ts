@@ -1,5 +1,6 @@
 import { apiClient } from '../api/client'
 import type { User, UserCreate, UserUpdate, UsersListParams } from './types'
+import { roleToBackendFields, backendFieldsToRole } from './role-mapping'
 
 // Servicio de usuarios
 export const usersService = {
@@ -17,22 +18,60 @@ export const usersService = {
     const query = queryParams.toString()
     const endpoint = query ? `/users/?${query}` : '/users/'
     
-    return apiClient.get<User[]>(endpoint)
+    const users = await apiClient.get<User[]>(endpoint)
+    
+    // Agregar rol derivado a cada usuario
+    return users.map(user => ({
+      ...user,
+      role: backendFieldsToRole(user.is_superuser, user.email, (user as any).role)
+    }))
   },
 
   // Obtener un usuario específico
   async getUser(userId: number): Promise<User> {
-    return apiClient.get<User>(`/users/${userId}`)
+    const user = await apiClient.get<User>(`/users/${userId}`)
+    return {
+      ...user,
+      role: backendFieldsToRole(user.is_superuser, user.email, (user as any).role)
+    }
   },
 
   // Crear un nuevo usuario
   async createUser(userData: UserCreate): Promise<User> {
-    return apiClient.post<User>('/users/', userData)
+    // Mapear rol del frontend a campos del backend
+    const backendData = { ...userData }
+    
+    if (userData.role) {
+      const roleFields = roleToBackendFields(userData.role)
+      backendData.is_superuser = roleFields.is_superuser
+      // Enviar rol en formato UPPERCASE que espera el API
+      ;(backendData as any).role = roleFields.role
+    }
+    
+    const createdUser = await apiClient.post<User>('/users/', backendData)
+    return {
+      ...createdUser,
+      role: backendFieldsToRole(createdUser.is_superuser, createdUser.email, (createdUser as any).role)
+    }
   },
 
   // Actualizar un usuario
   async updateUser(userId: number, userData: UserUpdate): Promise<User> {
-    return apiClient.put<User>(`/users/${userId}`, userData)
+    // Mapear rol del frontend a campos del backend
+    const backendData = { ...userData }
+    
+    if (userData.role) {
+      const roleFields = roleToBackendFields(userData.role)
+      backendData.is_superuser = roleFields.is_superuser
+      // Enviar rol en formato UPPERCASE que espera el API
+      ;(backendData as any).role = roleFields.role
+    }
+    
+    const updatedUser = await apiClient.put<User>(`/users/${userId}`, backendData)
+    return {
+      ...updatedUser,
+      role: backendFieldsToRole(updatedUser.is_superuser, updatedUser.email, (updatedUser as any).role)
+    }
   },
 
   // Eliminar un usuario

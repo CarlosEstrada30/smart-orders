@@ -11,9 +11,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { usersService, type User, type UserUpdate } from '@/services/users'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { usersService, type User, type UserUpdate, getAvailableRoles, getRoleConfig } from '@/services/users'
+import { useRole } from '@/hooks/use-permissions'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 interface UsersEditDialogProps {
   open: boolean
@@ -24,13 +39,18 @@ interface UsersEditDialogProps {
 
 export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: UsersEditDialogProps) {
   const [loading, setLoading] = useState(false)
+  const { role: currentUserRole, isSuperuser } = useRole()
+  
+  const availableRoles = getAvailableRoles(currentUserRole || undefined, isSuperuser)
+  
   const [formData, setFormData] = useState<UserUpdate>({
     email: '',
     username: '',
     full_name: '',
     password: '',
     is_active: true,
-    is_superuser: false
+    is_superuser: false,
+    role: 'employee'
   })
 
   // Update form data when user changes
@@ -42,7 +62,8 @@ export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: Use
         full_name: user.full_name,
         password: '', // Don't populate password
         is_active: user.is_active,
-        is_superuser: user.is_superuser
+        is_superuser: user.is_superuser,
+        role: user.role || 'employee'
       })
     }
   }, [user])
@@ -63,7 +84,8 @@ export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: Use
         username: formData.username,
         full_name: formData.full_name,
         is_active: formData.is_active,
-        is_superuser: formData.is_superuser
+        is_superuser: formData.is_superuser,
+        role: formData.role  // ¡Importante! El servicio necesita esto para el mapeo
       }
       
       if (formData.password && formData.password.trim() !== '') {
@@ -143,6 +165,63 @@ export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: Use
             />
           </div>
           
+          <div className="space-y-2">
+            <Label htmlFor="role">Rol del Usuario *</Label>
+            <TooltipProvider>
+              <Select 
+                value={formData.role} 
+                onValueChange={(value) => handleInputChange('role', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRoles.map((role) => (
+                    <Tooltip key={role.value}>
+                      <TooltipTrigger asChild>
+                        <SelectItem value={role.value}>
+                          <Badge className={getRoleConfig(role.value).color}>
+                            {role.label}
+                          </Badge>
+                        </SelectItem>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">{role.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </SelectContent>
+              </Select>
+            </TooltipProvider>
+            
+            {/* Descripción del rol seleccionado */}
+            {formData.role && (
+              <div className="bg-muted/50 p-3 rounded-md">
+                <p className="text-sm text-muted-foreground">
+                  <strong>{getRoleConfig(formData.role).displayName}:</strong>{' '}
+                  {availableRoles.find(r => r.value === formData.role)?.description}
+                </p>
+              </div>
+            )}
+            
+            {/* Mensaje informativo sobre permisos */}
+            {user?.is_superuser && !isSuperuser && (
+              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
+                <p className="text-sm text-yellow-800">
+                  ⚠️ Este usuario es administrador del sistema. Solo otros administradores pueden modificar su rol.
+                </p>
+              </div>
+            )}
+            
+            {!isSuperuser && availableRoles.length < 6 && (
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
+                <p className="text-sm text-blue-800">
+                  ℹ️ Como no eres administrador, solo puedes asignar roles básicos. Para gestionar administradores, necesitas ser administrador del sistema.
+                </p>
+              </div>
+            )}
+          </div>
+          
           <div className="flex items-center space-x-2">
             <Switch
               id="is_active"
@@ -152,14 +231,9 @@ export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: Use
             <Label htmlFor="is_active">Usuario activo</Label>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_superuser"
-              checked={formData.is_superuser || false}
-              onCheckedChange={(checked) => handleInputChange('is_superuser', checked)}
-            />
-            <Label htmlFor="is_superuser">Super usuario (administrador)</Label>
-          </div>
+          {/* El campo is_superuser se deriva automáticamente del rol seleccionado:
+              rol 'admin' → is_superuser: true
+              otros roles → is_superuser: false */}
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

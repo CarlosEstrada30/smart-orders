@@ -8,6 +8,8 @@ import { inventoryService, type InventoryEntryListResponse, type InventoryEntryS
 import { InventoryTable } from './components/inventory-table'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { usePermissions, useRole, useAutoLoadPermissions, useInventoryPermissions } from '@/hooks/use-permissions'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function InventoryPage() {
   const navigate = useNavigate()
@@ -16,6 +18,13 @@ export function InventoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { accessToken } = useAuthStore((state) => state.auth)
+  
+  // Cargar permisos automáticamente
+  useAutoLoadPermissions()
+  
+  // Hooks de permisos
+  const { role } = useRole()
+  const { canManage, canViewCosts } = useInventoryPermissions()
 
   useEffect(() => {
     if (accessToken) {
@@ -121,12 +130,15 @@ export function InventoryPage() {
             <Button onClick={refreshData} variant="outline">
               Actualizar
             </Button>
-            <Link to="/inventory/new-entry">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Entrada
-              </Button>
-            </Link>
+            {/* Solo mostrar el botón si el usuario puede gestionar inventario */}
+            <PermissionGuard inventoryPermission="can_manage">
+              <Link to="/inventory/new-entry">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Entrada
+                </Button>
+              </Link>
+            </PermissionGuard>
           </div>
         </div>
 
@@ -143,15 +155,18 @@ export function InventoryPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Costo Total</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Q{(summary.total_cost || 0).toFixed(2)}</div>
-              </CardContent>
-            </Card>
+            {/* Solo mostrar costos si el usuario tiene permisos */}
+            <PermissionGuard productPermission="can_view_costs">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Costo Total</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Q{(summary.total_cost || 0).toFixed(2)}</div>
+                </CardContent>
+              </Card>
+            </PermissionGuard>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -200,15 +215,18 @@ export function InventoryPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Costo Total</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Q0.00</div>
-              </CardContent>
-            </Card>
+            {/* Solo mostrar costos si el usuario tiene permisos */}
+            <PermissionGuard productPermission="can_view_costs">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Costo Total</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Q0.00</div>
+                </CardContent>
+              </Card>
+            </PermissionGuard>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -260,7 +278,7 @@ export function InventoryPage() {
               onApproveEntry={refreshData}
               onCompleteEntry={refreshData}
               onCancelEntry={refreshData}
-              userRole="supervisor"
+              userRole={role || 'employee'} // Usar rol real del usuario
             />
           </CardContent>
         </Card>

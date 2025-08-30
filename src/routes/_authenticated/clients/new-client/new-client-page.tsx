@@ -15,6 +15,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import { apiClient } from '@/services/api/client'
 
 interface NewClientData {
   name: string
@@ -62,18 +63,7 @@ export function NewClientPage() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('http://localhost:8000/api/v1/clients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || `Error al crear cliente: ${response.status}`)
-      }
+      await apiClient.post('/clients', formData)
 
       // Cliente creado exitosamente
       toast.success('Cliente creado exitosamente')

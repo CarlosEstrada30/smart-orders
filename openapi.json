@@ -76,14 +76,47 @@
         ]
       }
     },
+    "/api/v1/auth/permissions": {
+      "get": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Get Current User Permissions",
+        "description": "Get current user permissions for frontend",
+        "operationId": "get_current_user_permissions_api_v1_auth_permissions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Get Current User Permissions Api V1 Auth Permissions Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/users/": {
       "post": {
         "tags": [
           "users"
         ],
         "summary": "Create User",
-        "description": "Create a new user",
+        "description": "Create a new user (requires admin role)",
         "operationId": "create_user_api_v1_users__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -122,7 +155,7 @@
           "users"
         ],
         "summary": "Get Users",
-        "description": "Get all users (requires authentication)",
+        "description": "Get all users (requires admin role)",
         "operationId": "get_users_api_v1_users__get",
         "security": [
           {
@@ -185,7 +218,7 @@
           "users"
         ],
         "summary": "Get User",
-        "description": "Get a specific user by ID (requires authentication)",
+        "description": "Get a specific user by ID (admin or own profile)",
         "operationId": "get_user_api_v1_users__user_id__get",
         "security": [
           {
@@ -231,7 +264,7 @@
           "users"
         ],
         "summary": "Update User",
-        "description": "Update a user (requires authentication)",
+        "description": "Update a user (admin can edit all, users can edit their own basic info)",
         "operationId": "update_user_api_v1_users__user_id__put",
         "security": [
           {
@@ -287,7 +320,7 @@
           "users"
         ],
         "summary": "Delete User",
-        "description": "Delete a user (requires authentication)",
+        "description": "Delete a user (requires admin role)",
         "operationId": "delete_user_api_v1_users__user_id__delete",
         "security": [
           {
@@ -320,6 +353,90 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/users/{user_id}/assign-role": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Assign User Role",
+        "description": "Assign a role to a user (requires admin role)",
+        "operationId": "assign_user_role_api_v1_users__user_id__assign_role_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "new_role",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UserRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/roles/available": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get Available Roles",
+        "description": "Get list of available user roles (requires admin role)",
+        "operationId": "get_available_roles_api_v1_users_roles_available_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Get Available Roles Api V1 Users Roles Available Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/clients/": {
@@ -1520,7 +1637,7 @@
           "orders"
         ],
         "summary": "Create Order",
-        "description": "Create a new order (requires authentication)",
+        "description": "Create a new order (requires sales+ role)",
         "operationId": "create_order_api_v1_orders__post",
         "security": [
           {
@@ -1565,7 +1682,7 @@
           "orders"
         ],
         "summary": "Get Orders",
-        "description": "Get all orders (requires authentication)",
+        "description": "Get all orders (requires view orders permission)",
         "operationId": "get_orders_api_v1_orders__get",
         "security": [
           {
@@ -1895,7 +2012,7 @@
           "orders"
         ],
         "summary": "Update Order Status",
-        "description": "Update order status (requires authentication)",
+        "description": "Update order status (requires appropriate permissions)",
         "operationId": "update_order_status_api_v1_orders__order_id__status__new_status__post",
         "security": [
           {
@@ -3450,7 +3567,7 @@
           "inventory"
         ],
         "summary": "Approve Inventory Entry",
-        "description": "Approve an inventory entry (requires authentication)",
+        "description": "Approve an inventory entry (requires supervisor+ role)",
         "operationId": "approve_inventory_entry_api_v1_inventory_entries__entry_id__approve_post",
         "security": [
           {
@@ -3498,7 +3615,7 @@
           "inventory"
         ],
         "summary": "Complete Inventory Entry",
-        "description": "Complete an inventory entry and update stock (requires authentication)",
+        "description": "Complete an inventory entry and update stock (requires supervisor+ role)",
         "operationId": "complete_inventory_entry_api_v1_inventory_entries__entry_id__complete_post",
         "security": [
           {
@@ -6107,6 +6224,17 @@
             "title": "Is Superuser",
             "default": false
           },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "EMPLOYEE"
+          },
           "password": {
             "type": "string",
             "title": "Password"
@@ -6146,6 +6274,17 @@
             "title": "Is Superuser",
             "default": false
           },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "EMPLOYEE"
+          },
           "id": {
             "type": "integer",
             "title": "Id"
@@ -6177,6 +6316,18 @@
           "created_at"
         ],
         "title": "UserResponse"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "EMPLOYEE",
+          "SALES",
+          "DRIVER",
+          "SUPERVISOR",
+          "MANAGER",
+          "ADMIN"
+        ],
+        "title": "UserRole"
       },
       "UserUpdate": {
         "properties": {
@@ -6246,6 +6397,16 @@
               }
             ],
             "title": "Is Superuser"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

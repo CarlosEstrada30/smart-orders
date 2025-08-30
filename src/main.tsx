@@ -17,6 +17,8 @@ import { ThemeProvider } from './context/theme-provider'
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
+// Configuration verification (development only)
+import { printConfig } from '@/config/environment'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,4 +103,7 @@ if (!rootElement.innerHTML) {
       </QueryClientProvider>
     </StrictMode>
   )
+  
+  // Print configuration in development mode
+  printConfig()
 }

@@ -1,3 +1,5 @@
+import { UserRole } from '../auth/permissions.service'
+
 // Tipos para el servicio de usuarios basados en la API
 export interface UserCreate {
   email: string
@@ -6,6 +8,8 @@ export interface UserCreate {
   password: string
   is_active?: boolean
   is_superuser?: boolean
+  // Campo virtual para el frontend - se mapea a is_superuser en el backend
+  role?: UserRole
 }
 
 export interface UserUpdate {
@@ -15,6 +19,8 @@ export interface UserUpdate {
   password?: string
   is_active?: boolean
   is_superuser?: boolean
+  // Campo virtual para el frontend - se mapea a is_superuser en el backend
+  role?: UserRole
 }
 
 export interface User {
@@ -26,6 +32,8 @@ export interface User {
   is_superuser: boolean
   created_at: string
   updated_at?: string | null
+  // Campo virtual para el frontend - se deriva de is_superuser y otros factores
+  role?: UserRole
 }
 
 export interface UsersListParams {

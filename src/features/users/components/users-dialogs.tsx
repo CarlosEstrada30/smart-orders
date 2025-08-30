@@ -1,16 +1,21 @@
-import { UsersActionDialog } from './users-action-dialog'
+import { UsersCreateDialog } from './users-create-dialog'
+import { UsersEditDialog } from './users-edit-dialog'
 import { UsersDeleteDialog } from './users-delete-dialog'
 import { UsersInviteDialog } from './users-invite-dialog'
 import { useUsers } from './users-provider'
 
 export function UsersDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useUsers()
+  const { open, setOpen, currentRow, setCurrentRow, onUserCreated, onUserUpdated, onUserDeleted } = useUsers()
   return (
     <>
-      <UsersActionDialog
+      <UsersCreateDialog
         key='user-add'
         open={open === 'add'}
-        onOpenChange={() => setOpen('add')}
+        onOpenChange={(isOpen) => setOpen(isOpen ? 'add' : null)}
+        onUserCreated={() => {
+          onUserCreated?.()
+          setOpen(null)
+        }}
       />
 
       <UsersInviteDialog
@@ -21,16 +26,23 @@ export function UsersDialogs() {
 
       {currentRow && (
         <>
-          <UsersActionDialog
+          <UsersEditDialog
             key={`user-edit-${currentRow.id}`}
             open={open === 'edit'}
-            onOpenChange={() => {
-              setOpen('edit')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+            onOpenChange={(isOpen) => {
+              setOpen(isOpen ? 'edit' : null)
+              if (!isOpen) {
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }
             }}
-            currentRow={currentRow}
+            user={currentRow}
+            onUserUpdated={() => {
+              onUserUpdated?.()
+              setOpen(null)
+              setCurrentRow(null)
+            }}
           />
 
           <UsersDeleteDialog
@@ -42,7 +54,12 @@ export function UsersDialogs() {
                 setCurrentRow(null)
               }, 500)
             }}
-            currentRow={currentRow}
+            user={currentRow}
+            onUserDeleted={() => {
+              onUserDeleted?.()
+              setOpen(null)
+              setCurrentRow(null)
+            }}
           />
         </>
       )}
