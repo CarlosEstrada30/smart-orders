@@ -11,6 +11,7 @@ export { usersService } from './users'
 export { routesService } from './routes'
 export { inventoryService } from './inventory'
 export { dashboardService } from './dashboard'
+export { felService } from './fel'
 
 // Exportar tipos
 export type { Client, CreateClientRequest, UpdateClientRequest, ClientsListParams } from './clients'
@@ -20,4 +21,19 @@ export type { Order, OrderCreate, OrderUpdate, OrderItem, OrderStatus } from './
 export type { User, UserCreate, UserUpdate, UsersListParams } from './users'
 export type { Route, CreateRouteRequest, UpdateRouteRequest, RoutesListParams } from './routes'
 export type { InventoryEntry, InventoryEntryCreate, InventoryEntryUpdate, EntryType, EntryStatus } from './inventory'
-export type { DashboardMetrics, InvoiceSummary, InventoryEntrySummary, LowStockProduct, OrderSummary } from './dashboard' 
+export type { DashboardMetrics, InvoiceSummary, InventoryEntrySummary, LowStockProduct, OrderSummary } from './dashboard'
+export type { 
+  FELInvoice, 
+  FELStatusSummary, 
+  FiscalRevenueMetrics, 
+  OrderWithInvoiceInfo, 
+  FELStatus, 
+  InvoiceStatus, 
+  DocumentType, 
+  PaymentMethod, 
+  CreateFELInvoiceRequest, 
+  CreateReceiptRequest, 
+  RecordPaymentRequest, 
+  FELProcessResponse, 
+  InvoiceFilters 
+} from './fel' 

@@ -50,7 +50,6 @@ import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedFelInvoicesRouteImport } from './routes/_authenticated/fel/invoices'
-import { Route as AuthenticatedFelGenerateRouteImport } from './routes/_authenticated/fel/generate'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedOrderDetailOrderIdRouteRouteImport } from './routes/_authenticated/order-detail/$orderId/route'
 import { Route as AuthenticatedInventoryNewEntryRouteRouteImport } from './routes/_authenticated/inventory/new-entry/route'
@@ -277,12 +276,6 @@ const AuthenticatedFelInvoicesRoute =
     path: '/invoices',
     getParentRoute: () => AuthenticatedFelRouteRoute,
   } as any)
-const AuthenticatedFelGenerateRoute =
-  AuthenticatedFelGenerateRouteImport.update({
-    id: '/generate',
-    path: '/generate',
-    getParentRoute: () => AuthenticatedFelRouteRoute,
-  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -348,7 +341,6 @@ export interface FileRoutesByFullPath {
   '/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
-  '/fel/generate': typeof AuthenticatedFelGenerateRoute
   '/fel/invoices': typeof AuthenticatedFelInvoicesRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -390,7 +382,6 @@ export interface FileRoutesByTo {
   '/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
-  '/fel/generate': typeof AuthenticatedFelGenerateRoute
   '/fel/invoices': typeof AuthenticatedFelInvoicesRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -441,7 +432,6 @@ export interface FileRoutesById {
   '/_authenticated/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/_authenticated/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
-  '/_authenticated/fel/generate': typeof AuthenticatedFelGenerateRoute
   '/_authenticated/fel/invoices': typeof AuthenticatedFelInvoicesRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -491,7 +481,6 @@ export interface FileRouteTypes {
     | '/inventory/new-entry'
     | '/order-detail/$orderId'
     | '/errors/$error'
-    | '/fel/generate'
     | '/fel/invoices'
     | '/settings/account'
     | '/settings/appearance'
@@ -533,7 +522,6 @@ export interface FileRouteTypes {
     | '/inventory/new-entry'
     | '/order-detail/$orderId'
     | '/errors/$error'
-    | '/fel/generate'
     | '/fel/invoices'
     | '/settings/account'
     | '/settings/appearance'
@@ -583,7 +571,6 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory/new-entry'
     | '/_authenticated/order-detail/$orderId'
     | '/_authenticated/errors/$error'
-    | '/_authenticated/fel/generate'
     | '/_authenticated/fel/invoices'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
@@ -908,13 +895,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFelInvoicesRouteImport
       parentRoute: typeof AuthenticatedFelRouteRoute
     }
-    '/_authenticated/fel/generate': {
-      id: '/_authenticated/fel/generate'
-      path: '/generate'
-      fullPath: '/fel/generate'
-      preLoaderRoute: typeof AuthenticatedFelGenerateRouteImport
-      parentRoute: typeof AuthenticatedFelRouteRoute
-    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
@@ -979,13 +959,11 @@ const AuthenticatedClientsRouteRouteWithChildren =
   )
 
 interface AuthenticatedFelRouteRouteChildren {
-  AuthenticatedFelGenerateRoute: typeof AuthenticatedFelGenerateRoute
   AuthenticatedFelInvoicesRoute: typeof AuthenticatedFelInvoicesRoute
   AuthenticatedFelIndexRoute: typeof AuthenticatedFelIndexRoute
 }
 
 const AuthenticatedFelRouteRouteChildren: AuthenticatedFelRouteRouteChildren = {
-  AuthenticatedFelGenerateRoute: AuthenticatedFelGenerateRoute,
   AuthenticatedFelInvoicesRoute: AuthenticatedFelInvoicesRoute,
   AuthenticatedFelIndexRoute: AuthenticatedFelIndexRoute,
 }

@@ -11,6 +11,8 @@ import {
   UserCheck,
   Route,
   Archive,
+  FileText,
+  Receipt,
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -67,6 +69,26 @@ export const sidebarData: SidebarData = {
           url: '/',
           icon: LayoutDashboard,
         },
+      ],
+    },
+    {
+      title: 'Facturación',
+      items: [
+        {
+          title: 'Dashboard FEL',
+          url: '/fel',
+          icon: FileText,
+        },
+                  {
+            title: 'Facturas',
+            url: '/fel/invoices',
+            icon: Receipt,
+          },
+          {
+            title: 'Generar Factura',
+            url: '/fel/generate',
+            icon: FileText,
+          },
       ],
     },
     {

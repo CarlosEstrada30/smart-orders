@@ -3102,6 +3102,327 @@
         }
       }
     },
+    "/api/v1/invoices/{invoice_id}/fel/process": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Process Invoice Fel",
+        "description": "Process invoice through FEL (Guatemala electronic invoicing) (requires authentication)",
+        "operationId": "process_invoice_fel_api_v1_invoices__invoice_id__fel_process_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Invoice Id"
+            }
+          },
+          {
+            "name": "certifier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "FEL certifier to use (digifact, facturasgt)",
+              "default": "digifact",
+              "title": "Certifier"
+            },
+            "description": "FEL certifier to use (digifact, facturasgt)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FELProcessResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invoices/orders/{order_id}/auto-invoice-with-fel": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Auto Create Invoice With Fel",
+        "description": "Auto-create invoice for delivered order and process FEL (requires authentication)",
+        "operationId": "auto_create_invoice_with_fel_api_v1_invoices_orders__order_id__auto_invoice_with_fel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "certifier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "FEL certifier to use",
+              "default": "digifact",
+              "title": "Certifier"
+            },
+            "description": "FEL certifier to use"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invoices/orders/{order_id}/receipt-only": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Create Receipt Only",
+        "description": "Process delivered order with receipt only (no FEL invoice) (requires authentication)",
+        "operationId": "create_receipt_only_api_v1_invoices_orders__order_id__receipt_only_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invoices/fel/retry-failed": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Retry Failed Fel Processing",
+        "description": "Retry FEL processing for failed invoices (maintenance endpoint) (requires authentication)",
+        "operationId": "retry_failed_fel_processing_api_v1_invoices_fel_retry_failed_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "certifier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "FEL certifier to use",
+              "default": "digifact",
+              "title": "Certifier"
+            },
+            "description": "FEL certifier to use"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invoices/fel/status-summary": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Get Fel Status Summary",
+        "description": "Get FEL processing status summary (requires authentication)",
+        "operationId": "get_fel_status_summary_api_v1_invoices_fel_status_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/invoices/revenue/fiscal": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Get Fiscal Revenue",
+        "description": "Get fiscal revenue (only FEL-authorized invoices) (requires authentication)",
+        "operationId": "get_fiscal_revenue_api_v1_invoices_revenue_fiscal_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Start date (YYYY-MM-DD)",
+              "title": "Start Date"
+            },
+            "description": "Start date (YYYY-MM-DD)"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "End date (YYYY-MM-DD)",
+              "title": "End Date"
+            },
+            "description": "End date (YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/inventory/entries": {
       "post": {
         "tags": [
@@ -4424,6 +4745,101 @@
         "title": "EntryValidationRequest",
         "description": "For validating entries before approval"
       },
+      "FELProcessResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvoiceStatus"
+          },
+          "fel_uuid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Uuid"
+          },
+          "dte_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dte Number"
+          },
+          "fel_series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Series"
+          },
+          "fel_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Number"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "processed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Processed At"
+          },
+          "certifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "invoice_id",
+          "status",
+          "processed_at"
+        ],
+        "title": "FELProcessResponse",
+        "description": "Response from FEL processing"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -5124,6 +5540,12 @@
             "maxLength": 255,
             "title": "Payment Terms",
             "default": "Pago contra entrega"
+          },
+          "requires_fel": {
+            "type": "boolean",
+            "title": "Requires Fel",
+            "description": "Whether this invoice requires FEL processing",
+            "default": true
           }
         },
         "type": "object",
@@ -5289,6 +5711,112 @@
             "type": "number",
             "title": "Balance Due"
           },
+          "fel_uuid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Uuid"
+          },
+          "dte_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dte Number"
+          },
+          "fel_authorization_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Authorization Date"
+          },
+          "fel_xml_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Xml Path"
+          },
+          "fel_certification_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Certification Date"
+          },
+          "fel_certifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Certifier"
+          },
+          "fel_series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Series"
+          },
+          "fel_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Number"
+          },
+          "fel_error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fel Error Message"
+          },
+          "requires_fel": {
+            "type": "boolean",
+            "title": "Requires Fel",
+            "default": true
+          },
           "issue_date": {
             "type": "string",
             "format": "date-time",
@@ -5359,11 +5887,14 @@
       "InvoiceStatus": {
         "type": "string",
         "enum": [
-          "draft",
-          "issued",
-          "paid",
-          "overdue",
-          "cancelled"
+          "DRAFT",
+          "fel_pending",
+          "fel_authorized",
+          "fel_rejected",
+          "ISSUED",
+          "PAID",
+          "OVERDUE",
+          "CANCELLED"
         ],
         "title": "InvoiceStatus"
       },
