@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
+import { redirectWithSubdomain } from '@/utils/subdomain'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -83,8 +84,8 @@ export function InventoryDetailPage() {
       // Note: Add delete method to inventoryService if needed
       // await inventoryService.deleteEntry(entry.id!)
       toast.success('Entrada eliminada exitosamente')
-      // Redirigir a la lista de inventario
-      window.location.href = '/inventory'
+      // Redirigir a la lista de inventario preservando el subdominio
+      redirectWithSubdomain('/inventory')
     } catch (_err) {
       setError('Error al eliminar la entrada')
       toast.error('Error al eliminar la entrada')

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
+import { redirectWithSubdomain } from '@/utils/subdomain'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -73,8 +74,8 @@ export function OrderDetailPage() {
 
     try {
       await ordersService.deleteOrder(order.id!)
-      // Redirigir a la lista de órdenes
-      window.location.href = '/orders'
+      // Redirigir a la lista de órdenes preservando el subdominio
+      redirectWithSubdomain('/orders')
     } catch (_err) {
       setError('Error al cancelar la orden')
     }

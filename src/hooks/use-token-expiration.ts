@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
 import { isTokenExpired } from '@/utils/jwt'
+import { redirectWithSubdomain } from '@/utils/subdomain'
 import { toast } from 'sonner'
 
 export function useTokenExpiration() {
@@ -14,9 +15,9 @@ export function useTokenExpiration() {
         toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
         reset()
         
-        // Redirigir al login
+        // Redirigir al login preservando el subdominio
         const currentPath = window.location.pathname
-        window.location.href = `/sign-in?redirect=${encodeURIComponent(currentPath)}`
+        redirectWithSubdomain(`/sign-in?redirect=${encodeURIComponent(currentPath)}`)
       }
     }
 

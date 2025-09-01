@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { authService } from '@/services/auth'
 import { ApiError } from '@/services/api/config'
 import { getUserFromToken } from '@/utils/jwt'
+import { extractSubdomain, redirectWithSubdomain } from '@/utils/subdomain'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/(auth)/sign-in')({
@@ -38,8 +39,11 @@ function SignInPage() {
     setError(null)
 
     try {
+      // Extraer subdominio de la URL actual
+      const subdominio = extractSubdomain()
+      
       // Login real con la API
-      const response = await authService.login({ email, password })
+      const response = await authService.login({ email, password, subdominio })
 
       // Decodificar JWT para obtener información del usuario
       const userInfo = getUserFromToken(response.access_token)
@@ -58,9 +62,9 @@ function SignInPage() {
 
       toast.success('Inicio de sesión exitoso')
 
-      // Redirigir a la página original o al dashboard
+      // Redirigir a la página original o al dashboard preservando el subdominio
       const redirectTo = (search as { redirect?: string }).redirect || '/'
-      window.location.href = redirectTo
+      redirectWithSubdomain(redirectTo)
 
     } catch (err) {
       const errorMessage = err instanceof ApiError ? err.detail : 'Error al iniciar sesión. Verifica tus credenciales.'

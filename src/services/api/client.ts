@@ -1,5 +1,6 @@
 import { API_CONFIG, ApiError } from './config'
 import { useAuthStore } from '@/stores/auth-store'
+import { redirectWithSubdomain } from '@/utils/subdomain'
 import { toast } from 'sonner'
 
 // Cliente HTTP base
@@ -30,9 +31,9 @@ class ApiClient {
       // Limpiar el store de autenticación
       useAuthStore.getState().auth.reset()
       
-      // Redirigir al login
+      // Redirigir al login preservando el subdominio
       const currentPath = window.location.pathname
-      window.location.href = `/sign-in?redirect=${encodeURIComponent(currentPath)}`
+      redirectWithSubdomain(`/sign-in?redirect=${encodeURIComponent(currentPath)}`)
       
       return true // Indica que el error fue manejado
     }

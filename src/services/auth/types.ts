@@ -2,6 +2,7 @@
 export interface LoginRequest {
   email: string
   password: string
+  subdominio: string
 }
 
 export interface LoginResponse {

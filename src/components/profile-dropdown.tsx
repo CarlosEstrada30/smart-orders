@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/stores/auth-store'
+import { redirectWithSubdomain } from '@/utils/subdomain'
 import { toast } from 'sonner'
 import { LogOut } from 'lucide-react'
 
@@ -21,7 +22,7 @@ export function ProfileDropdown() {
   const handleLogout = () => {
     reset()
     toast.success('Sesión cerrada exitosamente')
-    window.location.href = '/sign-in'
+    redirectWithSubdomain('/sign-in')
   }
 
   return (
