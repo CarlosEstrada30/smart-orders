@@ -28,6 +28,13 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
 
+  // Actualizar activeTeam cuando cambien los teams (cuando lleguen los settings)
+  React.useEffect(() => {
+    if (teams && teams[0] && (!activeTeam || activeTeam.name !== teams[0].name)) {
+      setActiveTeam(teams[0])
+    }
+  }, [teams, activeTeam])
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>

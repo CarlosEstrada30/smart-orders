@@ -4,10 +4,6 @@ import {
   Package,
   ShoppingCart,
   Settings,
-  UserCog,
-  Palette,
-  Bell,
-  Monitor,
   UserCheck,
   Route,
   Archive,
@@ -106,30 +102,9 @@ export const sidebarData: SidebarData = {
       title: 'Configuración',
       items: [
         {
-          title: 'Settings',
+          title: 'Configuración de Empresa',
+          url: '/settings',
           icon: Settings,
-          items: [
-            {
-              title: 'Profile',
-              url: '/settings',
-              icon: UserCog,
-            },
-            {
-              title: 'Appearance',
-              url: '/settings/appearance',
-              icon: Palette,
-            },
-            {
-              title: 'Notifications',
-              url: '/settings/notifications',
-              icon: Bell,
-            },
-            {
-              title: 'Display',
-              url: '/settings/display',
-              icon: Monitor,
-            },
-          ],
         },
       ],
     },

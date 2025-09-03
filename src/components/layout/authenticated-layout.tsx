@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
 import { useAutoLoadPermissions } from '@/hooks/use-permissions'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import {
   SidebarContent,
   SidebarFooter,
@@ -38,6 +39,9 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   
   // Cargar permisos automáticamente al montar el layout
   useAutoLoadPermissions()
+  
+  // Cargar settings de la empresa automáticamente
+  useCompanySettings()
   
   // Obtener datos del sidebar filtrados por permisos
   const filteredSidebarData = useFilteredSidebarData()

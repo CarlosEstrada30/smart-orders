@@ -3,6 +3,7 @@ import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { isTokenExpired } from '@/utils/jwt'
 import type { AuthUser } from '@/services/auth'
 import type { UserPermissions } from '@/services/auth/permissions.service'
+import type { CompanySettings } from '@/services/settings'
 
 const ACCESS_TOKEN = 'smart_orders_auth_token'
 
@@ -12,6 +13,8 @@ interface AuthState {
     setUser: (user: AuthUser | null) => void
     permissions: UserPermissions | null
     setPermissions: (permissions: UserPermissions | null) => void
+    companySettings: CompanySettings | null
+    setCompanySettings: (settings: CompanySettings | null) => void
     accessToken: string
     setAccessToken: (accessToken: string) => void
     resetAccessToken: () => void
@@ -35,6 +38,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
         permissions: null,
         setPermissions: (permissions) =>
           set((state) => ({ ...state, auth: { ...state.auth, permissions } })),
+        companySettings: null,
+        setCompanySettings: (companySettings) =>
+          set((state) => ({ ...state, auth: { ...state.auth, companySettings } })),
         accessToken: '',
         setAccessToken: (accessToken) =>
           set((state) => {
@@ -51,7 +57,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
             removeCookie(ACCESS_TOKEN)
             return {
               ...state,
-              auth: { ...state.auth, user: null, permissions: null, accessToken: '' },
+              auth: { ...state.auth, user: null, permissions: null, companySettings: null, accessToken: '' },
             }
           }),
         checkTokenExpiration: () => {
@@ -74,6 +80,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
       permissions: null,
       setPermissions: (permissions) =>
         set((state) => ({ ...state, auth: { ...state.auth, permissions } })),
+      companySettings: null,
+      setCompanySettings: (companySettings) =>
+        set((state) => ({ ...state, auth: { ...state.auth, companySettings } })),
       accessToken: initToken,
       setAccessToken: (accessToken) =>
         set((state) => {
@@ -90,7 +99,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           removeCookie(ACCESS_TOKEN)
           return {
             ...state,
-            auth: { ...state.auth, user: null, permissions: null, accessToken: '' },
+            auth: { ...state.auth, user: null, permissions: null, companySettings: null, accessToken: '' },
           }
         }),
       checkTokenExpiration: () => {

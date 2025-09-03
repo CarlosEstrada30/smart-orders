@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { SettingsService } from '@/services'
 import type { CompanySettings, SettingsFormData } from '@/services'
+import { useAuthStore } from '@/stores/auth-store'
 
 const formSchema = z.object({
   company_name: z.string().min(1, 'El nombre de la empresa es requerido'),
@@ -33,6 +34,7 @@ export function CompanySettingsForm() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const { setCompanySettings } = useAuthStore(state => state.auth)
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -74,13 +76,16 @@ export function CompanySettingsForm() {
   const saveSettingsMutation = useMutation({
     mutationFn: (data: SettingsFormData) => SettingsService.saveCompanySettings(data),
     onSuccess: (data) => {
-      console.log('Settings saved successfully:', data)
       toast.success('Configuración guardada exitosamente')
+      
+      // Actualizar el store inmediatamente para reflejar cambios en el sidebar
+      setCompanySettings(data)
+      
+      // Invalidar cache para asegurar consistencia
       queryClient.invalidateQueries({ queryKey: ['company-settings'] })
     },
     onError: (error: any) => {
       console.error('Error saving settings:', error)
-      console.error('Error response:', error?.response?.data)
       
       let errorMessage = 'Error al guardar la configuración'
       
@@ -157,8 +162,6 @@ export function CompanySettingsForm() {
   }, [form])
 
   const onSubmit = (data: FormData) => {
-    console.log('Form submitted with data:', data)
-    
     const formData: SettingsFormData = {
       ...data,
       // Clean up empty strings
@@ -168,7 +171,6 @@ export function CompanySettingsForm() {
       website: data.website || undefined,
     }
 
-    console.log('Processed form data:', formData)
     saveSettingsMutation.mutate(formData)
   }
 

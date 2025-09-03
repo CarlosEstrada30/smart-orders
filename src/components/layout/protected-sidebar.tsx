@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useCompaniesPermissions } from '@/hooks/use-companies-permissions'
+import { useAuthStore } from '@/stores/auth-store'
 import { sidebarData } from './data/sidebar-data'
 import { type SidebarData } from './types'
 
@@ -10,13 +11,31 @@ import { type SidebarData } from './types'
 export function useFilteredSidebarData(): SidebarData {
   const { permissions } = usePermissions()
   const { canAccessCompanies } = useCompaniesPermissions()
+  const { user, companySettings } = useAuthStore(state => state.auth)
 
   return useMemo(() => {
+    // Crear datos dinámicos del sidebar con company settings
+    const dynamicSidebarData: SidebarData = {
+      user: user ? {
+        name: user.name || user.username || 'Usuario',
+        email: user.email || 'usuario@ejemplo.com',
+        avatar: '/avatars/shadcn.jpg', // TODO: agregar avatar del usuario si está disponible
+      } : sidebarData.user,
+      teams: [
+        {
+          name: companySettings?.company_name || companySettings?.business_name || 'SmartOrders',
+          logo: companySettings?.logo_url || '/images/bethel.jpeg',
+          plan: 'Sistema de Gestión',
+        },
+      ],
+      navGroups: sidebarData.navGroups, // Los grupos de navegación se mantienen igual
+    }
+    
     if (!permissions) {
       // Si no hay permisos cargados, mostrar solo elementos básicos
       return {
-        ...sidebarData,
-        navGroups: sidebarData.navGroups.map(group => ({
+        ...dynamicSidebarData,
+        navGroups: dynamicSidebarData.navGroups.map(group => ({
           ...group,
           items: group.items.filter(item => 
             item.title === 'Dashboard' // Solo mostrar dashboard
@@ -28,8 +47,8 @@ export function useFilteredSidebarData(): SidebarData {
     // Aplicar filtros específicos incluso para superusuarios
     // porque algunos módulos tienen restricciones adicionales (como empresas)
     return {
-      ...sidebarData,
-      navGroups: sidebarData.navGroups.map(group => ({
+      ...dynamicSidebarData,
+      navGroups: dynamicSidebarData.navGroups.map(group => ({
         ...group,
         items: group.items.filter(item => {
           switch (item.title) {
@@ -74,5 +93,5 @@ export function useFilteredSidebarData(): SidebarData {
         })
       })).filter(group => group.items.length > 0) // Remover grupos vacíos
     }
-  }, [permissions, canAccessCompanies])
+  }, [permissions, canAccessCompanies, user, companySettings])
 }

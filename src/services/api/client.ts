@@ -59,14 +59,6 @@ class ApiClient {
     }
 
     try {
-      console.log(`🌐 API ${config.method || 'GET'} ${url}`)
-      if (config.body instanceof FormData) {
-        console.log('FormData entries:')
-        for (const [key, value] of (config.body as FormData).entries()) {
-          console.log(`  ${key}:`, value instanceof File ? `File(${value.name})` : value)
-        }
-      }
-      
       const response = await fetch(url, config)
 
       if (!response.ok) {

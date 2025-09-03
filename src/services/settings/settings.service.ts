@@ -11,12 +11,10 @@ export class SettingsService {
    */
   static async getCompanySettings(): Promise<CompanySettings | null> {
     try {
-      console.log('Fetching settings from:', ENDPOINTS.SETTINGS)
       const response = await apiClient.get<CompanySettings | null>(ENDPOINTS.SETTINGS)
-      console.log('Settings response:', response)
       return response
     } catch (error) {
-      console.error('Error fetching settings:', error)
+      console.error('Error fetching company settings:', error)
       throw error
     }
   }
@@ -47,12 +45,6 @@ export class SettingsService {
         formData.append(field, String(data[field as keyof typeof data] || ''))
       }
     })
-
-    // Log the FormData for debugging
-    console.log('Sending FormData with the following entries:')
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value)
-    }
 
     const response = await apiClient.post<CompanySettings>(ENDPOINTS.SETTINGS, formData)
 
