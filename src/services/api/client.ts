@@ -47,15 +47,26 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
     
+    // Para FormData, no incluir Content-Type en headers
+    const baseHeaders = this.getHeaders()
+    const headers = options.body instanceof FormData 
+      ? { Authorization: (baseHeaders as Record<string, string>).Authorization || '' } // Solo auth header
+      : { ...baseHeaders, ...options.headers } // Headers completos para JSON
+    
     const config: RequestInit = {
-      headers: {
-        ...this.getHeaders(),
-        ...options.headers,
-      },
+      headers,
       ...options,
     }
 
     try {
+      console.log(`🌐 API ${config.method || 'GET'} ${url}`)
+      if (config.body instanceof FormData) {
+        console.log('FormData entries:')
+        for (const [key, value] of (config.body as FormData).entries()) {
+          console.log(`  ${key}:`, value instanceof File ? `File(${value.name})` : value)
+        }
+      }
+      
       const response = await fetch(url, config)
 
       if (!response.ok) {
@@ -108,10 +119,19 @@ class ApiClient {
   }
 
   async post<T>(endpoint: string, data?: unknown): Promise<T> {
-    return this.request<T>(endpoint, {
+    const options: RequestInit = {
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    })
+    }
+
+    if (data instanceof FormData) {
+      // Para FormData, no serializar ni establecer Content-Type
+      options.body = data
+    } else if (data) {
+      // Para otros tipos de data, serializar a JSON
+      options.body = JSON.stringify(data)
+    }
+
+    return this.request<T>(endpoint, options)
   }
 
   async put<T>(endpoint: string, data?: unknown): Promise<T> {

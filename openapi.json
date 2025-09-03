@@ -4772,6 +4772,130 @@
         }
       }
     },
+    "/api/v1/settings/": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Company Settings",
+        "description": "Get company settings (requires authentication)",
+        "operationId": "get_company_settings_api_v1_settings__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SettingsResponse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Company Settings Api V1 Settings  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Save Company Settings",
+        "description": "Create or update company settings with optional logo upload in a single request\n\nThis endpoint handles both creating new settings and updating existing ones.\nOnly one settings record is allowed per tenant.",
+        "operationId": "save_company_settings_api_v1_settings__post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_save_company_settings_api_v1_settings__post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Delete Company Settings",
+        "description": "Delete company settings (soft delete) (requires authentication)",
+        "operationId": "delete_company_settings_api_v1_settings__delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/settings/logo": {
+      "delete": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Delete Company Logo",
+        "description": "Delete company logo from R2 and database (requires authentication)",
+        "operationId": "delete_company_logo_api_v1_settings_logo_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -4832,6 +4956,85 @@
         ],
         "title": "BatchUpdateRequest",
         "description": "For batch operations"
+      },
+      "Body_save_company_settings_api_v1_settings__post": {
+        "properties": {
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "business_name": {
+            "type": "string",
+            "title": "Business Name"
+          },
+          "nit": {
+            "type": "string",
+            "title": "Nit"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "binary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_name",
+          "business_name",
+          "nit"
+        ],
+        "title": "Body_save_company_settings_api_v1_settings__post"
       },
       "ClientCreate": {
         "properties": {
@@ -7043,6 +7246,113 @@
         "type": "object",
         "title": "RouteUpdate"
       },
+      "SettingsResponse": {
+        "properties": {
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "business_name": {
+            "type": "string",
+            "title": "Business Name"
+          },
+          "nit": {
+            "type": "string",
+            "title": "Nit"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_name",
+          "business_name",
+          "nit",
+          "id",
+          "created_at"
+        ],
+        "title": "SettingsResponse"
+      },
       "StockAdjustmentRequest": {
         "properties": {
           "product_id": {
@@ -7089,6 +7399,18 @@
           "subdominio": {
             "type": "string",
             "title": "Subdominio"
+          },
+          "is_trial": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Trial",
+            "default": false
           }
         },
         "type": "object",
@@ -7120,6 +7442,14 @@
             "type": "string",
             "title": "Schema Name"
           },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "is_trial": {
+            "type": "boolean",
+            "title": "Is Trial"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -7145,6 +7475,8 @@
           "id",
           "token",
           "schema_name",
+          "active",
+          "is_trial",
           "created_at"
         ],
         "title": "TenantResponse"
@@ -7172,6 +7504,17 @@
               }
             ],
             "title": "Subdominio"
+          },
+          "is_trial": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Trial"
           }
         },
         "type": "object",
