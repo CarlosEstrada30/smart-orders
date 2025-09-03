@@ -12,6 +12,7 @@ export { routesService } from './routes'
 export { inventoryService } from './inventory'
 export { dashboardService } from './dashboard'
 export { felService } from './fel'
+export { companiesService } from './companies'
 
 // Exportar tipos
 export type { Client, CreateClientRequest, UpdateClientRequest, ClientsListParams } from './clients'
@@ -37,3 +38,4 @@ export type {
   FELProcessResponse, 
   InvoiceFilters 
 } from './fel' 
+export type { Company, CompanyCreate, CompanyUpdate, CompaniesListParams, CompaniesListResponse } from './companies'

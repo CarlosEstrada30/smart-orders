@@ -13,6 +13,7 @@ import {
   Archive,
   FileText,
   Receipt,
+  Building,
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -31,6 +32,16 @@ export const sidebarData: SidebarData = {
     },
   ],
   navGroups: [
+    {
+      title: 'Sistema',
+      items: [
+        {
+          title: 'Empresas',
+          url: '/companies',
+          icon: Building,
+        },
+      ],
+    },
     {
       title: 'Gestión',
       items: [

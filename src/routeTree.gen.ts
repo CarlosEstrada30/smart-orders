@@ -32,6 +32,7 @@ import { Route as AuthenticatedOrdersRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNewOrderRouteRouteImport } from './routes/_authenticated/new-order/route'
 import { Route as AuthenticatedInventoryRouteRouteImport } from './routes/_authenticated/inventory/route'
 import { Route as AuthenticatedFelRouteRouteImport } from './routes/_authenticated/fel/route'
+import { Route as AuthenticatedCompaniesRouteRouteImport } from './routes/_authenticated/companies/route'
 import { Route as AuthenticatedClientsRouteRouteImport } from './routes/_authenticated/clients/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedRoutesIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedFelIndexRouteImport } from './routes/_authenticated/fel/index'
+import { Route as AuthenticatedCompaniesIndexRouteImport } from './routes/_authenticated/companies/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
@@ -176,6 +178,12 @@ const AuthenticatedFelRouteRoute = AuthenticatedFelRouteRouteImport.update({
   path: '/fel',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCompaniesRouteRoute =
+  AuthenticatedCompaniesRouteRouteImport.update({
+    id: '/companies',
+    path: '/companies',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientsRouteRoute =
   AuthenticatedClientsRouteRouteImport.update({
     id: '/clients',
@@ -221,6 +229,12 @@ const AuthenticatedFelIndexRoute = AuthenticatedFelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedFelRouteRoute,
 } as any)
+const AuthenticatedCompaniesIndexRoute =
+  AuthenticatedCompaniesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCompaniesRouteRoute,
+  } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -323,6 +337,7 @@ const AuthenticatedClientsEditClientClientIdRouteRoute =
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/clients': typeof AuthenticatedClientsRouteRouteWithChildren
+  '/companies': typeof AuthenticatedCompaniesRouteRouteWithChildren
   '/fel': typeof AuthenticatedFelRouteRouteWithChildren
   '/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
@@ -359,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/companies/': typeof AuthenticatedCompaniesIndexRoute
   '/fel/': typeof AuthenticatedFelIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -401,6 +417,7 @@ export interface FileRoutesByTo {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/companies': typeof AuthenticatedCompaniesIndexRoute
   '/fel': typeof AuthenticatedFelIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -415,6 +432,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/clerk': typeof ClerkRouteRouteWithChildren
   '/_authenticated/clients': typeof AuthenticatedClientsRouteRouteWithChildren
+  '/_authenticated/companies': typeof AuthenticatedCompaniesRouteRouteWithChildren
   '/_authenticated/fel': typeof AuthenticatedFelRouteRouteWithChildren
   '/_authenticated/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/_authenticated/new-order': typeof AuthenticatedNewOrderRouteRoute
@@ -452,6 +470,7 @@ export interface FileRoutesById {
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/companies/': typeof AuthenticatedCompaniesIndexRoute
   '/_authenticated/fel/': typeof AuthenticatedFelIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -466,6 +485,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/clerk'
     | '/clients'
+    | '/companies'
     | '/fel'
     | '/inventory'
     | '/new-order'
@@ -502,6 +522,7 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/chats'
+    | '/companies/'
     | '/fel/'
     | '/help-center'
     | '/inventory/'
@@ -544,6 +565,7 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/chats'
+    | '/companies'
     | '/fel'
     | '/help-center'
     | '/inventory'
@@ -557,6 +579,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/clerk'
     | '/_authenticated/clients'
+    | '/_authenticated/companies'
     | '/_authenticated/fel'
     | '/_authenticated/inventory'
     | '/_authenticated/new-order'
@@ -594,6 +617,7 @@ export interface FileRouteTypes {
     | '/clerk/_authenticated/user-management'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
+    | '/_authenticated/companies/'
     | '/_authenticated/fel/'
     | '/_authenticated/help-center/'
     | '/_authenticated/inventory/'
@@ -782,6 +806,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFelRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/companies': {
+      id: '/_authenticated/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof AuthenticatedCompaniesRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients': {
       id: '/_authenticated/clients'
       path: '/clients'
@@ -837,6 +868,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/fel/'
       preLoaderRoute: typeof AuthenticatedFelIndexRouteImport
       parentRoute: typeof AuthenticatedFelRouteRoute
+    }
+    '/_authenticated/companies/': {
+      id: '/_authenticated/companies/'
+      path: '/'
+      fullPath: '/companies/'
+      preLoaderRoute: typeof AuthenticatedCompaniesIndexRouteImport
+      parentRoute: typeof AuthenticatedCompaniesRouteRoute
     }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
@@ -978,6 +1016,20 @@ const AuthenticatedClientsRouteRouteWithChildren =
     AuthenticatedClientsRouteRouteChildren,
   )
 
+interface AuthenticatedCompaniesRouteRouteChildren {
+  AuthenticatedCompaniesIndexRoute: typeof AuthenticatedCompaniesIndexRoute
+}
+
+const AuthenticatedCompaniesRouteRouteChildren: AuthenticatedCompaniesRouteRouteChildren =
+  {
+    AuthenticatedCompaniesIndexRoute: AuthenticatedCompaniesIndexRoute,
+  }
+
+const AuthenticatedCompaniesRouteRouteWithChildren =
+  AuthenticatedCompaniesRouteRoute._addFileChildren(
+    AuthenticatedCompaniesRouteRouteChildren,
+  )
+
 interface AuthenticatedFelRouteRouteChildren {
   AuthenticatedFelGenerateRoute: typeof AuthenticatedFelGenerateRoute
   AuthenticatedFelInvoicesRoute: typeof AuthenticatedFelInvoicesRoute
@@ -1065,6 +1117,7 @@ const AuthenticatedUsersRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsRouteRoute: typeof AuthenticatedClientsRouteRouteWithChildren
+  AuthenticatedCompaniesRouteRoute: typeof AuthenticatedCompaniesRouteRouteWithChildren
   AuthenticatedFelRouteRoute: typeof AuthenticatedFelRouteRouteWithChildren
   AuthenticatedInventoryRouteRoute: typeof AuthenticatedInventoryRouteRouteWithChildren
   AuthenticatedNewOrderRouteRoute: typeof AuthenticatedNewOrderRouteRoute
@@ -1085,6 +1138,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientsRouteRoute: AuthenticatedClientsRouteRouteWithChildren,
+  AuthenticatedCompaniesRouteRoute:
+    AuthenticatedCompaniesRouteRouteWithChildren,
   AuthenticatedFelRouteRoute: AuthenticatedFelRouteRouteWithChildren,
   AuthenticatedInventoryRouteRoute:
     AuthenticatedInventoryRouteRouteWithChildren,

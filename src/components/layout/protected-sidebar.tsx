@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useCompaniesPermissions } from '@/hooks/use-companies-permissions'
 import { sidebarData } from './data/sidebar-data'
 import { type SidebarData } from './types'
 
@@ -8,6 +9,7 @@ import { type SidebarData } from './types'
  */
 export function useFilteredSidebarData(): SidebarData {
   const { permissions } = usePermissions()
+  const { canAccessCompanies } = useCompaniesPermissions()
 
   return useMemo(() => {
     if (!permissions) {
@@ -23,17 +25,18 @@ export function useFilteredSidebarData(): SidebarData {
       }
     }
 
-    // Si es superusuario, mostrar todo sin restricciones
-    if (permissions.is_superuser) {
-      return sidebarData
-    }
-
+    // Aplicar filtros específicos incluso para superusuarios
+    // porque algunos módulos tienen restricciones adicionales (como empresas)
     return {
       ...sidebarData,
       navGroups: sidebarData.navGroups.map(group => ({
         ...group,
         items: group.items.filter(item => {
           switch (item.title) {
+            case 'Empresas':
+              // Restricción especial: solo dominio principal + superusuario
+              return canAccessCompanies
+
             case 'Usuarios':
               return permissions.permissions.users.can_manage
 
@@ -58,11 +61,18 @@ export function useFilteredSidebarData(): SidebarData {
             case 'Dashboard':
               return permissions.permissions.reports.can_view
 
+            // Para elementos del menú de configuración, aplicar lógica de superusuario
+            case 'Settings':
+            case 'Dashboard FEL':
+            case 'Facturas':
+            case 'Generar Factura':
+              return permissions.is_superuser || true // Mostrar para todos por ahora
+
             default:
               return true // Por defecto, mostrar elementos no categorizados
           }
         })
       })).filter(group => group.items.length > 0) // Remover grupos vacíos
     }
-  }, [permissions])
+  }, [permissions, canAccessCompanies])
 }
