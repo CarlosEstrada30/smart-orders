@@ -44,7 +44,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   useCompanySettings()
   
   // Obtener datos del sidebar filtrados por permisos
-  const filteredSidebarData = useFilteredSidebarData()
+  const { isLoading: sidebarLoading, ...filteredSidebarData } = useFilteredSidebarData()
   
   return (
     <SearchProvider>
@@ -53,7 +53,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
           <SkipToMain />
           <AppSidebar>
             <SidebarHeader>
-              <TeamSwitcher teams={filteredSidebarData.teams} />
+              <TeamSwitcher teams={filteredSidebarData.teams} isLoading={sidebarLoading} />
             </SidebarHeader>
             <SidebarContent>
               {filteredSidebarData.navGroups.map((props) => (

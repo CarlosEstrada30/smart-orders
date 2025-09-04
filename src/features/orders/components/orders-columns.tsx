@@ -118,6 +118,10 @@ export const ordersColumns: ColumnDef<Order>[] = [
         <span className="text-sm text-muted-foreground">Sin ruta asignada</span>
       )
     },
+    accessorFn: (row) => row.route ? row.route.id.toString() : 'null',
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
     enableSorting: false,
   },
   {
@@ -194,6 +198,25 @@ export const ordersColumns: ColumnDef<Order>[] = [
         </div>
       )
     },
+    filterFn: (row, id, value) => {
+      // value es { from: Date, to: Date } | null
+      if (!value) return true
+      
+      const rowDate = new Date(row.getValue(id) as string)
+      const { from, to } = value
+      
+      if (from && to) {
+        // Comparar solo la fecha (sin hora)
+        const rowDateOnly = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate())
+        const fromDateOnly = new Date(from.getFullYear(), from.getMonth(), from.getDate())
+        const toDateOnly = new Date(to.getFullYear(), to.getMonth(), to.getDate())
+        
+        return rowDateOnly >= fromDateOnly && rowDateOnly <= toDateOnly
+      }
+      
+      return true
+    },
+    enableSorting: true,
   },
   {
     id: 'actions',

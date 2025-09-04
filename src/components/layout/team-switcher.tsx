@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { ChevronsUpDown, Plus } from 'lucide-react'
+import { ChevronsUpDown, Plus, Building2 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,18 +23,31 @@ type TeamSwitcherProps = {
     logo: React.ElementType | string
     plan: string
   }[]
+  isLoading?: boolean
 }
 
-export function TeamSwitcher({ teams }: TeamSwitcherProps) {
+export function TeamSwitcher({ teams, isLoading = false }: TeamSwitcherProps) {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  
+  // Usar directamente teams[0] en lugar de estado interno para mejor reactivity
+  const activeTeam = teams[0]
 
-  // Actualizar activeTeam cuando cambien los teams (cuando lleguen los settings)
-  React.useEffect(() => {
-    if (teams && teams[0] && (!activeTeam || activeTeam.name !== teams[0].name)) {
-      setActiveTeam(teams[0])
-    }
-  }, [teams, activeTeam])
+  // Show loading skeleton if loading or no teams
+  if (isLoading || !activeTeam) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size='lg' disabled>
+            <Skeleton className="size-8 rounded-lg" />
+            <div className="grid flex-1 gap-1">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
 
   return (
     <SidebarMenu>
@@ -46,11 +60,24 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
             >
               <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden'>
                 {typeof activeTeam.logo === 'string' ? (
-                  <img 
-                    src={activeTeam.logo} 
-                    alt={`${activeTeam.name} logo`}
-                    className='size-full object-cover'
-                  />
+                  activeTeam.logo === 'Building2' ? (
+                    <Building2 className='size-4' />
+                  ) : (
+                    <>
+                      <img 
+                        src={activeTeam.logo} 
+                        alt={`${activeTeam.name} logo`}
+                        className='size-full object-cover'
+                        onError={(e) => {
+                          // Fallback to Building2 icon if image fails to load
+                          e.currentTarget.style.display = 'none'
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                        }}
+                      />
+                      {/* Fallback icon hidden by default, shown if image fails */}
+                      <Building2 className='size-4 hidden' />
+                    </>
+                  )
                 ) : (
                   <activeTeam.logo className='size-4' />
                 )}
@@ -76,16 +103,19 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
             {teams.map((team, index) => (
               <DropdownMenuItem
                 key={team.name}
-                onClick={() => setActiveTeam(team)}
                 className='gap-2 p-2'
               >
                 <div className='flex size-6 items-center justify-center rounded-sm border overflow-hidden'>
                   {typeof team.logo === 'string' ? (
-                    <img 
-                      src={team.logo} 
-                      alt={`${team.name} logo`}
-                      className='size-full object-cover'
-                    />
+                    team.logo === 'Building2' ? (
+                      <Building2 className='size-4 shrink-0' />
+                    ) : (
+                      <img 
+                        src={team.logo} 
+                        alt={`${team.name} logo`}
+                        className='size-full object-cover'
+                      />
+                    )
                   ) : (
                     <team.logo className='size-4 shrink-0' />
                   )}

@@ -202,7 +202,7 @@ export function OrdersTable({ data, onViewOrder, onDeleteOrder }: OrdersTablePro
 
   return (
     <div className='space-y-4 max-sm:has-[div[role="toolbar"]]:mb-16'>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} data={data} />
       <div className='overflow-hidden rounded-md border'>
         <Table>
           <TableHeader>

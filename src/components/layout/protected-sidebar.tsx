@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useCompaniesPermissions } from '@/hooks/use-companies-permissions'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import { useAuthStore } from '@/stores/auth-store'
 import { sidebarData } from './data/sidebar-data'
 import { type SidebarData } from './types'
@@ -8,26 +9,27 @@ import { type SidebarData } from './types'
 /**
  * Hook que filtra los datos del sidebar basándose en permisos del usuario
  */
-export function useFilteredSidebarData(): SidebarData {
+export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
   const { permissions } = usePermissions()
   const { canAccessCompanies } = useCompaniesPermissions()
-  const { user, companySettings } = useAuthStore(state => state.auth)
+  const { user } = useAuthStore(state => state.auth)
+  const { companySettings, isLoading: settingsLoading, hasSettings } = useCompanySettings()
 
   return useMemo(() => {
-    // Crear datos dinámicos del sidebar con company settings
+    // Crear datos dinámicos del sidebar
     const dynamicSidebarData: SidebarData = {
       user: user ? {
         name: user.name || user.username || 'Usuario',
         email: user.email || 'usuario@ejemplo.com',
         avatar: '/avatars/shadcn.jpg', // TODO: agregar avatar del usuario si está disponible
       } : sidebarData.user,
-      teams: [
+      teams: hasSettings && companySettings ? [
         {
-          name: companySettings?.company_name || companySettings?.business_name || 'SmartOrders',
-          logo: companySettings?.logo_url || '/images/bethel.jpeg',
+          name: companySettings.company_name || companySettings.business_name || 'Mi Empresa',
+          logo: companySettings.logo_url || 'Building2', // Will be handled as icon type in TeamSwitcher
           plan: 'Sistema de Gestión',
         },
-      ],
+      ] : [], // Empty array when no settings to avoid showing hardcoded fallbacks
       navGroups: sidebarData.navGroups, // Los grupos de navegación se mantienen igual
     }
     
@@ -46,7 +48,7 @@ export function useFilteredSidebarData(): SidebarData {
 
     // Aplicar filtros específicos incluso para superusuarios
     // porque algunos módulos tienen restricciones adicionales (como empresas)
-    return {
+    const result: SidebarData = {
       ...dynamicSidebarData,
       navGroups: dynamicSidebarData.navGroups.map(group => ({
         ...group,
@@ -93,5 +95,10 @@ export function useFilteredSidebarData(): SidebarData {
         })
       })).filter(group => group.items.length > 0) // Remover grupos vacíos
     }
-  }, [permissions, canAccessCompanies, user, companySettings])
+    
+    return {
+      ...result,
+      isLoading: settingsLoading
+    }
+  }, [permissions, canAccessCompanies, user, companySettings, settingsLoading, hasSettings])
 }

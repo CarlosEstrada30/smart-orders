@@ -5,6 +5,7 @@ import {
   CheckCircle,
   X,
   Clock,
+  Route,
 } from 'lucide-react'
 
 // Estados de órdenes con sus íconos y colores
@@ -66,5 +67,29 @@ export const getOrderStatusData = (status: string) => {
     color: 'text-gray-600',
     bgColor: 'bg-gray-50 border-gray-200',
   }
+}
+
+// Función para obtener rutas únicas de una lista de órdenes
+export const getUniqueRoutes = (orders: any[]) => {
+  const routes = new Map()
+  
+  orders.forEach(order => {
+    if (order.route && order.route.is_active) {
+      routes.set(order.route.id, {
+        value: order.route.id.toString(),
+        label: order.route.name,
+        icon: Route,
+      })
+    }
+  })
+
+  // Agregar opción para órdenes sin ruta
+  routes.set('null', {
+    value: 'null',
+    label: 'Sin ruta asignada',
+    icon: X,
+  })
+
+  return Array.from(routes.values())
 }
 

@@ -47,8 +47,7 @@ export class SettingsService {
     })
 
     const response = await apiClient.post<CompanySettings>(ENDPOINTS.SETTINGS, formData)
-
-    return response.data
+    return response
   }
 
   /**

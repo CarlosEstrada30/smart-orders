@@ -40,13 +40,15 @@ export function useCompanySettings() {
 
   return {
     companySettings,
-    isLoading,
+    isLoading: isLoading || (!!accessToken && !companySettings), // Loading si hay token pero no settings
     error,
     refetch,
-    // Helper function para obtener el nombre de la empresa o fallback
-    getCompanyName: () => companySettings?.company_name || companySettings?.business_name || 'SmartOrders',
-    // Helper function para obtener el logo o fallback
-    getCompanyLogo: () => companySettings?.logo_url || '/images/bethel.jpeg',
+    // Helper function para obtener el nombre de la empresa (sin fallback hardcodeado)
+    getCompanyName: () => companySettings?.company_name || companySettings?.business_name,
+    // Helper function para obtener el logo (sin fallback hardcodeado)  
+    getCompanyLogo: () => companySettings?.logo_url,
+    // Helper para saber si los settings están disponibles
+    hasSettings: !!companySettings,
   }
 }
 
