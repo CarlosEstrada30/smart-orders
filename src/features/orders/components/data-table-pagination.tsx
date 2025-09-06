@@ -13,14 +13,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import type { OrdersQueryParams } from '@/services/orders'
+import type { TablePaginationInfo } from './orders-table'
+import { memo } from 'react'
 
 type DataTablePaginationProps<TData> = {
   table: Table<TData>
+  onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
+  filters: OrdersQueryParams
+  pagination: TablePaginationInfo
 }
 
-export function DataTablePagination<TData>({
+const DataTablePaginationComponent = <TData,>({
   table,
-}: DataTablePaginationProps<TData>) {
+  onFiltersChange,
+  filters,
+  pagination,
+}: DataTablePaginationProps<TData>) => {
+  // Valores de la nueva estructura de paginación
+  const {
+    total: totalItems,
+    count: currentPageCount,
+    page: currentPage,
+    pages: totalPages,
+    per_page: pageSize,
+    has_next: canNextPage,
+    has_previous: canPreviousPage
+  } = pagination
+  
+  // Handlers para navegación mejorados
+  const handlePageSizeChange = (newSize: number) => {
+    onFiltersChange({
+      limit: newSize,
+      skip: 0  // Reset to first page when changing page size
+    })
+  }
+  
+  const handleFirstPage = () => {
+    onFiltersChange({ skip: 0 })
+  }
+  
+  const handlePreviousPage = () => {
+    const newSkip = Math.max(0, (currentPage - 2) * pageSize)
+    onFiltersChange({ skip: newSkip })
+  }
+  
+  const handleNextPage = () => {
+    const newSkip = currentPage * pageSize
+    onFiltersChange({ skip: newSkip })
+  }
+  
+  const handleLastPage = () => {
+    const lastPageSkip = (totalPages - 1) * pageSize
+    onFiltersChange({ skip: lastPageSkip })
+  }
   return (
     <div
       className='flex items-center justify-between overflow-clip px-2'
@@ -28,39 +74,45 @@ export function DataTablePagination<TData>({
     >
       <div className='text-muted-foreground hidden flex-1 text-sm sm:block'>
         {table.getFilteredSelectedRowModel().rows.length} de{' '}
-        {table.getFilteredRowModel().rows.length} orden(es) seleccionada(s).
+        {currentPageCount} orden(es) seleccionada(s) en esta página.
       </div>
       <div className='flex items-center sm:space-x-6 lg:space-x-8'>
         <div className='flex items-center space-x-2'>
           <p className='hidden text-sm font-medium sm:block'>Filas por página</p>
           <Select
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              handlePageSizeChange(Number(value))
             }}
           >
             <SelectTrigger className='h-8 w-[70px]'>
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side='top'>
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize}
+              {[10, 20, 30, 40, 50].map((size) => (
+                <SelectItem key={size} value={`${size}`}>
+                  {size}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <div className='flex w-[100px] items-center justify-center text-sm font-medium'>
-          Página {table.getState().pagination.pageIndex + 1} de{' '}
-          {table.getPageCount()}
+        <div className='flex w-[150px] items-center justify-center text-sm font-medium'>
+          <div className='text-center'>
+            <div>Página {currentPage} de {totalPages}</div>
+            {totalItems > 0 && (
+              <div className='text-xs text-muted-foreground'>
+                {currentPageCount} de {totalItems} registros
+              </div>
+            )}
+          </div>
         </div>
         <div className='flex items-center space-x-2'>
           <Button
             variant='outline'
             className='hidden h-8 w-8 p-0 lg:flex'
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
+            onClick={handleFirstPage}
+            disabled={!canPreviousPage}
           >
             <span className='sr-only'>Ir a la primera página</span>
             <DoubleArrowLeftIcon className='h-4 w-4' />
@@ -68,8 +120,8 @@ export function DataTablePagination<TData>({
           <Button
             variant='outline'
             className='h-8 w-8 p-0'
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={handlePreviousPage}
+            disabled={!canPreviousPage}
           >
             <span className='sr-only'>Ir a la página anterior</span>
             <ChevronLeftIcon className='h-4 w-4' />
@@ -77,8 +129,8 @@ export function DataTablePagination<TData>({
           <Button
             variant='outline'
             className='h-8 w-8 p-0'
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={handleNextPage}
+            disabled={!canNextPage}
           >
             <span className='sr-only'>Ir a la página siguiente</span>
             <ChevronRightIcon className='h-4 w-4' />
@@ -86,8 +138,8 @@ export function DataTablePagination<TData>({
           <Button
             variant='outline'
             className='hidden h-8 w-8 p-0 lg:flex'
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
+            onClick={handleLastPage}
+            disabled={!canNextPage}
           >
             <span className='sr-only'>Ir a la última página</span>
             <DoubleArrowRightIcon className='h-4 w-4' />
@@ -97,4 +149,9 @@ export function DataTablePagination<TData>({
     </div>
   )
 }
+
+// Memoized version to prevent unnecessary re-renders
+export const DataTablePagination = memo(DataTablePaginationComponent) as <TData>(
+  props: DataTablePaginationProps<TData>
+) => JSX.Element
 

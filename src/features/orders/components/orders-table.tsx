@@ -1,13 +1,9 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import {
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
@@ -34,8 +30,18 @@ import { type Order } from '../data/schema'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 import { ordersColumns as columns } from './orders-columns'
-import { ordersService } from '@/services/orders'
+import { ordersService, type OrdersQueryParams } from '@/services/orders'
 import { toast } from 'sonner'
+
+export interface TablePaginationInfo {
+  total: number          // Total de registros disponibles
+  count: number          // Registros en página actual
+  page: number           // Página actual
+  pages: number          // Total de páginas
+  per_page: number       // Registros por página
+  has_next: boolean      // ¿Hay página siguiente?
+  has_previous: boolean  // ¿Hay página anterior?
+}
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -48,18 +54,25 @@ type OrdersTableProps = {
   data: Order[]
   onViewOrder?: (order: Order) => void
   onDeleteOrder?: (order: Order) => void
+  onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
+  filters: OrdersQueryParams
+  pagination: TablePaginationInfo
+  loading?: boolean
 }
 
-export function OrdersTable({ data, onViewOrder, onDeleteOrder }: OrdersTableProps) {
-  // Local UI-only states
+const OrdersTableComponent = ({ 
+  data, 
+  onViewOrder, 
+  onDeleteOrder, 
+  onFiltersChange,
+  filters,
+  pagination,
+  loading: _loading = false
+}: OrdersTableProps) => {
+  // Solo estados locales para UI (no para filtros ni paginación)
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<Array<{ id: string; value: unknown }>>([])
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
   const [isLoading, setIsLoading] = useState(false)
 
   // Receipt handlers
@@ -177,32 +190,33 @@ export function OrdersTable({ data, onViewOrder, onDeleteOrder }: OrdersTablePro
   })
 
   const table = useReactTable({
-    data,
+    data: data || [], // Asegurar que siempre sea un array
     columns: columnsWithHandlers,
     state: {
       sorting,
-      pagination,
       rowSelection,
-      columnFilters,
       columnVisibility,
     },
     enableRowSelection: true,
-    onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    // Manualmente configuramos el row count para controlar la paginación desde el backend
+    manualPagination: true,
+    pageCount: pagination.pages || 1,
+    rowCount: pagination.total || 0,
   })
 
   return (
     <div className='space-y-4 max-sm:has-[div[role="toolbar"]]:mb-16'>
-      <DataTableToolbar table={table} data={data} />
+      <DataTableToolbar 
+        table={table} 
+        data={data} 
+        onFiltersChange={onFiltersChange}
+        filters={filters}
+      />
       <div className='overflow-hidden rounded-md border'>
         <Table>
           <TableHeader>
@@ -267,7 +281,15 @@ export function OrdersTable({ data, onViewOrder, onDeleteOrder }: OrdersTablePro
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination 
+        table={table} 
+        onFiltersChange={onFiltersChange}
+        filters={filters}
+        pagination={pagination}
+      />
     </div>
   )
 }
+
+// Memoized version to prevent unnecessary re-renders
+export const OrdersTable = memo(OrdersTableComponent)

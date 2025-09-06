@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,40 +12,95 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Main } from '@/components/layout/main'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ordersService, type Order } from '@/services/orders'
+import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse } from '@/services/orders'
 import { OrdersTable } from '@/features/orders/components/orders-table'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function OrdersPage() {
   const navigate = useNavigate()
-  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersData, setOrdersData] = useState<OrdersResponse>({
+    items: [],
+    pagination: {
+      total: 0,
+      count: 0,
+      page: 1,
+      pages: 1,
+      per_page: 10,
+      has_next: false,
+      has_previous: false
+    }
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null)
+  
+  // Estados para filtros y paginación
+  const [filters, setFilters] = useState<OrdersQueryParams>({
+    skip: 0,
+    limit: 10,
+  })
 
-  useEffect(() => {
-    loadOrders()
-  }, [])
-
+  // Función para cargar órdenes - SIN useCallback para evitar loops
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const ordersData = await ordersService.getOrders()
-      setOrders(ordersData)
+      const response = await ordersService.getOrders(filters)
+      
+      // La nueva estructura ya está normalizada por el servicio
+      setOrdersData(response)
+      setError(null)
     } catch (_err) {
       setError('Error al cargar las órdenes')
+      // Asegurar que siempre hay datos válidos incluso en error
+      setOrdersData({
+        items: [],
+        pagination: {
+          total: 0,
+          count: 0,
+          page: 1,
+          pages: 1,
+          per_page: filters.limit || 10,
+          has_next: false,
+          has_previous: false
+        }
+      })
     } finally {
       setLoading(false)
     }
   }
+
+  // UseEffect directo con filters - más simple y sin loops
+  useEffect(() => {
+    loadOrders()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.skip, filters.limit, filters.search, filters.status_filter, filters.route_id, filters.date_from, filters.date_to])
+
+  // Función para actualizar filtros
+  const handleFiltersChange = useCallback((newFilters: Partial<OrdersQueryParams>) => {
+    setFilters(prev => ({
+      ...prev,
+      ...newFilters,
+      // Reset a la primera página cuando cambian los filtros (excepto paginación)
+      ...(newFilters.skip === undefined && newFilters.limit === undefined ? { skip: 0 } : {})
+    }))
+  }, [])
+  
+  // Memoizar valores calculados para evitar re-renders
+  const paginationInfo = useMemo(() => ordersData.pagination, [ordersData.pagination])
+  
+  const ordersCount = useMemo(() => {
+    const { total, count, page, pages } = paginationInfo
+    return `${total} órdenes encontradas (${count} en esta página) - Página ${page} de ${pages}`
+  }, [paginationInfo])
 
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return
 
     try {
       await ordersService.deleteOrder(orderToDelete.id!)
-      setOrders(orders.filter(order => order.id !== orderToDelete.id))
+      // Recargar datos después de eliminar
+      loadOrders()
       setIsDeleteDialogOpen(false)
       setOrderToDelete(null)
     } catch (_err) {
@@ -111,14 +166,18 @@ export function OrdersPage() {
           <CardHeader>
             <CardTitle>Lista de Órdenes</CardTitle>
             <CardDescription>
-              {orders.length} órdenes encontradas
+              {ordersCount}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <OrdersTable
-              data={orders}
+              data={ordersData.items || []}
               onViewOrder={handleViewOrder}
               onDeleteOrder={handleDeleteOrderAction}
+              onFiltersChange={handleFiltersChange}
+              filters={filters}
+              pagination={paginationInfo}
+              loading={loading}
             />
           </CardContent>
         </Card>

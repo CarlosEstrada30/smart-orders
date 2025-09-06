@@ -14,6 +14,34 @@ export interface OrderItem {
   product_description?: string
 }
 
+// Parámetros para filtrado y paginación de órdenes
+export interface OrdersQueryParams {
+  skip?: number
+  limit?: number
+  status_filter?: string
+  route_id?: number
+  date_from?: string
+  date_to?: string
+  search?: string
+}
+
+// Información de paginación mejorada del backend
+export interface PaginationInfo {
+  total: number          // Total de registros disponibles
+  count: number          // Registros en página actual
+  page: number           // Página actual
+  pages: number          // Total de páginas
+  per_page: number       // Registros por página
+  has_next: boolean      // ¿Hay página siguiente?
+  has_previous: boolean  // ¿Hay página anterior?
+}
+
+// Respuesta paginada del backend
+export interface OrdersResponse {
+  items: Order[]
+  pagination: PaginationInfo
+}
+
 export interface Client {
   id: number
   name: string
@@ -78,19 +106,78 @@ export interface ReceiptPreviewBlob {
 
 // Servicio de órdenes
 export const ordersService = {
-  // Obtener todas las órdenes
-  async getOrders(params?: {
-    skip?: number
-    limit?: number
-    status_filter?: string
-  }): Promise<Order[]> {
+  // Obtener todas las órdenes con filtrado y paginación
+  async getOrders(params?: OrdersQueryParams): Promise<OrdersResponse> {
     const queryParams = params ? {
       ...(params.skip !== undefined && { skip: params.skip.toString() }),
       ...(params.limit !== undefined && { limit: params.limit.toString() }),
-      ...(params.status_filter && { status_filter: params.status_filter })
+      ...(params.status_filter && { status_filter: params.status_filter }),
+      ...(params.route_id !== undefined && { route_id: params.route_id.toString() }),
+      ...(params.date_from && { date_from: params.date_from }),
+      ...(params.date_to && { date_to: params.date_to }),
+      ...(params.search && { search: params.search })
     } : undefined
     
-    return apiClient.get<Order[]>('/orders/', queryParams)
+    const response = await apiClient.get<any>('/orders/', queryParams)
+    
+    // Verificar si la respuesta usa la nueva estructura con items y pagination
+    if (response && response.items && response.pagination) {
+      // Nueva estructura del backend
+      return {
+        items: Array.isArray(response.items) ? response.items : [],
+        pagination: {
+          total: response.pagination.total || 0,
+          count: response.pagination.count || 0,
+          page: response.pagination.page || 1,
+          pages: response.pagination.pages || 1,
+          per_page: response.pagination.per_page || (params?.limit || 10),
+          has_next: response.pagination.has_next || false,
+          has_previous: response.pagination.has_previous || false
+        }
+      }
+    } else if (Array.isArray(response)) {
+      // Formato legacy: array directo
+      return {
+        items: response,
+        pagination: {
+          total: response.length,
+          count: response.length,
+          page: 1,
+          pages: 1,
+          per_page: response.length,
+          has_next: false,
+          has_previous: false
+        }
+      }
+    } else if (response && response.data) {
+      // Formato legacy: objeto con data
+      return {
+        items: Array.isArray(response.data) ? response.data : [],
+        pagination: {
+          total: response.total || 0,
+          count: response.data.length,
+          page: response.page || 1,
+          pages: response.pages || 1,
+          per_page: response.size || (params?.limit || 10),
+          has_next: (response.page || 1) < (response.pages || 1),
+          has_previous: (response.page || 1) > 1
+        }
+      }
+    } else {
+      // Fallback seguro
+      return {
+        items: [],
+        pagination: {
+          total: 0,
+          count: 0,
+          page: 1,
+          pages: 1,
+          per_page: params?.limit || 10,
+          has_next: false,
+          has_previous: false
+        }
+      }
+    }
   },
 
   // Obtener una orden por ID
@@ -267,8 +354,7 @@ export const ordersService = {
 // Hooks para usar con React Query
 export const useOrders = () => {
   return {
-    getOrders: (params?: Parameters<typeof ordersService.getOrders>[0]) => 
-      ordersService.getOrders(params),
+    getOrders: (params?: OrdersQueryParams) => ordersService.getOrders(params),
     getOrder: (orderId: number) => ordersService.getOrder(orderId),
     createOrder: (orderData: OrderCreate) => ordersService.createOrder(orderData),
     updateOrder: (orderId: number, orderData: OrderUpdate) => 
