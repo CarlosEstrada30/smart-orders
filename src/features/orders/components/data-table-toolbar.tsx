@@ -3,12 +3,15 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Eye } from 'lucide-react'
 import { orderStatuses, getUniqueRoutes } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
 import { DataTableDateFilter } from './data-table-date-filter'
 import type { Order } from '../data/schema'
 import type { OrdersQueryParams } from '@/services/orders'
+import { ordersService } from '@/services/orders'
+import { toast } from 'sonner'
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>
@@ -40,6 +43,7 @@ const DataTableToolbarComponent = <TData,>({
   
   // Estado local para el input de búsqueda (para evitar perder el foco)
   const [localSearch, setLocalSearch] = useState(() => filters.search || '')
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const isInitialMount = useRef(true)
   
   // Debounce para la búsqueda (evita llamadas excesivas al backend)
@@ -117,6 +121,70 @@ const DataTableToolbarComponent = <TData,>({
     })
   }, [onFiltersChange])
 
+  const handlePreviewReport = useCallback(async () => {
+    try {
+      setIsLoadingPreview(true)
+      
+      // Preparar parámetros para el reporte (excluyendo skip y limit)
+      const reportParams: OrdersQueryParams = {
+        status_filter: filters.status_filter,
+        route_id: filters.route_id,
+        date_from: filters.date_from,
+        date_to: filters.date_to,
+        search: filters.search
+      }
+      
+      const url = await ordersService.getOrdersReportPreviewBlob(reportParams)
+      
+      // Crear ventana de vista previa simple
+      const newWindow = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
+      if (newWindow) {
+        newWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Reporte de Órdenes para Ruteros</title>
+              <meta charset="utf-8">
+              <style>
+                body {
+                  margin: 0;
+                  padding: 0;
+                  height: 100vh;
+                  overflow: hidden;
+                }
+                .pdf-frame {
+                  width: 100%;
+                  height: 100vh;
+                  border: none;
+                }
+              </style>
+            </head>
+            <body>
+              <iframe src="${url}" class="pdf-frame"></iframe>
+              
+              <script>
+                // Cleanup cuando se cierre la ventana
+                window.addEventListener('beforeunload', () => {
+                  window.URL.revokeObjectURL('${url}');
+                });
+              </script>
+            </body>
+          </html>
+        `)
+        newWindow.document.close()
+        
+        toast.success('Vista previa del reporte abierta en nueva ventana')
+      } else {
+        toast.error('No se pudo abrir la vista previa. Por favor, permite las ventanas emergentes.')
+      }
+    } catch (error) {
+      toast.error('Error al generar vista previa del reporte')
+      console.error('Error previewing report:', error)
+    } finally {
+      setIsLoadingPreview(false)
+    }
+  }, [filters])
+
   return (
     <div className='flex items-center justify-between'>
       <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
@@ -174,7 +242,18 @@ const DataTableToolbarComponent = <TData,>({
           </Button>
         )}
       </div>
-      <DataTableViewOptions table={table} />
+      <div className='flex items-center gap-x-2'>
+        <Button
+          variant='outline'
+          onClick={handlePreviewReport}
+          disabled={isLoadingPreview}
+          className='h-8 px-3'
+        >
+          <Eye className='mr-2 h-4 w-4' />
+          {isLoadingPreview ? 'Cargando...' : 'Ver Reporte'}
+        </Button>
+        <DataTableViewOptions table={table} />
+      </div>
     </div>
   )
 }

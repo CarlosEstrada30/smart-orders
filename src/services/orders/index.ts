@@ -348,6 +348,86 @@ export const ordersService = {
     } catch {
       return false
     }
+  },
+
+  // ===== FUNCIONES DE REPORTE PDF PARA RUTEROS =====
+
+  // Obtener blob del reporte para vista previa
+  async getOrdersReportPreviewBlob(params?: OrdersQueryParams): Promise<string> {
+    try {
+      const token = useAuthStore.getState().auth.accessToken
+      
+      // Construir query params para el endpoint
+      const queryParams = new URLSearchParams()
+      if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
+      if (params?.route_id) queryParams.append('route_id', params.route_id.toString())
+      if (params?.date_from) queryParams.append('date_from', params.date_from)
+      if (params?.date_to) queryParams.append('date_to', params.date_to)
+      if (params?.search) queryParams.append('search', params.search)
+
+      const url = `${API_CONFIG.BASE_URL}/orders/report/pdf${queryParams.toString() ? '?' + queryParams.toString() : ''}`
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener vista previa del reporte: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url_blob = window.URL.createObjectURL(blob)
+      return url_blob
+    } catch (error) {
+      throw new Error('Error al obtener vista previa del reporte de órdenes')
+    }
+  },
+
+  // Descargar reporte PDF de órdenes para ruteros
+  async downloadOrdersReport(params?: OrdersQueryParams): Promise<void> {
+    try {
+      const token = useAuthStore.getState().auth.accessToken
+      
+      // Construir query params para el endpoint
+      const queryParams = new URLSearchParams()
+      if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
+      if (params?.route_id) queryParams.append('route_id', params.route_id.toString())
+      if (params?.date_from) queryParams.append('date_from', params.date_from)
+      if (params?.date_to) queryParams.append('date_to', params.date_to)
+      if (params?.search) queryParams.append('search', params.search)
+
+      const url = `${API_CONFIG.BASE_URL}/orders/report/pdf${queryParams.toString() ? '?' + queryParams.toString() : ''}`
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al descargar el reporte: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      
+      // Generar nombre del archivo con fecha actual
+      const currentDate = new Date().toISOString().split('T')[0]
+      link.setAttribute('download', `reporte-ordenes-ruteros-${currentDate}.pdf`)
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      throw new Error('Error al descargar el reporte de órdenes')
+    }
   }
 }
 
@@ -376,6 +456,10 @@ export const useOrders = () => {
     getReceiptPreviewUrl: (orderId: number) => ordersService.getReceiptPreviewUrl(orderId),
     getReceiptPreviewBlob: (orderId: number) => ordersService.getReceiptPreviewBlob(orderId),
     generateReceipt: (orderId: number) => ordersService.generateReceipt(orderId),
-    checkReceiptExists: (orderId: number) => ordersService.checkReceiptExists(orderId)
+    checkReceiptExists: (orderId: number) => ordersService.checkReceiptExists(orderId),
+    
+    // Report functions
+    getOrdersReportPreviewBlob: (params?: OrdersQueryParams) => ordersService.getOrdersReportPreviewBlob(params),
+    downloadOrdersReport: (params?: OrdersQueryParams) => ordersService.downloadOrdersReport(params)
   }
 } 

@@ -78,26 +78,26 @@ export const sidebarData: SidebarData = {
         },
       ],
     },
-    {
-      title: 'Facturación',
-      items: [
-        {
-          title: 'Dashboard FEL',
-          url: '/fel',
-          icon: FileText,
-        },
-                  {
-            title: 'Facturas',
-            url: '/fel/invoices',
-            icon: Receipt,
-          },
-          {
-            title: 'Generar Factura',
-            url: '/fel/generate',
-            icon: FileText,
-          },
-      ],
-    },
+    // {
+    //   title: 'Facturación',
+    //   items: [
+    //     {
+    //       title: 'Dashboard FEL',
+    //       url: '/fel',
+    //       icon: FileText,
+    //     },
+    //               {
+    //         title: 'Facturas',
+    //         url: '/fel/invoices',
+    //         icon: Receipt,
+    //       },
+    //       {
+    //         title: 'Generar Factura',
+    //         url: '/fel/generate',
+    //         icon: FileText,
+    //       },
+    //   ],
+    // },
     {
       title: 'Configuración',
       items: [
