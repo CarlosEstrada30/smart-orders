@@ -67,7 +67,7 @@ npm error Missing: serve@14.2.5 from lock file
 
 ### 🔑 **Configuración de Render**
 ```yaml
-Build Command: npm install && npm run build
+Build Command: npm install --include=dev && npm run build
 Start Command: npm start
 ```
 

@@ -29,7 +29,7 @@ Los siguientes archivos ya fueron configurados:
 Name: smartorders-frontend
 Runtime: Node
 Branch: main (o development)
-Build Command: npm ci && npm run build
+Build Command: npm install --include=dev && npm run build
 Start Command: npm start
 ```
 

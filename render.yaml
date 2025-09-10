@@ -4,8 +4,8 @@ services:
     name: smartorders-frontend
     runtime: node
     plan: starter  # o 'starter' para plan pago
-    buildCommand: npm install && npm run build
-    startCommand: npx serve -s dist -l 10000
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: serve -s dist -p $PORT
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
