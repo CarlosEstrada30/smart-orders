@@ -119,7 +119,7 @@ export function CompanyForm({
                   <FormLabel>Nombre de la Empresa</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Ej: Lácteos Bethel" 
+                      placeholder="Ej: Smart Orders" 
                       {...field}
                     />
                   </FormControl>
@@ -139,7 +139,7 @@ export function CompanyForm({
                   <FormLabel>Subdominio</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="bethel" 
+                      placeholder="smart-orders" 
                       {...field}
                       onChange={(e) => {
                         const normalized = normalizeSubdomain(e.target.value)

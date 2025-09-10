@@ -8,7 +8,7 @@ Este módulo permite gestionar las empresas (tenants) del sistema multitenant. I
 
 El módulo tiene dos condiciones estrictas de acceso:
 
-1. **Dominio Principal**: Solo está disponible cuando se accede sin subdominio (ej: `localhost:3000`, NO `bethel.localhost:3000`)
+1. **Dominio Principal**: Solo está disponible cuando se accede sin subdominio (ej: `localhost:3000`, NO `smartorders.localhost:3000`)
 2. **Superusuario**: Solo usuarios con rol `admin` (superusuario) pueden acceder
 
 ## Estructura de Archivos

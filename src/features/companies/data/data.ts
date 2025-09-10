@@ -43,15 +43,15 @@ export const companyTypes = [
 export const mockCompanies: Company[] = [
   {
     id: '1',
-    nombre: 'Lácteos Bethel',
-    subdominio: 'bethel',
-    token: 'bethel-token-123',
-    schema_name: 'bethel_schema',
+    nombre: 'Smart Orders',
+    subdominio: 'smart-orders',
+    token: 'smart-orders-token-123',
+    schema_name: 'smart-orders_schema',
     created_at: '2024-01-15T10:30:00Z',
     active: true,
     is_trial: false,
     status: 'active',
-    url: 'bethel.localhost:3000'
+    url: 'smart-orders.localhost:3000'
   },
   {
     id: '2',

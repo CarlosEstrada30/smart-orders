@@ -16,13 +16,13 @@ import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'Bethel',
-    email: 'admin@bethel.com',
+    name: 'Smart Orders',
+    email: 'admin@smartorders.com',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
     {
-      name: 'Lacteos Bethel',
+      name: 'Smart Orders',
       logo: '/images/bethel.jpeg',
       plan: 'Sistema de Gestión',
     },

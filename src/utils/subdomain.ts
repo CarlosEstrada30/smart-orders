@@ -21,8 +21,8 @@ function getMainDomains(): string[] {
  * Extrae el subdominio de la URL actual
  * 
  * Ejemplos:
- * - bethel.localhost:3000 -> "bethel"
- * - bethel.smart-orders.onrender.com -> "bethel"
+ * - smart-orders.localhost:3000 -> "smart-orders"
+ * - other-subdomain.smart-orders.onrender.com -> "other-subdomain"
  * - smart-orders.onrender.com -> ""
  * - localhost:3000 -> ""
  * - subdomain.miapp.com -> "subdomain"
@@ -84,9 +84,9 @@ export function hasSubdomain(): boolean {
  * Construye una URL preservando el subdominio actual
  * 
  * Ejemplos:
- * - En bethel.localhost:3000 con path="/dashboard" -> "http://bethel.localhost:3000/dashboard"
+ * - En smart-orders.localhost:3000 con path="/dashboard" -> "http://smart-orders.localhost:3000/dashboard"
  * - En localhost:3000 con path="/dashboard" -> "http://localhost:3000/dashboard"
- * - En bethel.miapp.com con path="/dashboard" -> "https://bethel.miapp.com/dashboard"
+ * - En smart-orders.miapp.com con path="/dashboard" -> "https://smart-orders.miapp.com/dashboard"
  * 
  * @param path El path de destino (debe empezar con /)
  * @returns URL completa preservando el subdominio actual
