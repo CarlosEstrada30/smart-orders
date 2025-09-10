@@ -28,6 +28,14 @@ VITE_ENABLE_EXPERIMENTAL_FEATURES=false
 VITE_ENABLE_ANALYTICS=true
 ```
 
+## 🌐 Configuración de Dominio Principal
+
+```
+VITE_MAIN_DOMAIN=smart-orders.onrender.com
+```
+
+**Importante**: Esto le dice a la aplicación cuál es tu dominio principal para la lógica de subdominios.
+
 ## 🔐 Clerk (Opcional - solo si usas Clerk)
 
 ```
