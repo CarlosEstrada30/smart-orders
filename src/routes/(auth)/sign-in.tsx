@@ -154,10 +154,6 @@ function SignInPage() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Credenciales de ejemplo: admin@example.com / admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>
