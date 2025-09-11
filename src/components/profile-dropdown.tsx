@@ -12,18 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/stores/auth-store'
-import { redirectWithSubdomain } from '@/utils/subdomain'
-import { toast } from 'sonner'
+import { useLogout } from '@/hooks/use-logout'
 import { LogOut } from 'lucide-react'
 
 export function ProfileDropdown() {
-  const { user, reset } = useAuthStore((state) => state.auth)
-
-  const handleLogout = () => {
-    reset()
-    toast.success('Sesión cerrada exitosamente')
-    redirectWithSubdomain('/sign-in')
-  }
+  const { user } = useAuthStore((state) => state.auth)
+  const { logout, isLoggingOut } = useLogout()
 
   return (
     <DropdownMenu modal={false}>
@@ -71,9 +65,9 @@ export function ProfileDropdown() {
           <DropdownMenuItem>New Team</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          Cerrar Sesión
+          {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

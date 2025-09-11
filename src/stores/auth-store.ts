@@ -20,6 +20,8 @@ interface AuthState {
     resetAccessToken: () => void
     reset: () => void
     checkTokenExpiration: () => boolean
+    isLoggingOut: boolean
+    setLoggingOut: (isLoggingOut: boolean) => void
   }
 }
 
@@ -57,7 +59,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
             removeCookie(ACCESS_TOKEN)
             return {
               ...state,
-              auth: { ...state.auth, user: null, permissions: null, companySettings: null, accessToken: '' },
+              auth: { ...state.auth, user: null, permissions: null, companySettings: null, accessToken: '', isLoggingOut: false },
             }
           }),
         checkTokenExpiration: () => {
@@ -68,6 +70,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
           }
           return false // Token válido
         },
+        isLoggingOut: false,
+        setLoggingOut: (isLoggingOut) =>
+          set((state) => ({ ...state, auth: { ...state.auth, isLoggingOut } })),
       },
     }
   }
@@ -99,7 +104,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           removeCookie(ACCESS_TOKEN)
           return {
             ...state,
-            auth: { ...state.auth, user: null, permissions: null, companySettings: null, accessToken: '' },
+            auth: { ...state.auth, user: null, permissions: null, companySettings: null, accessToken: '', isLoggingOut: false },
           }
         }),
       checkTokenExpiration: () => {
@@ -110,6 +115,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
         }
         return false // Token válido
       },
+      isLoggingOut: false,
+      setLoggingOut: (isLoggingOut) =>
+        set((state) => ({ ...state, auth: { ...state.auth, isLoggingOut } })),
     },
   }
 })
