@@ -10,12 +10,56 @@ import { type SidebarData } from './types'
  * Hook que filtra los datos del sidebar basándose en permisos del usuario
  */
 export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
-  const { permissions } = usePermissions()
+  const { permissions, isLoading: permissionsLoading } = usePermissions()
   const { canAccessCompanies } = useCompaniesPermissions()
   const { user } = useAuthStore(state => state.auth)
   const { companySettings, isLoading: settingsLoading, hasSettings } = useCompanySettings()
 
   return useMemo(() => {
+    // Si los permisos están cargando, mostrar solo dashboard básico
+    if (permissionsLoading) {
+      return {
+        user,
+        teams: [
+          {
+            name: companySettings?.company_name || 'Empresa',
+            logo: companySettings?.logo_url || '/images/favicon.svg',
+            plan: 'Loading...',
+          },
+        ],
+        navGroups: [
+          {
+            title: 'General',
+            items: [
+              {
+                title: 'Dashboard',
+                url: '/',
+                icon: 'BarChart',
+                isActive: true,
+                description: 'Panel principal'
+              }
+            ]
+          }
+        ],
+        isLoading: true
+      }
+    }
+
+    // Si no hay permisos, mostrar error
+    if (!permissions) {
+      return {
+        user,
+        teams: [
+          {
+            name: 'Error',
+            logo: '/images/favicon.svg',
+            plan: 'No se pudieron cargar los permisos',
+          },
+        ],
+        navGroups: [],
+        isLoading: false
+      }
+    }
     // Crear datos dinámicos del sidebar
     const dynamicSidebarData: SidebarData = {
       user: user ? {
@@ -98,7 +142,7 @@ export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
     
     return {
       ...result,
-      isLoading: settingsLoading
+      isLoading: settingsLoading || permissionsLoading
     }
-  }, [permissions, canAccessCompanies, user, companySettings, settingsLoading, hasSettings])
+  }, [permissions, permissionsLoading, canAccessCompanies, user, companySettings, settingsLoading, hasSettings])
 }

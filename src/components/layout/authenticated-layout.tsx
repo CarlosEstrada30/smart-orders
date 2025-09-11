@@ -3,7 +3,8 @@ import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
-import { useAutoLoadPermissions } from '@/hooks/use-permissions'
+import { useAutoLoadPermissions, usePermissions } from '@/hooks/use-permissions'
+import { PermissionsLoadingCompact } from './permissions-loading'
 import { useCompanySettings } from '@/hooks/use-company-settings'
 import {
   SidebarContent,
@@ -40,11 +41,19 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   // Cargar permisos automáticamente al montar el layout
   useAutoLoadPermissions()
   
+  // Verificar estado de permisos
+  const { isLoading: permissionsLoading } = usePermissions()
+  
   // Cargar settings de la empresa automáticamente
   useCompanySettings()
   
   // Obtener datos del sidebar filtrados por permisos
   const { isLoading: sidebarLoading, ...filteredSidebarData } = useFilteredSidebarData()
+  
+  // Mostrar loading mientras cargan los permisos iniciales
+  if (permissionsLoading) {
+    return <PermissionsLoadingCompact />
+  }
   
   return (
     <SearchProvider>

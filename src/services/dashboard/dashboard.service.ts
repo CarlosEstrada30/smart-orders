@@ -69,7 +69,7 @@ class DashboardService {
    */
   async getDashboardMetrics(filters?: DashboardFilters): Promise<DashboardMetrics> {
     try {
-      // Ejecutar todas las llamadas en paralelo
+      // Ejecutar todas las llamadas en paralelo con manejo de errores individual
       const [
         invoiceSummary,
         inventorySummary,
@@ -77,7 +77,7 @@ class DashboardService {
         recentOrders,
         allOrders,
         products
-      ] = await Promise.all([
+      ] = await Promise.allSettled([
         this.getInvoiceSummary(),
         this.getInventorySummary(),
         this.getLowStockProducts(),
@@ -86,36 +86,56 @@ class DashboardService {
         this.getAllProducts()
       ])
 
+      // Extraer valores con fallbacks seguros
+      const invoiceData = invoiceSummary.status === 'fulfilled' ? invoiceSummary.value : {
+        total_invoices: 0, total_amount: 0, paid_amount: 0, pending_amount: 0, overdue_count: 0, overdue_amount: 0
+      }
+      
+      const inventoryData = inventorySummary.status === 'fulfilled' ? inventorySummary.value : {
+        total_entries: 0, pending_entries: 0, completed_today: 0, total_cost: 0
+      }
+      
+      const lowStockData = lowStockProducts.status === 'fulfilled' ? lowStockProducts.value || [] : []
+      const recentOrdersData = recentOrders.status === 'fulfilled' ? recentOrders.value || [] : []
+      const allOrdersData = allOrders.status === 'fulfilled' ? allOrders.value || [] : []
+      const productsData = products.status === 'fulfilled' ? products.value || [] : []
+
+      // Asegurar que son arrays antes de usar métodos de array
+      const ordersArray = Array.isArray(allOrdersData) ? allOrdersData : []
+      const productsArray = Array.isArray(productsData) ? productsData : []
+      const lowStockArray = Array.isArray(lowStockData) ? lowStockData : []
+      const recentOrdersArray = Array.isArray(recentOrdersData) ? recentOrdersData : []
+
       // Calcular métricas de pedidos
-      const pendingOrders = allOrders.filter(o => o.status === 'pending').length
-      const confirmedOrders = allOrders.filter(o => o.status === 'confirmed').length
-      const deliveredOrders = allOrders.filter(o => o.status === 'delivered').length
+      const pendingOrders = ordersArray.filter(o => o.status === 'pending').length
+      const confirmedOrders = ordersArray.filter(o => o.status === 'confirmed').length
+      const deliveredOrders = ordersArray.filter(o => o.status === 'delivered').length
       
       // Calcular pedidos de hoy
       const today = new Date().toISOString().split('T')[0]
-      const todayOrders = allOrders.filter(o => 
-        o.created_at.startsWith(today)
+      const todayOrders = ordersArray.filter(o => 
+        o.created_at && o.created_at.startsWith(today)
       ).length
 
       // Calcular valor promedio de pedido
-      const totalRevenue = allOrders.reduce((sum, order) => sum + order.total_amount, 0)
-      const averageOrderValue = allOrders.length > 0 ? totalRevenue / allOrders.length : 0
+      const totalRevenue = ordersArray.reduce((sum, order) => sum + (order.total_amount || 0), 0)
+      const averageOrderValue = ordersArray.length > 0 ? totalRevenue / ordersArray.length : 0
 
       // Calcular crecimiento (simulado por ahora)
-      const monthlyGrowth = this.calculateGrowth(invoiceSummary.total_amount)
-      const orderGrowth = this.calculateGrowth(allOrders.length)
+      const monthlyGrowth = this.calculateGrowth(invoiceData.total_amount)
+      const orderGrowth = this.calculateGrowth(ordersArray.length)
 
       return {
         financial: {
-          totalRevenue: invoiceSummary.total_amount,
-          paidAmount: invoiceSummary.paid_amount,
-          pendingAmount: invoiceSummary.pending_amount,
-          overdueAmount: invoiceSummary.overdue_amount,
-          overdueCount: invoiceSummary.overdue_count,
+          totalRevenue: invoiceData.total_amount,
+          paidAmount: invoiceData.paid_amount,
+          pendingAmount: invoiceData.pending_amount,
+          overdueAmount: invoiceData.overdue_amount,
+          overdueCount: invoiceData.overdue_count,
           monthlyGrowth
         },
         orders: {
-          totalOrders: allOrders.length,
+          totalOrders: ordersArray.length,
           pendingOrders,
           confirmedOrders, 
           deliveredOrders,
@@ -124,20 +144,20 @@ class DashboardService {
           orderGrowth
         },
         inventory: {
-          totalEntries: inventorySummary.total_entries,
-          pendingEntries: inventorySummary.pending_entries,
-          completedToday: inventorySummary.completed_today,
-          totalCost: inventorySummary.total_cost,
-          lowStockCount: lowStockProducts.length,
-          lowStockProducts
+          totalEntries: inventoryData.total_entries,
+          pendingEntries: inventoryData.pending_entries,
+          completedToday: inventoryData.completed_today,
+          totalCost: inventoryData.total_cost,
+          lowStockCount: lowStockArray.length,
+          lowStockProducts: lowStockArray
         },
         products: {
-          totalActive: products.filter(p => p.is_active).length,
-          lowStockCount: lowStockProducts.length,
+          totalActive: productsArray.filter(p => p.is_active).length,
+          lowStockCount: lowStockArray.length,
           newThisMonth: 0 // Por ahora 0, se puede calcular después
         },
         recentActivity: {
-          recentOrders,
+          recentOrders: recentOrdersArray,
           recentInvoices: [] // Se puede agregar después
         }
       }

@@ -17,7 +17,7 @@ import {
  * Hook principal para gestión de permisos
  */
 export const usePermissions = () => {
-  const { permissions, setPermissions } = useAuthStore((state) => state.auth)
+  const { permissions, setPermissions, accessToken } = useAuthStore((state) => state.auth)
 
   /**
    * Cargar permisos del usuario actual
@@ -29,7 +29,21 @@ export const usePermissions = () => {
       return userPermissions
     } catch (error) {
       console.error('Error loading permissions:', error)
-      setPermissions(null)
+      // En caso de error, establecer permisos vacíos en lugar de null
+      // para evitar loops de loading infinito
+      setPermissions({
+        role: 'cashier',
+        is_superuser: false,
+        permissions: {
+          inventory: { can_manage: false, can_approve: false, can_complete: false },
+          orders: { can_view: false, can_create: false, can_update: false, can_delete: false, can_update_delivery: false },
+          products: { can_view: false, can_manage: false },
+          clients: { can_view: false, can_manage: false },
+          routes: { can_view: false, can_manage: false },
+          reports: { can_view: false },
+          users: { can_manage: false }
+        }
+      })
       return null
     }
   }
@@ -45,7 +59,10 @@ export const usePermissions = () => {
     permissions,
     loadPermissions,
     clearPermissions,
-    isLoading: permissions === null
+    // Determinar si está cargando: hay token pero no hay permisos
+    isLoading: !!accessToken && permissions === null,
+    // Determinar si falló la carga de permisos
+    hasPermissions: permissions !== null
   }
 }
 

@@ -39,10 +39,19 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   requireSuperuser = false,
   requireAll = false // Por defecto OR
 }) => {
-  const { permissions } = usePermissions()
+  const { permissions, isLoading } = usePermissions()
   const { hasRole, isSuperuser } = useRole()
 
-  // Si no hay permisos cargados, no mostrar nada
+  // Si los permisos están cargando, mostrar un placeholder suave
+  if (isLoading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 bg-muted rounded-md w-24"></div>
+      </div>
+    )
+  }
+
+  // Si no hay permisos cargados después de intentar cargar, mostrar fallback
   if (!permissions) {
     return <>{fallback}</>
   }
