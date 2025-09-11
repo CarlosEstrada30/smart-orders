@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { NumericInput, PriceInput, QuantityInput } from '@/components/ui/numeric-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -58,6 +59,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
     expiry_date: '',
     notes: ''
   })
+
   
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -304,22 +306,18 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
 
             <div className="space-y-2">
               <Label>Cantidad</Label>
-              <Input
-                type="number"
-                min="1"
+              <QuantityInput
                 value={newItem.quantity}
-                onChange={(e) => setNewItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                onValueChange={(value) => setNewItem(prev => ({ ...prev, quantity: value }))}
+                min={1}
               />
             </div>
 
             <div className="space-y-2">
               <Label>Costo Unitario</Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
+              <PriceInput
                 value={newItem.unit_cost}
-                onChange={(e) => setNewItem(prev => ({ ...prev, unit_cost: parseFloat(e.target.value) || 0 }))}
+                onValueChange={(value) => setNewItem(prev => ({ ...prev, unit_cost: value }))}
               />
             </div>
 
@@ -385,21 +383,17 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Input
-                        type="number"
-                        min="1"
+                      <QuantityInput
                         value={item.quantity}
-                        onChange={(e) => updateItemQuantity(item.id, parseInt(e.target.value) || 1)}
+                        onValueChange={(value) => updateItemQuantity(item.id, value)}
+                        min={1}
                         className="w-20 text-center"
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.unit_cost}
-                        onChange={(e) => updateItemCost(item.id, parseFloat(e.target.value) || 0)}
+                      <PriceInput
+                        value={item.unit_cost || 0}
+                        onValueChange={(value) => updateItemCost(item.id, value)}
                         className="w-24 text-right"
                       />
                     </TableCell>

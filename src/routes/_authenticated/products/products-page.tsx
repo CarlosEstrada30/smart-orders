@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PriceInput, QuantityInput } from '@/components/ui/numeric-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -518,26 +519,22 @@ export function ProductsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="modal-price">Precio *</Label>
-                <Input
+                <PriceInput
                   id="modal-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
                   placeholder="0.00"
                   value={newProductForm.price}
-                  onChange={(e) => setNewProductForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  onValueChange={(value) => setNewProductForm(prev => ({ ...prev, price: value }))}
                   required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="modal-stock">Stock *</Label>
-                <Input
+                <QuantityInput
                   id="modal-stock"
-                  type="number"
-                  min="0"
                   placeholder="0"
                   value={newProductForm.stock}
-                  onChange={(e) => setNewProductForm(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
+                  onValueChange={(value) => setNewProductForm(prev => ({ ...prev, stock: value }))}
+                  min={0}
                   required
                 />
               </div>

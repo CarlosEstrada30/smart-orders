@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { QuantityInput } from '@/components/ui/numeric-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Combobox } from '@/components/ui/combobox'
@@ -344,15 +345,14 @@ export function NewOrderPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quantity">Cantidad</Label>
-                  <Input
+                  <QuantityInput
                     id="quantity"
-                    type="number"
-                    min="1"
                     value={quantity}
-                    onChange={(e) => {
-                      setQuantity(parseInt(e.target.value) || 1)
+                    onValueChange={(value) => {
+                      setQuantity(value)
                       setStockError(null) // Limpiar error al cambiar cantidad
                     }}
+                    min={1}
                   />
                 </div>
                 <div className="flex items-end">
