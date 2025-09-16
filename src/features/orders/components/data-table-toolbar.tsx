@@ -186,20 +186,35 @@ const DataTableToolbarComponent = <TData,>({
   }, [filters])
 
   return (
-    <div className='flex items-center justify-between'>
-      <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
-        <Input
-          placeholder='Buscar órdenes...'
-          value={localSearch}
-          onChange={(event) => handleSearchChange(event.target.value)}
-          className='h-8 w-[150px] lg:w-[300px]'
-        />
-        <div className='flex gap-x-2'>
-          {/* Status Filter - usando select simple por ahora */}
+    <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
+      <div className='flex flex-1 flex-col gap-4'>
+        {/* Search input */}
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+          <Input
+            placeholder='Buscar órdenes...'
+            value={localSearch}
+            onChange={(event) => handleSearchChange(event.target.value)}
+            className='h-8 w-full sm:w-[200px] lg:w-[300px]'
+          />
+          {isFiltered && (
+            <Button
+              variant='ghost'
+              onClick={handleClearFilters}
+              className='h-8 px-2 lg:px-3 w-fit'
+            >
+              Limpiar {filtersCount > 0 && `(${filtersCount})`}
+              <Cross2Icon className='ms-2 h-4 w-4' />
+            </Button>
+          )}
+        </div>
+        
+        {/* Filters row */}
+        <div className='flex flex-wrap gap-2'>
+          {/* Status Filter */}
           <select
             value={filters.status_filter || ''}
             onChange={(e) => handleStatusChange([e.target.value])}
-            className="h-8 rounded-md border border-input bg-transparent px-3 text-sm"
+            className="h-8 min-w-[140px] rounded-md border border-input bg-transparent px-3 text-sm"
           >
             <option value="">Todos los estados</option>
             {orderStatuses.map((status) => (
@@ -209,12 +224,12 @@ const DataTableToolbarComponent = <TData,>({
             ))}
           </select>
           
-          {/* Route Filter - usando select simple por ahora */}
+          {/* Route Filter */}
           {uniqueRoutes.length > 0 && (
             <select
               value={filters.route_id?.toString() || ''}
               onChange={(e) => handleRouteChange([e.target.value])}
-              className="h-8 rounded-md border border-input bg-transparent px-3 text-sm"
+              className="h-8 min-w-[140px] rounded-md border border-input bg-transparent px-3 text-sm"
             >
               <option value="">Todas las rutas</option>
               {uniqueRoutes.map((route) => (
@@ -231,18 +246,10 @@ const DataTableToolbarComponent = <TData,>({
             onDateRangeChange={handleDateRangeChange}
           />
         </div>
-        {isFiltered && (
-          <Button
-            variant='ghost'
-            onClick={handleClearFilters}
-            className='h-8 px-2 lg:px-3'
-          >
-            Limpiar {filtersCount > 0 && `(${filtersCount})`}
-            <Cross2Icon className='ms-2 h-4 w-4' />
-          </Button>
-        )}
       </div>
-      <div className='flex items-center gap-x-2'>
+      
+      {/* Actions */}
+      <div className='flex items-center gap-x-2 lg:flex-shrink-0'>
         <Button
           variant='outline'
           onClick={handlePreviewReport}

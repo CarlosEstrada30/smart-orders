@@ -41,7 +41,7 @@ import {
   X
 } from 'lucide-react'
 import { ordersService, type Order, type OrderStatus } from '@/services/orders'
-import { OrderReceiptActions, OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
+import { OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function OrderDetailPage() {
@@ -186,39 +186,43 @@ export function OrderDetailPage() {
     <Main>
       <div className="container mx-auto py-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Top row - Back button and title */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <Link to="/orders">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Orden #{order.order_number}
-              </h1>
-              <p className="text-muted-foreground">
-                Detalles de la orden
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  Orden #{order.order_number}
+                </h1>
+                <p className="text-muted-foreground">
+                  Detalles de la orden
+                </p>
+              </div>
+              <Badge variant={getStatusBadgeVariant(order.status)} className="shrink-0">
+                <div className="flex items-center space-x-1">
+                  {getStatusIcon(order.status)}
+                  <span className="hidden sm:inline">{getStatusLabel(order.status)}</span>
+                </div>
+              </Badge>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant={getStatusBadgeVariant(order.status)}>
-              <div className="flex items-center space-x-1">
-                {getStatusIcon(order.status)}
-                <span>{getStatusLabel(order.status)}</span>
-              </div>
-            </Badge>
-            
-            {/* Acciones de comprobante */}
-            
+          
+          {/* Bottom row - Action buttons */}
+          <div className="flex flex-wrap items-center gap-2">
             <PermissionGuard orderPermission="can_update_delivery">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setIsStatusDialogOpen(true)}
               >
-                Cambiar Estado
+                <span className="hidden sm:inline">Cambiar Estado</span>
+                <span className="sm:hidden">Estado</span>
               </Button>
             </PermissionGuard>
 
@@ -226,9 +230,9 @@ export function OrderDetailPage() {
               <PermissionGuard orderPermission="can_manage">
                 <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Cancelar
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Cancelar</span>
                     </Button>
                   </DialogTrigger>
                 <DialogContent>
@@ -253,37 +257,38 @@ export function OrderDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Información de la Orden */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
             {/* Información del Cliente */}
             <Card>
-              <CardHeader>
-                <CardTitle>Información del Cliente</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Información del Cliente</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="pt-0">
                 {order.client ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Nombre del Cliente</Label>
-                      <Input value={order.client.name} disabled />
+                      <Label className="text-sm font-medium">Nombre del Cliente</Label>
+                      <Input value={order.client.name} disabled className="text-sm" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Teléfono</Label>
-                      <Input value={order.client.phone || 'No disponible'} disabled />
+                      <Label className="text-sm font-medium">Teléfono</Label>
+                      <Input value={order.client.phone || 'No disponible'} disabled className="text-sm" />
                     </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label>Dirección</Label>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label className="text-sm font-medium">Dirección</Label>
                       <Textarea 
                         value={order.client.address || 'Sin dirección'} 
                         disabled 
                         rows={2}
+                        className="text-sm resize-none"
                       />
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-6">
+                    <p className="text-sm text-muted-foreground">
                       Información del cliente no disponible (Cliente #{order.client_id})
                     </p>
                   </div>
@@ -293,28 +298,28 @@ export function OrderDetailPage() {
 
             {/* Detalles de la Orden */}
             <Card>
-              <CardHeader>
-                <CardTitle>Detalles de la Orden</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Detalles de la Orden</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Número de Orden</Label>
-                    <Input value={order.order_number || `#${order.id}`} disabled />
+                    <Label className="text-sm font-medium">Número de Orden</Label>
+                    <Input value={order.order_number || `#${order.id}`} disabled className="text-sm" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Fecha de Creación</Label>
-                    <Input value={order.created_at ? new Date(order.created_at).toLocaleDateString() : ''} disabled />
+                    <Label className="text-sm font-medium">Fecha de Creación</Label>
+                    <Input value={order.created_at ? new Date(order.created_at).toLocaleDateString() : ''} disabled className="text-sm" />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Última Actualización</Label>
-                    <Input value={order.updated_at ? new Date(order.updated_at).toLocaleDateString() : ''} disabled />
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label className="text-sm font-medium">Última Actualización</Label>
+                    <Input value={order.updated_at ? new Date(order.updated_at).toLocaleDateString() : ''} disabled className="text-sm" />
                   </div>
                 </div>
                 {order.notes && (
-                  <div className="space-y-2">
-                    <Label>Notas</Label>
-                    <Textarea value={order.notes} disabled />
+                  <div className="space-y-2 mt-4">
+                    <Label className="text-sm font-medium">Notas</Label>
+                    <Textarea value={order.notes} disabled className="text-sm resize-none" />
                   </div>
                 )}
               </CardContent>
@@ -322,35 +327,62 @@ export function OrderDetailPage() {
 
             {/* Items de la Orden */}
             <Card>
-              <CardHeader>
-                <CardTitle>Items de la Orden</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Items de la Orden</CardTitle>
               </CardHeader>
               <CardContent>
                 {order.items.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Producto</TableHead>
-                        <TableHead className="text-center">Cantidad</TableHead>
-                        <TableHead className="text-right">Precio Unitario</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <>
+                    {/* Desktop Table */}
+                    <div className="hidden md:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Producto</TableHead>
+                            <TableHead className="text-center">Cantidad</TableHead>
+                            <TableHead className="text-right">Precio Unitario</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {order.items.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell className="font-medium">
+                                {item.product_name || `Producto #${item.product_id}`}
+                              </TableCell>
+                              <TableCell className="text-center">{item.quantity}</TableCell>
+                              <TableCell className="text-right">Q{item.unit_price.toFixed(2)}</TableCell>
+                              <TableCell className="text-right font-medium">
+                                Q{(item.quantity * item.unit_price).toFixed(2)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    {/* Mobile Cards */}
+                    <div className="md:hidden space-y-4">
                       {order.items.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">
-                            {item.product_name || `Producto #${item.product_id}`}
-                          </TableCell>
-                          <TableCell className="text-center">{item.quantity}</TableCell>
-                          <TableCell className="text-right">Q{item.unit_price.toFixed(2)}</TableCell>
-                          <TableCell className="text-right font-medium">
-                            Q{(item.quantity * item.unit_price).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
+                        <div key={item.id} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <h4 className="font-medium leading-5">
+                              {item.product_name || `Producto #${item.product_id}`}
+                            </h4>
+                            <div className="text-right font-medium">
+                              Q{(item.quantity * item.unit_price).toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4">
+                              <span>Cantidad: <strong>{item.quantity}</strong></span>
+                              <span>Precio: <strong>Q{item.unit_price.toFixed(2)}</strong></span>
+                            </div>
+                          </div>
+                        </div>
                       ))}
-                    </TableBody>
-                  </Table>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No hay items en esta orden</p>
@@ -361,26 +393,26 @@ export function OrderDetailPage() {
           </div>
 
           {/* Resumen */}
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Resumen de la Orden</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Resumen de la Orden</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Total Items:</span>
+              <CardContent className="pt-0 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Total Items:</span>
                   <span className="font-medium">{order.items.length}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Total Cantidad:</span>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Total Cantidad:</span>
                   <span className="font-medium">
                     {order.items.reduce((sum, item) => sum + item.quantity, 0)}
                   </span>
                 </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total:</span>
-                    <span>Q{order.total_amount?.toFixed(2) || '0.00'}</span>
+                <div className="border-t pt-3 mt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-semibold">Total:</span>
+                    <span className="text-lg font-bold">Q{order.total_amount?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -388,10 +420,10 @@ export function OrderDetailPage() {
             
             {/* Sección de Comprobante */}
             <Card>
-              <CardHeader>
-                <CardTitle>Comprobante</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Comprobante</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="pt-0">
                 <div className="text-sm text-muted-foreground mb-4">
                   Descargar o visualizar el comprobante de esta orden
                 </div>
