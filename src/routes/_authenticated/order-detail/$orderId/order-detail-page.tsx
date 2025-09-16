@@ -212,10 +212,6 @@ export function OrderDetailPage() {
             </Badge>
             
             {/* Acciones de comprobante */}
-            <OrderReceiptActions 
-              orderId={order.id!} 
-              orderNumber={order.order_number || `#${order.id}`} 
-            />
             
             <PermissionGuard orderPermission="can_update_delivery">
               <Button

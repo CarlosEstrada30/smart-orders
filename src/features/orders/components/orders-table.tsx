@@ -164,10 +164,6 @@ const OrdersTableComponent = ({
                   <Download className="mr-2 h-4 w-4" />
                   Descargar comprobante
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleGenerateReceipt(order)} disabled={isLoading}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generar comprobante
-                </DropdownMenuItem>
                 {order.status !== 'cancelled' && (
                   <>
                     <DropdownMenuSeparator />

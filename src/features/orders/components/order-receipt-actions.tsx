@@ -103,10 +103,6 @@ export function OrderReceiptActions({ orderId, orderNumber }: OrderReceiptAction
             <Download className="h-4 w-4 mr-2" />
             Descargar PDF
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleGenerateReceipt} disabled={isLoading}>
-            <FileText className="h-4 w-4 mr-2" />
-            Generar nuevo
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
