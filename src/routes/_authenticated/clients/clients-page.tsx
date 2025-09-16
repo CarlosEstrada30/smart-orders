@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
+import { useNavigationCleanup } from '@/hooks/use-navigation-cleanup'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -47,6 +48,7 @@ import { ApiError } from '@/services/api/config'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function ClientsPage() {
+  const { isMounted, safeAsync } = useNavigationCleanup()
   const [searchTerm, setSearchTerm] = useState('')
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -133,17 +135,35 @@ export function ClientsPage() {
 
   // Función para obtener los clientes de la API
   const fetchClients = async () => {
+    if (!isMounted()) return
+    
     try {
       setLoading(true)
       setError(null)
       
       const data = await clientsService.getClients({ skip: 0, limit: 100, active_only: true })
-      setClients(data)
+      
+      // Solo actualizar estado si el componente aún está montado
+      if (isMounted()) {
+        setClients(data)
+      }
     } catch (err) {
-      const errorMessage = err instanceof ApiError ? err.detail : 'Error desconocido'
+      if (!isMounted()) return // No actualizar estado si el componente ya no está montado
+      
+      let errorMessage = 'Error al cargar los clientes'
+      
+      if (err instanceof ApiError) {
+        errorMessage = err.detail
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+      }
+      
+      console.error('Error loading clients:', err)
       setError(errorMessage)
     } finally {
-      setLoading(false)
+      if (isMounted()) {
+        setLoading(false)
+      }
     }
   }
 
@@ -223,7 +243,7 @@ export function ClientsPage() {
   // Cargar clientes al montar el componente
   useEffect(() => {
     fetchClients()
-  }, [])
+  }, []) // Sin dependencias para evitar bucles
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

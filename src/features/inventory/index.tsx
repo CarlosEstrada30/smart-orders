@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
@@ -10,14 +10,17 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { usePermissions, useRole, useAutoLoadPermissions, useInventoryPermissions } from '@/hooks/use-permissions'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { useNavigationCleanup } from '@/hooks/use-navigation-cleanup'
 
 export function InventoryPage() {
+  const { isMounted } = useNavigationCleanup()
   const navigate = useNavigate()
   const [entries, setEntries] = useState<InventoryEntryListResponse[]>([])
   const [summary, setSummary] = useState<InventoryEntrySummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { accessToken } = useAuthStore((state) => state.auth)
+  const abortControllerRef = useRef<AbortController | null>(null)
   
   // Cargar permisos automáticamente
   useAutoLoadPermissions()
@@ -27,36 +30,74 @@ export function InventoryPage() {
   const { canManage, canViewCosts } = useInventoryPermissions()
 
   useEffect(() => {
-    if (accessToken) {
+    if (accessToken && isMounted()) {
       loadData()
-    } else {
+    } else if (!accessToken && isMounted()) {
       setError('No hay token de autenticación. Por favor, inicia sesión.')
       setLoading(false)
     }
-  }, [accessToken])
+    
+    // Cleanup al cambiar accessToken o desmontar
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [accessToken, isMounted])
 
   const loadData = async () => {
+    if (!isMounted()) return
+    
     try {
       setLoading(true)
       setError(null)
       
+      // Cancelar peticiones anteriores
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+      
+      // Crear nuevo controller
+      abortControllerRef.current = new AbortController()
+      
       console.log('Loading inventory data...')
       
-      const [entriesData, summaryData] = await Promise.all([
+      // Usar Promise.all con manejo de errores mejorado
+      const [entriesData, summaryData] = await Promise.allSettled([
         inventoryService.getEntries({ limit: 100 }),
         inventoryService.getEntriesSummary()
       ])
       
-      console.log('Inventory data loaded:', { entriesData, summaryData })
-      setEntries(entriesData || [])
-      setSummary(summaryData)
+      // Solo actualizar estado si el componente sigue montado
+      if (!isMounted()) return
+      
+      // Manejar resultados de Promise.allSettled
+      const entries = entriesData.status === 'fulfilled' ? (entriesData.value || []) : []
+      const summary = summaryData.status === 'fulfilled' ? summaryData.value : null
+      
+      console.log('Inventory data loaded:', { entries, summary })
+      setEntries(entries)
+      setSummary(summary)
+      
+      // Si alguna promesa falló, mostrar advertencia pero no bloquear la UI
+      if (entriesData.status === 'rejected' || summaryData.status === 'rejected') {
+        console.warn('Some inventory data failed to load')
+        toast.error('Algunos datos de inventario no se pudieron cargar')
+      }
+      
     } catch (err) {
+      if (!isMounted() || (err instanceof Error && err.name === 'AbortError')) {
+        return // Componente desmontado o petición cancelada
+      }
+      
       console.error('Error loading inventory data:', err)
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
       setError(`Error al cargar los datos de inventario: ${errorMessage}`)
       toast.error('Error al cargar los datos de inventario')
     } finally {
-      setLoading(false)
+      if (isMounted()) {
+        setLoading(false)
+      }
     }
   }
 

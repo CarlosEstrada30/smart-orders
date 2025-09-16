@@ -25,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MoreHorizontal, Eye, Trash2, Download, FileText } from 'lucide-react'
+import { MoreHorizontal, Eye, Trash2, Download } from 'lucide-react'
 import { type Order } from '../data/schema'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
@@ -94,9 +94,14 @@ const OrdersTableComponent = ({
         newWindow.document.close()
         
         // Cleanup cuando se cierre la ventana
-        newWindow.addEventListener('beforeunload', () => {
+        const cleanupBlob = () => {
           window.URL.revokeObjectURL(url)
-        })
+        }
+        
+        newWindow.addEventListener('beforeunload', cleanupBlob)
+        
+        // Cleanup adicional después de 30 segundos por seguridad
+        setTimeout(cleanupBlob, 30000)
       }
       toast.success('Vista previa abierta en nueva ventana')
     } catch (_error) {
@@ -119,7 +124,7 @@ const OrdersTableComponent = ({
     }
   }
 
-  const handleGenerateReceipt = async (order: Order) => {
+  const _handleGenerateReceipt = async (order: Order) => {
     try {
       setIsLoading(true)
       await ordersService.generateReceipt(order.id!)

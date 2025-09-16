@@ -2,6 +2,7 @@ import { RoutesCreateDialog } from './routes-create-dialog'
 import { RoutesEditDialog } from './routes-edit-dialog'
 import { RoutesDeleteDialog } from './routes-delete-dialog'
 import { RoutesReactivateDialog } from './routes-reactivate-dialog'
+import { useEffect, useRef } from 'react'
 import { useRoutes } from './routes-provider'
 
 interface RoutesDialogsProps {
@@ -11,12 +12,31 @@ interface RoutesDialogsProps {
 export function RoutesDialogs({ onDataChange }: RoutesDialogsProps) {
   const { open, setOpen, currentRow, setCurrentRow } = useRoutes()
   
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
   const handleClose = (dialogType: string) => {
     setOpen(null)
-    setTimeout(() => {
+    
+    // Limpiar timeout anterior si existe
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    
+    // Programar limpieza con cleanup
+    timeoutRef.current = setTimeout(() => {
       setCurrentRow(null)
+      timeoutRef.current = null
     }, 500)
   }
+  
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   return (
     <>

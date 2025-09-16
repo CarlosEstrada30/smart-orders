@@ -64,8 +64,19 @@ const DataTableToolbarComponent = <TData,>({
       onFiltersChange({ search: normalizedLocal })
     }, 500)
     
-    return () => clearTimeout(timeoutId)
-  }, [localSearch]) // Solo dependencia en localSearch
+    // Cleanup crítico - limpiar timeout al desmontar o cambiar
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [localSearch, onFiltersChange]) // Incluir onFiltersChange para estabilidad
+  
+  // Cleanup effect al desmontar el componente
+  useEffect(() => {
+    return () => {
+      // Limpiar cualquier timeout pendiente
+      isInitialMount.current = true
+    }
+  }, [])
   
   // Sincronizar estado local SOLO cuando los filtros cambien externamente
   useEffect(() => {

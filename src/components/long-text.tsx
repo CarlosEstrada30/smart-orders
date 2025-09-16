@@ -5,6 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { ClientOnly } from '@/components/client-only'
 import {
   Tooltip,
   TooltipContent,
@@ -43,7 +44,11 @@ export function LongText({
     )
 
   return (
-    <>
+    <ClientOnly fallback={
+      <div ref={ref} className={cn('truncate', className)}>
+        {children}
+      </div>
+    }>
       <div className='hidden sm:block'>
         <TooltipProvider delayDuration={0}>
           <Tooltip>
@@ -70,7 +75,7 @@ export function LongText({
           </PopoverContent>
         </Popover>
       </div>
-    </>
+    </ClientOnly>
   )
 }
 
