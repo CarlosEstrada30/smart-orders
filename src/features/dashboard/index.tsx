@@ -11,9 +11,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Main } from '@/components/layout/main'
 import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
+import { MiniOrdersChart, MiniLegend } from './components/mini-orders-chart'
 import { Users, Package, ShoppingCart, TrendingUp, RefreshCw, AlertTriangle } from 'lucide-react'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { useDashboard } from '@/hooks/use-dashboard'
+import { useCurrentMonthStatusDistribution } from '@/hooks/use-order-status-distribution'
 import { Badge } from '@/components/ui/badge'
 
 export function Dashboard() {
@@ -28,6 +30,13 @@ export function Dashboard() {
     formatNumber,
     getRefreshIntervalText
   } = useDashboard()
+  
+  // Hook para obtener distribución de estados del mes actual
+  const {
+    data: statusDistribution,
+    isLoading: statusLoading,
+    error: statusError
+  } = useCurrentMonthStatusDistribution()
 
   const LoadingSkeleton = () => (
     <div className="space-y-4">
@@ -142,7 +151,7 @@ export function Dashboard() {
                   <Card>
                     <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                       <CardTitle className='text-sm font-medium'>
-                        Ingresos Totales
+                        Ingresos del Mes
                       </CardTitle>
                       <TrendingUp className='text-muted-foreground h-4 w-4' />
                     </CardHeader>
@@ -151,11 +160,21 @@ export function Dashboard() {
                         {metrics ? formatCurrency(metrics.financial.totalRevenue) : 'Q0.00'}
                       </div>
                       <p className='text-muted-foreground text-xs'>
-                        {metrics && formatPercentage(metrics.financial.monthlyGrowth)} desde el mes pasado
+                        {new Date().toLocaleDateString('es-GT', { month: 'long', year: 'numeric' })}
                       </p>
-                      {metrics && metrics.financial.overdueCount > 0 && (
-                        <Badge variant="destructive" className="mt-2 text-xs">
-                          {metrics.financial.overdueCount} facturas vencidas
+                      {metrics && metrics.financial.monthlyGrowth !== 0 && (
+                        <p className='text-muted-foreground text-xs mt-1'>
+                          {formatPercentage(metrics.financial.monthlyGrowth)} vs mes anterior
+                        </p>
+                      )}
+                      {metrics && metrics.financial.currentMonthDelivered > 0 && (
+                        <Badge variant="default" className="mt-2 text-xs">
+                          {metrics.financial.currentMonthDelivered} órdenes entregadas este mes
+                        </Badge>
+                      )}
+                      {metrics && metrics.financial.currentMonthDelivered === 0 && (
+                        <Badge variant="secondary" className="mt-2 text-xs">
+                          Sin entregas este mes
                         </Badge>
                       )}
                     </CardContent>
@@ -165,22 +184,57 @@ export function Dashboard() {
                   <Card>
                     <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                       <CardTitle className='text-sm font-medium'>
-                        Pedidos Totales
+                        Pedidos del Mes
                       </CardTitle>
                       <ShoppingCart className='text-muted-foreground h-4 w-4' />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pb-4">
                       <div className='text-2xl font-bold'>
-                        {metrics ? formatNumber(metrics.orders.totalOrders) : '0'}
+                        {statusDistribution ? 
+                          formatNumber(statusDistribution.total_orders) : 
+                          (metrics ? formatNumber(metrics.orders.currentMonthTotal) : '0')
+                        }
                       </div>
-                      <p className='text-muted-foreground text-xs'>
-                        {metrics && formatPercentage(metrics.orders.orderGrowth)} desde el mes pasado
+                      <p className='text-muted-foreground text-xs mb-2'>
+                        {new Date().toLocaleDateString('es-GT', { month: 'long', year: 'numeric' })}
                       </p>
-                      <div className="flex gap-1 mt-2">
-                        {metrics && metrics.orders.pendingOrders > 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            {metrics.orders.pendingOrders} pendientes
-                          </Badge>
+                      
+                      {/* Mini gráfica de distribución de estados */}
+                      {!statusLoading && statusDistribution && statusDistribution.total_orders > 0 ? (
+                        <>
+                          <MiniOrdersChart 
+                            data={metrics?.orders.currentMonthByStatus || {
+                              pending: 0, confirmed: 0, in_progress: 0, 
+                              shipped: 0, delivered: 0, cancelled: 0
+                            }}
+                            statusData={statusDistribution.status_data}
+                          />
+                          <MiniLegend 
+                            data={metrics?.orders.currentMonthByStatus || {
+                              pending: 0, confirmed: 0, in_progress: 0, 
+                              shipped: 0, delivered: 0, cancelled: 0
+                            }}
+                            statusData={statusDistribution.status_data}
+                          />
+                        </>
+                      ) : statusLoading ? (
+                        <div className="flex items-center justify-center h-[120px] text-sm text-muted-foreground">
+                          <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                            <span>Cargando distribución...</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-[120px] text-sm text-muted-foreground">
+                          Sin pedidos este mes
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center mt-3">
+                        {statusDistribution && (
+                          <div className="text-xs text-muted-foreground">
+                            {statusDistribution.period_name}
+                          </div>
                         )}
                         {metrics && metrics.orders.todayOrders > 0 && (
                           <Badge variant="default" className="text-xs">

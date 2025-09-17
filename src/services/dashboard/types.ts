@@ -62,14 +62,15 @@ export interface OrderSummary {
 // ========================================
 
 export interface DashboardMetrics {
-  // Métricas financieras
+  // Métricas financieras (basadas en órdenes entregadas del mes actual)
   financial: {
-    totalRevenue: number
-    paidAmount: number
-    pendingAmount: number
-    overdueAmount: number
-    overdueCount: number
-    monthlyGrowth: number // Calculado comparando períodos
+    totalRevenue: number        // SUM(total_amount) de órdenes delivered del mes actual
+    paidAmount: number          // Igual a totalRevenue (consideramos entregas como pagadas)
+    pendingAmount: number       // 0 (no usamos facturas)
+    overdueAmount: number       // 0 (no usamos facturas)
+    overdueCount: number        // 0 (no usamos facturas)
+    monthlyGrowth: number       // % crecimiento vs mes anterior en ingresos de órdenes entregadas
+    currentMonthDelivered: number // COUNT de órdenes entregadas del mes actual
   }
   
   // Métricas de pedidos
@@ -81,6 +82,16 @@ export interface DashboardMetrics {
     todayOrders: number
     averageOrderValue: number
     orderGrowth: number
+    // Nuevos: distribución de estados del mes actual
+    currentMonthByStatus: {
+      pending: number
+      confirmed: number
+      in_progress: number
+      shipped: number
+      delivered: number
+      cancelled: number
+    }
+    currentMonthTotal: number // Total de pedidos del mes actual
   }
   
   // Métricas de inventario
@@ -122,6 +133,67 @@ export interface SalesChartData {
   sales: number
   orders: number
   revenue: number
+}
+
+// ========================================
+// TIPOS PARA NUEVO ENDPOINT DE ANALYTICS
+// ========================================
+
+export interface MonthlyAnalyticsData {
+  year: number
+  month: number
+  month_name: string
+  order_count: number
+  total_amount: number
+}
+
+export interface MonthlyAnalyticsResponse {
+  monthly_data: MonthlyAnalyticsData[]
+  total_orders: number
+  total_amount: number
+  period_start: string | null
+  period_end: string | null
+}
+
+export interface AnalyticsFilters {
+  status_filter: 'delivered' // Requerido
+  year?: number // Opcional: año específico
+  start_date?: string // Opcional: fecha inicio (formato: 2024-01-01)
+  end_date?: string // Opcional: fecha fin (formato: 2024-12-31)
+}
+
+// ========================================
+// TIPOS PARA MÉTRICAS DE ÓRDENES ENTREGADAS
+// ========================================
+
+export interface DeliveredOrdersMetrics {
+  totalRevenue: number
+  deliveredCount: number
+  averageOrderValue: number
+}
+
+// ========================================
+// TIPOS PARA ENDPOINT DE DISTRIBUCIÓN DE ESTADOS
+// ========================================
+
+export interface StatusDistributionItem {
+  status: 'pending' | 'confirmed' | 'in_progress' | 'shipped' | 'delivered' | 'cancelled'
+  status_name: string
+  count: number
+  percentage: number
+}
+
+export interface StatusDistributionResponse {
+  status_data: StatusDistributionItem[]
+  total_orders: number
+  month: number
+  year: number
+  period_name: string
+}
+
+export interface StatusDistributionFilters {
+  year?: number  // Año para análisis (por defecto: año actual)
+  month?: number // Mes para análisis 1-12 (por defecto: mes actual)
 }
 
 // ========================================

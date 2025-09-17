@@ -1692,7 +1692,7 @@
           "orders"
         ],
         "summary": "Get Orders",
-        "description": "Get all orders (requires view orders permission)",
+        "description": "Get all orders with optional filters (requires view orders permission)\n\nFilters:\n- status_filter: Filter by order status (pending, confirmed, in_progress, shipped, delivered, cancelled)\n- route_id: Filter by specific route ID\n- date_from: Show orders from this date onwards (inclusive)\n- date_to: Show orders up to this date (inclusive)\n- search: Search by order number or client name (case-insensitive partial matching)\n- paginated: Return paginated response with metadata (default: True)\n\nResponse:\n- If paginated=True: Returns PaginatedResponse with items and pagination metadata\n- If paginated=False: Returns List[OrderResponse] for backward compatibility",
         "operationId": "get_orders_api_v1_orders__get",
         "security": [
           {
@@ -1725,9 +1725,104 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by order status",
               "title": "Status Filter"
-            }
+            },
+            "description": "Filter by order status"
+          },
+          {
+            "name": "route_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by route ID",
+              "title": "Route Id"
+            },
+            "description": "Filter by route ID"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter orders from this date (YYYY-MM-DD)",
+              "title": "Date From"
+            },
+            "description": "Filter orders from this date (YYYY-MM-DD)"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter orders to this date (YYYY-MM-DD)",
+              "title": "Date To"
+            },
+            "description": "Filter orders to this date (YYYY-MM-DD)"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by order number or client name",
+              "title": "Search"
+            },
+            "description": "Search by order number or client name"
+          },
+          {
+            "name": "paginated",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Return paginated response with metadata",
+              "default": true,
+              "title": "Paginated"
+            },
+            "description": "Return paginated response with metadata"
           }
         ],
         "responses": {
@@ -1736,10 +1831,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/OrderResponse"
-                  },
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderResponse"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/PaginatedResponse_OrderResponse_"
+                    }
+                  ],
                   "title": "Response Get Orders Api V1 Orders  Get"
                 }
               }
@@ -2261,6 +2363,130 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/report/pdf": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Download Orders Report Pdf",
+        "description": "Download orders report PDF with filters\n\nGenera un PDF con múltiples órdenes agrupadas por cliente.\nEl PDF incluye:\n- Encabezado con logo, nombre y teléfono de la empresa\n- Órdenes organizadas por cliente con información compacta\n- Solo nombre, número, dirección del cliente\n- Por cada orden: número, fecha, detalle de productos, total\n- Resumen general por estado\n\nFilters (same as get orders endpoint):\n- status_filter: Filter by order status (pending, confirmed, in_progress, shipped, delivered, cancelled)\n- route_id: Filter by specific route ID\n- date_from: Show orders from this date onwards (inclusive)\n- date_to: Show orders up to this date (inclusive)\n- search: Search by order number or client name (case-insensitive partial matching)",
+        "operationId": "download_orders_report_pdf_api_v1_orders_report_pdf_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by order status",
+              "title": "Status Filter"
+            },
+            "description": "Filter by order status"
+          },
+          {
+            "name": "route_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by route ID",
+              "title": "Route Id"
+            },
+            "description": "Filter by route ID"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter orders from this date (YYYY-MM-DD)",
+              "title": "Date From"
+            },
+            "description": "Filter orders from this date (YYYY-MM-DD)"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter orders to this date (YYYY-MM-DD)",
+              "title": "Date To"
+            },
+            "description": "Filter orders to this date (YYYY-MM-DD)"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by order number or client name",
+              "title": "Search"
+            },
+            "description": "Search by order number or client name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -4899,6 +5125,7 @@
     "/": {
       "get": {
         "summary": "Root",
+        "description": "Endpoint raíz con información básica de la API",
         "operationId": "root__get",
         "responses": {
           "200": {
@@ -4917,7 +5144,27 @@
     "/health": {
       "get": {
         "summary": "Health Check",
+        "description": "Endpoint de health check básico para servicios de deployment\nVerifica la conexión a la base de datos",
         "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/detailed": {
+      "get": {
+        "summary": "Detailed Health Check",
+        "description": "Health check detallado que incluye verificación de migraciones",
+        "operationId": "detailed_health_check_health_detailed_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -6921,6 +7168,78 @@
         },
         "type": "object",
         "title": "OrderUpdate"
+      },
+      "PaginatedResponse_OrderResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of items in current page"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "pagination"
+        ],
+        "title": "PaginatedResponse[OrderResponse]"
+      },
+      "PaginationInfo": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of records"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Number of records in current page"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "Current page number (1-based)"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages",
+            "description": "Total number of pages"
+          },
+          "per_page": {
+            "type": "integer",
+            "title": "Per Page",
+            "description": "Records per page"
+          },
+          "has_next": {
+            "type": "boolean",
+            "title": "Has Next",
+            "description": "Whether there is a next page"
+          },
+          "has_previous": {
+            "type": "boolean",
+            "title": "Has Previous",
+            "description": "Whether there is a previous page"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "count",
+          "page",
+          "pages",
+          "per_page",
+          "has_next",
+          "has_previous"
+        ],
+        "title": "PaginationInfo",
+        "description": "Pagination metadata"
       },
       "PaymentCreate": {
         "properties": {

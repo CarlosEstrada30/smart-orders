@@ -4,7 +4,17 @@ import { dashboardService } from '@/services/dashboard'
 import type { SalesChartData } from '@/services/dashboard/types'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export function Overview() {
+/**
+ * Componente Overview - Gráfica de resumen de ventas mensuales
+ * Usa el endpoint /orders/analytics/monthly-summary para obtener datos reales
+ * de órdenes entregadas por mes
+ */
+
+interface OverviewProps {
+  year?: number // Filtro opcional por año
+}
+
+export function Overview({ year }: OverviewProps = {}) {
   const [chartData, setChartData] = useState<SalesChartData[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -12,26 +22,21 @@ export function Overview() {
     const loadChartData = async () => {
       try {
         setIsLoading(true)
-        const data = await dashboardService.getSalesChartData()
+        const data = await dashboardService.getSalesChartData(
+          year ? { year } : undefined
+        )
         setChartData(data)
       } catch (error) {
         console.error('Error cargando datos del gráfico:', error)
-        // Si hay error, usar datos por defecto
-        setChartData([
-          { month: 'Ene', sales: 12000, orders: 25, revenue: 15000 },
-          { month: 'Feb', sales: 18000, orders: 35, revenue: 22000 },
-          { month: 'Mar', sales: 15000, orders: 28, revenue: 18000 },
-          { month: 'Abr', sales: 22000, orders: 42, revenue: 28000 },
-          { month: 'May', sales: 28000, orders: 55, revenue: 35000 },
-          { month: 'Jun', sales: 32000, orders: 68, revenue: 42000 },
-        ])
+        // Si hay error, mantener arreglo vacío para mostrar estado sin datos
+        setChartData([])
       } finally {
         setIsLoading(false)
       }
     }
 
     loadChartData()
-  }, [])
+  }, [year]) // Recargar cuando cambie el año
 
   if (isLoading) {
     return (
@@ -44,14 +49,45 @@ export function Overview() {
     )
   }
 
+  // Estado sin datos
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full h-[350px] flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-muted-foreground">No hay datos de ventas disponibles</p>
+          <p className="text-sm text-muted-foreground">Los datos aparecerán cuando tengas órdenes entregadas</p>
+        </div>
+      </div>
+    )
+  }
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload // Acceso a todos los datos del punto
+      const hasData = data.orders > 0 || data.sales > 0
+      
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
-          <p className="font-medium">{`${label} 2024`}</p>
-          <p className="text-sm text-muted-foreground">
-            {`Ventas: Q${payload[0].value.toLocaleString()}`}
-          </p>
+          <p className="font-medium mb-2">{label} {new Date().getFullYear()}</p>
+          {hasData ? (
+            <div className="space-y-1 text-sm">
+              <p className="text-muted-foreground">
+                Ventas: <span className="font-medium text-foreground">Q{data.sales.toLocaleString()}</span>
+              </p>
+              <p className="text-muted-foreground">
+                Órdenes: <span className="font-medium text-foreground">{data.orders}</span>
+              </p>
+              {data.orders > 0 && (
+                <p className="text-muted-foreground">
+                  Promedio: <span className="font-medium text-foreground">Q{(data.sales / data.orders).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm">
+              <p className="text-muted-foreground">Sin datos para este mes</p>
+            </div>
+          )}
         </div>
       )
     }
@@ -64,9 +100,12 @@ export function Overview() {
         <XAxis
           dataKey='month'
           stroke='#888888'
-          fontSize={12}
+          fontSize={11}
           tickLine={false}
           axisLine={false}
+          interval={0}
+          angle={0}
+          textAnchor="middle"
         />
         <YAxis
           stroke='#888888'
