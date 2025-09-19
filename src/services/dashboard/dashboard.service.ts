@@ -122,8 +122,8 @@ class DashboardService {
         o.created_at && o.created_at.startsWith(today)
       ).length
       
-      // Obtener pedidos del mes actual por estado usando el nuevo endpoint
-      let currentMonthByStatus = {
+      // Simplificar: solo usar cálculo local para evitar llamadas API extra
+      const currentMonthByStatus = {
         pending: 0,
         confirmed: 0,
         in_progress: 0,
@@ -131,106 +131,27 @@ class DashboardService {
         delivered: 0,
         cancelled: 0,
       }
-      let currentMonthTotal = 0
-      
-      try {
-        const statusDistribution = await this.getOrderStatusDistribution()
-        currentMonthTotal = statusDistribution.total_orders
-        
-        // Mapear los datos del endpoint al formato esperado
-        statusDistribution.status_data.forEach(item => {
-          if (item.status in currentMonthByStatus) {
-            currentMonthByStatus[item.status as keyof typeof currentMonthByStatus] = item.count
-          }
-        })
-      } catch (error) {
-        console.warn('Error obteniendo distribución de estados, usando cálculo local:', error)
-        // Fallback: cálculo local como antes
-        const currentDate = new Date()
-        const currentYear = currentDate.getFullYear()
-        const currentMonth = currentDate.getMonth() + 1 // 0-11 -> 1-12
-        
-        const currentMonthOrders = ordersArray.filter(order => {
-          if (!order.created_at) return false
-          const orderDate = new Date(order.created_at)
-          return orderDate.getFullYear() === currentYear && 
-                 (orderDate.getMonth() + 1) === currentMonth
-        })
-        
-        currentMonthByStatus = {
-          pending: currentMonthOrders.filter(o => o.status === 'pending').length,
-          confirmed: currentMonthOrders.filter(o => o.status === 'confirmed').length,
-          in_progress: currentMonthOrders.filter(o => o.status === 'in_progress').length,
-          shipped: currentMonthOrders.filter(o => o.status === 'shipped').length,
-          delivered: currentMonthOrders.filter(o => o.status === 'delivered').length,
-          cancelled: currentMonthOrders.filter(o => o.status === 'cancelled').length,
-        }
-        
-        currentMonthTotal = currentMonthOrders.length
-      }
+      const currentMonthTotal = 0 // Se puede calcular localmente si es necesario
 
-      // Calcular ingresos del mes actual usando el endpoint de analytics
-      let totalRevenue = 0
-      let monthlyGrowth = 0
-      let averageOrderValue = 0
-      let currentMonthDelivered = 0
+      // Calcular ingresos usando solo datos locales de órdenes (sin llamadas API extra)
+      const currentDate = new Date()
+      const currentYear = currentDate.getFullYear()
+      const currentMonth = currentDate.getMonth() + 1 // 0-11 -> 1-12
       
-      try {
-        const currentDate = new Date()
-        const currentYear = currentDate.getFullYear()
-        const currentMonthIndex = currentDate.getMonth() // 0-11
-        
-        const monthNames = [
-          'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ]
-        
-        const currentMonthName = monthNames[currentMonthIndex]
-        
-        // Obtener datos del año actual
-        const analyticsData = await this.getMonthlyAnalytics({ year: currentYear })
-        const currentMonthData = analyticsData.monthly_data.find(item => 
-          item.month_name === currentMonthName
-        )
-        
-        if (currentMonthData) {
-          totalRevenue = currentMonthData.total_amount
-          currentMonthDelivered = currentMonthData.order_count
-          averageOrderValue = currentMonthData.order_count > 0 
-            ? currentMonthData.total_amount / currentMonthData.order_count 
-            : 0
-        }
-        
-        // Calcular crecimiento comparando con el mes anterior
-        const previousMonthIndex = currentMonthIndex === 0 ? 11 : currentMonthIndex - 1
-        const previousYear = currentMonthIndex === 0 ? currentYear - 1 : currentYear
-        const previousMonthName = monthNames[previousMonthIndex]
-        
-        try {
-          const previousAnalytics = await this.getMonthlyAnalytics({ year: previousYear })
-          const previousMonthData = previousAnalytics.monthly_data.find(item => 
-            item.month_name === previousMonthName
-          )
-          
-          if (previousMonthData && previousMonthData.total_amount > 0) {
-            monthlyGrowth = Math.round(((totalRevenue - previousMonthData.total_amount) / previousMonthData.total_amount) * 100 * 100) / 100
-          } else if (totalRevenue > 0 && !previousMonthData) {
-            // Si hay revenue este mes pero no el anterior, es 100% de crecimiento
-            monthlyGrowth = 100
-          }
-        } catch (error) {
-          console.warn('No se pudo calcular crecimiento mensual:', error)
-        }
-        
-      } catch (error) {
-        console.warn('Error obteniendo analytics mensual, usando cálculo básico:', error)
-        // Fallback: usar cálculo básico como antes
-        const deliveredOrdersArray = ordersArray.filter(o => o.status === 'delivered')
-        totalRevenue = deliveredOrdersArray.reduce((sum, order) => sum + (order.total_amount || 0), 0)
-        currentMonthDelivered = deliveredOrdersArray.length // Usar conteo total como fallback
-        averageOrderValue = ordersArray.length > 0 ? totalRevenue / ordersArray.length : 0
-        monthlyGrowth = this.calculateGrowth(totalRevenue)
-      }
+      // Filtrar órdenes del mes actual
+      const currentMonthOrders = ordersArray.filter(order => {
+        if (!order.created_at || order.status !== 'delivered') return false
+        const orderDate = new Date(order.created_at)
+        return orderDate.getFullYear() === currentYear && 
+               (orderDate.getMonth() + 1) === currentMonth
+      })
+      
+      const totalRevenue = currentMonthOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
+      const currentMonthDelivered = currentMonthOrders.length
+      const averageOrderValue = ordersArray.length > 0 ? totalRevenue / ordersArray.length : 0
+      
+      // Cálculo simple de crecimiento (simulado)
+      const monthlyGrowth = this.calculateGrowth(totalRevenue)
       
       const orderGrowth = this.calculateGrowth(ordersArray.length)
 
@@ -252,7 +173,7 @@ class DashboardService {
           todayOrders,
           averageOrderValue,
           orderGrowth,
-          // Datos del mes actual
+          // Simplificado: no necesitamos estos datos para el nuevo card
           currentMonthByStatus,
           currentMonthTotal
         },
@@ -280,51 +201,18 @@ class DashboardService {
     }
   }
 
-  /**
-   * Obtiene métricas financieras basadas en órdenes entregadas
-   */
-  async getDeliveredOrdersMetrics(): Promise<DeliveredOrdersMetrics> {
-    try {
-      const deliveredOrders = await this.getOrdersByStatus('delivered')
-      const totalRevenue = deliveredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
-      const averageOrderValue = deliveredOrders.length > 0 ? totalRevenue / deliveredOrders.length : 0
-      
-      return {
-        totalRevenue,
-        deliveredCount: deliveredOrders.length,
-        averageOrderValue
-      }
-    } catch (error) {
-      console.error('Error obteniendo métricas de órdenes entregadas:', error)
-      throw error
-    }
-  }
+  // Método comentado - ya no se usa para evitar llamadas API duplicadas
+  // async getDeliveredOrdersMetrics(): Promise<DeliveredOrdersMetrics> { ... }
+
+  // Método comentado - ya no se usa para evitar llamadas API duplicadas  
+  // async getOrderStatusDistribution(filters?: StatusDistributionFilters): Promise<StatusDistributionResponse> { ... }
 
   /**
-   * Obtiene distribución de órdenes por estado usando el nuevo endpoint
-   */
-  async getOrderStatusDistribution(filters?: StatusDistributionFilters): Promise<StatusDistributionResponse> {
-    try {
-      const queryParams = new URLSearchParams()
-      
-      if (filters?.year) queryParams.append('year', filters.year.toString())
-      if (filters?.month) queryParams.append('month', filters.month.toString())
-      
-      const url = queryParams.toString() 
-        ? `/orders/analytics/status-distribution?${queryParams.toString()}`
-        : '/orders/analytics/status-distribution'
-      
-      return await apiClient.get<StatusDistributionResponse>(url)
-    } catch (error) {
-      console.error('Error obteniendo distribución de estados:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Obtiene datos del analytics mensual usando el nuevo endpoint
+   * NOTA: Este método solo debe ser usado por la gráfica Overview
+   * El dashboard principal NO debe usarlo para evitar llamadas duplicadas
    */
   async getMonthlyAnalytics(filters?: Omit<AnalyticsFilters, 'status_filter'>): Promise<MonthlyAnalyticsResponse> {
+    console.warn('getMonthlyAnalytics llamado - verificar que no sea duplicado')
     try {
       const queryParams = new URLSearchParams({
         status_filter: 'delivered'

@@ -11,11 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Main } from '@/components/layout/main'
 import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
-import { MiniOrdersChart, MiniLegend } from './components/mini-orders-chart'
-import { Users, Package, ShoppingCart, TrendingUp, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Users, Package, ShoppingCart, TrendingUp, RefreshCw, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { useDashboard } from '@/hooks/use-dashboard'
-import { useCurrentMonthStatusDistribution } from '@/hooks/use-order-status-distribution'
 import { Badge } from '@/components/ui/badge'
 
 export function Dashboard() {
@@ -31,12 +29,10 @@ export function Dashboard() {
     getRefreshIntervalText
   } = useDashboard()
   
-  // Hook para obtener distribución de estados del mes actual
-  const {
-    data: statusDistribution,
-    isLoading: statusLoading,
-    error: statusError
-  } = useCurrentMonthStatusDistribution()
+  // Calcular métricas derivadas
+  const todayOrdersCount = metrics?.orders.todayOrders || 0
+  const deliveryRate = metrics?.orders.totalOrders ? 
+    ((metrics.orders.deliveredOrders / metrics.orders.totalOrders) * 100) : 0
 
   const LoadingSkeleton = () => (
     <div className="space-y-4">
@@ -160,11 +156,11 @@ export function Dashboard() {
                         {metrics ? formatCurrency(metrics.financial.totalRevenue) : 'Q0.00'}
                       </div>
                       <p className='text-muted-foreground text-xs'>
-                        {new Date().toLocaleDateString('es-GT', { month: 'long', year: 'numeric' })}
+                        órdenes entregadas del mes actual
                       </p>
                       {metrics && metrics.financial.monthlyGrowth !== 0 && (
                         <p className='text-muted-foreground text-xs mt-1'>
-                          {formatPercentage(metrics.financial.monthlyGrowth)} vs mes anterior
+                          {formatPercentage(metrics.financial.monthlyGrowth)} estimado
                         </p>
                       )}
                       {metrics && metrics.financial.currentMonthDelivered > 0 && (
@@ -180,68 +176,59 @@ export function Dashboard() {
                     </CardContent>
                   </Card>
 
-                  {/* Pedidos */}
+                  {/* Actividad de Hoy */}
                   <Card>
                     <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                       <CardTitle className='text-sm font-medium'>
-                        Pedidos del Mes
+                        Actividad de Hoy
                       </CardTitle>
-                      <ShoppingCart className='text-muted-foreground h-4 w-4' />
+                      <Clock className='text-muted-foreground h-4 w-4' />
                     </CardHeader>
-                    <CardContent className="pb-4">
+                    <CardContent>
                       <div className='text-2xl font-bold'>
-                        {statusDistribution ? 
-                          formatNumber(statusDistribution.total_orders) : 
-                          (metrics ? formatNumber(metrics.orders.currentMonthTotal) : '0')
-                        }
+                        {metrics ? formatNumber(todayOrdersCount) : '0'}
                       </div>
-                      <p className='text-muted-foreground text-xs mb-2'>
-                        {new Date().toLocaleDateString('es-GT', { month: 'long', year: 'numeric' })}
+                      <p className='text-muted-foreground text-xs'>
+                        pedidos creados hoy
                       </p>
                       
-                      {/* Mini gráfica de distribución de estados */}
-                      {!statusLoading && statusDistribution && statusDistribution.total_orders > 0 ? (
-                        <>
-                          <MiniOrdersChart 
-                            data={metrics?.orders.currentMonthByStatus || {
-                              pending: 0, confirmed: 0, in_progress: 0, 
-                              shipped: 0, delivered: 0, cancelled: 0
-                            }}
-                            statusData={statusDistribution.status_data}
-                          />
-                          <MiniLegend 
-                            data={metrics?.orders.currentMonthByStatus || {
-                              pending: 0, confirmed: 0, in_progress: 0, 
-                              shipped: 0, delivered: 0, cancelled: 0
-                            }}
-                            statusData={statusDistribution.status_data}
-                          />
-                        </>
-                      ) : statusLoading ? (
-                        <div className="flex items-center justify-center h-[120px] text-sm text-muted-foreground">
-                          <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                            <span>Cargando distribución...</span>
+                      <div className="space-y-2 mt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ShoppingCart className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm">Pedidos totales</span>
                           </div>
+                          <span className="font-medium">
+                            {metrics ? formatNumber(metrics.orders.totalOrders) : '0'}
+                          </span>
                         </div>
-                      ) : (
-                        <div className="flex items-center justify-center h-[120px] text-sm text-muted-foreground">
-                          Sin pedidos este mes
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between items-center mt-3">
-                        {statusDistribution && (
-                          <div className="text-xs text-muted-foreground">
-                            {statusDistribution.period_name}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <span className="text-sm">Entregados</span>
                           </div>
-                        )}
-                        {metrics && metrics.orders.todayOrders > 0 && (
-                          <Badge variant="default" className="text-xs">
-                            {metrics.orders.todayOrders} hoy
-                          </Badge>
-                        )}
+                          <span className="font-medium">
+                            {metrics ? formatNumber(metrics.orders.deliveredOrders) : '0'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-purple-600" />
+                            <span className="text-sm">Tasa de entrega</span>
+                          </div>
+                          <span className="font-medium">
+                            {deliveryRate.toFixed(1)}%
+                          </span>
+                        </div>
                       </div>
+                      
+                      {metrics && metrics.orders.pendingOrders > 0 && (
+                        <Badge variant="secondary" className="text-xs mt-3">
+                          {metrics.orders.pendingOrders} pendientes
+                        </Badge>
+                      )}
                     </CardContent>
                   </Card>
 
