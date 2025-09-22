@@ -1,4 +1,5 @@
 import { useState, memo } from 'react'
+import { ModernPDFViewer } from '@/components/pdf-viewer'
 import {
   type SortingState,
   type VisibilityState,
@@ -74,40 +75,61 @@ const OrdersTableComponent = ({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [currentOrderTitle, setCurrentOrderTitle] = useState<string>('')
 
   // Receipt handlers
   const handlePreviewReceipt = async (order: Order) => {
     try {
       setIsLoading(true)
       const url = await ordersService.getReceiptPreviewBlob(order.id!)
-      // Abrir en nueva ventana
-      const newWindow = window.open('', '_blank', 'width=800,height=600')
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head><title>Comprobante - ${order.order_number || `Orden ${order.id}`}</title></head>
-            <body style="margin:0;">
-              <iframe src="${url}" style="width:100%;height:100vh;border:none;"></iframe>
-            </body>
-          </html>
-        `)
-        newWindow.document.close()
-        
-        // Cleanup cuando se cierre la ventana
-        const cleanupBlob = () => {
-          window.URL.revokeObjectURL(url)
-        }
-        
-        newWindow.addEventListener('beforeunload', cleanupBlob)
-        
-        // Cleanup adicional después de 30 segundos por seguridad
-        setTimeout(cleanupBlob, 30000)
-      }
-      toast.success('Vista previa abierta en nueva ventana')
+      setPdfUrl(url)
+      setCurrentOrderTitle(`Comprobante - ${order.order_number || `Orden ${order.id}`}`)
+      setPdfViewerOpen(true)
+      toast.success('Abriendo vista previa del comprobante')
     } catch (_error) {
       toast.error('Error al abrir vista previa')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleClosePdfViewer = () => {
+    setPdfViewerOpen(false)
+    // Cleanup del blob URL
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl)
+      setPdfUrl(null)
+    }
+    setCurrentOrderTitle('')
+  }
+
+  const handleDownloadFromViewer = async () => {
+    // Extraer el ID de la orden desde el título actual
+    const orderIdMatch = currentOrderTitle.match(/Orden (\d+)/)
+    const orderNumberMatch = currentOrderTitle.match(/Comprobante - (.+)/)
+    
+    if (orderIdMatch || orderNumberMatch) {
+      try {
+        // Buscar la orden en los datos actuales
+        let orderId: number | undefined
+        
+        if (orderNumberMatch) {
+          const orderNumber = orderNumberMatch[1]
+          const order = data.find(o => o.order_number === orderNumber)
+          orderId = order?.id
+        } else if (orderIdMatch) {
+          orderId = parseInt(orderIdMatch[1])
+        }
+        
+        if (orderId) {
+          await ordersService.downloadReceipt(orderId)
+          toast.success('Comprobante descargado exitosamente')
+        }
+      } catch (_error) {
+        toast.error('Error al descargar el comprobante')
+      }
     }
   }
 
@@ -124,18 +146,6 @@ const OrdersTableComponent = ({
     }
   }
 
-  const _handleGenerateReceipt = async (order: Order) => {
-    try {
-      setIsLoading(true)
-      await ordersService.generateReceipt(order.id!)
-      toast.success(`Comprobante de orden ${order.order_number || order.id} generado`)
-    } catch (_error) {
-      toast.error('Error al generar el comprobante')
-      // Error generating receipt
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   // Create columns with handlers
   const columnsWithHandlers = columns.map((column) => {
@@ -287,6 +297,14 @@ const OrdersTableComponent = ({
         onFiltersChange={onFiltersChange}
         filters={filters}
         pagination={pagination}
+      />
+
+      <ModernPDFViewer
+        pdfUrl={pdfUrl}
+        title={currentOrderTitle}
+        isOpen={pdfViewerOpen}
+        onClose={handleClosePdfViewer}
+        onDownload={handleDownloadFromViewer}
       />
     </div>
   )

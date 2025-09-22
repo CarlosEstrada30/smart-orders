@@ -14,8 +14,10 @@ import {
   Download,
   MoreHorizontal,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from 'lucide-react'
+import { ModernPDFViewer } from '@/components/pdf-viewer'
 import { cn } from '@/lib/utils'
 import type { OrderWithInvoiceInfo, CreateFELInvoiceRequest, CreateReceiptRequest } from '@/services/fel/types'
 import { felService } from '@/services/fel'
@@ -54,6 +56,8 @@ export function DocumentActions({
 
   const [showSelector, setShowSelector] = useState(false)
   const [showErrorHandler, setShowErrorHandler] = useState(false)
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
 
   const {
     isProcessing,
@@ -147,6 +151,20 @@ export function DocumentActions({
     }
   }
 
+  const handlePreviewPDF = async () => {
+    if (!order.invoice) return
+    
+    try {
+      const blob = await felService.downloadInvoicePDF(order.invoice.id)
+      const url = window.URL.createObjectURL(blob)
+      setPdfUrl(url)
+      setPdfViewerOpen(true)
+      toast.success('Abriendo vista previa del documento')
+    } catch (_error) {
+      toast.error('Error al abrir vista previa del documento')
+    }
+  }
+
   const handleDownloadPDF = async () => {
     if (!order.invoice) return
     
@@ -163,8 +181,16 @@ export function DocumentActions({
       window.URL.revokeObjectURL(url)
       
       toast.success('PDF descargado correctamente')
-    } catch (error) {
+    } catch (_error) {
       toast.error('Error descargando PDF')
+    }
+  }
+
+  const handleClosePdfViewer = () => {
+    setPdfViewerOpen(false)
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl)
+      setPdfUrl(null)
     }
   }
 
@@ -278,9 +304,14 @@ export function DocumentActions({
         />
         
         {orderStatus.canDownload && (
-          <Button variant="ghost" size="sm" onClick={handleDownloadPDF}>
-            <Download className="h-3 w-3" />
-          </Button>
+          <>
+            <Button variant="ghost" size="sm" onClick={handlePreviewPDF} title="Ver documento">
+              <Eye className="h-3 w-3" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleDownloadPDF} title="Descargar PDF">
+              <Download className="h-3 w-3" />
+            </Button>
+          </>
         )}
         
         {orderStatus.hasFELError && (
@@ -317,10 +348,16 @@ export function DocumentActions({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {orderStatus.canDownload && (
-                <DropdownMenuItem onClick={handleDownloadPDF}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Descargar PDF
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={handlePreviewPDF}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver documento
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownloadPDF}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Descargar PDF
+                  </DropdownMenuItem>
+                </>
               )}
               
               {orderStatus.canRetryFEL && (
@@ -357,10 +394,16 @@ export function DocumentActions({
       
       <div className="flex gap-2">
         {orderStatus.canDownload && (
-          <Button variant="outline" size={size} onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            PDF
-          </Button>
+          <>
+            <Button variant="outline" size={size} onClick={handlePreviewPDF}>
+              <Eye className="h-4 w-4 mr-2" />
+              Ver
+            </Button>
+            <Button variant="outline" size={size} onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              PDF
+            </Button>
+          </>
         )}
         
         {orderStatus.canRetryFEL && (
@@ -425,6 +468,14 @@ export function DocumentActions({
             }}
           />
         )}
+
+        <ModernPDFViewer
+          pdfUrl={pdfUrl}
+          title={order.invoice ? `${order.invoice.fel.requires_fel ? 'Factura FEL' : 'Comprobante'} - ${order.invoice.invoice_number}` : 'Documento'}
+          isOpen={pdfViewerOpen}
+          onClose={handleClosePdfViewer}
+          onDownload={handleDownloadPDF}
+        />
       </>
     </div>
   )

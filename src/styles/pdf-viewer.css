@@ -1,0 +1,58 @@
+/* Estilos personalizados para ModernPDFViewer */
+
+/* PDF Viewer */
+.rpv-core__viewer {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Área de documentos */
+.rpv-core__doc-container {
+  padding: 16px;
+  background-color: rgb(243 244 246);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+}
+
+.dark .rpv-core__doc-container {
+  background-color: rgb(31 41 55);
+}
+
+/* Páginas del PDF */
+.rpv-core__page-layer {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  max-width: 100%;
+}
+
+/* Modal optimizado - 60% de pantalla */
+.pdf-modal-content {
+  width: 60vw !important;
+  height: 75vh !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+@media (max-width: 1024px) {
+  .pdf-modal-content {
+    width: 70vw !important;
+    height: 80vh !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .pdf-modal-content {
+    width: 90vw !important;
+    height: 90vh !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .pdf-modal-content {
+    width: 95vw !important;
+    height: 95vh !important;
+  }
+}

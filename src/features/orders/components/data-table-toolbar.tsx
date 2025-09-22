@@ -12,6 +12,7 @@ import type { Order } from '../data/schema'
 import type { OrdersQueryParams } from '@/services/orders'
 import { ordersService } from '@/services/orders'
 import { toast } from 'sonner'
+import { ModernPDFViewer } from '@/components/pdf-viewer'
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>
@@ -44,6 +45,8 @@ const DataTableToolbarComponent = <TData,>({
   // Estado local para el input de búsqueda (para evitar perder el foco)
   const [localSearch, setLocalSearch] = useState(() => filters.search || '')
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const isInitialMount = useRef(true)
   
   // Debounce para la búsqueda (evita llamadas excesivas al backend)
@@ -146,53 +149,39 @@ const DataTableToolbarComponent = <TData,>({
       }
       
       const url = await ordersService.getOrdersReportPreviewBlob(reportParams)
-      
-      // Crear ventana de vista previa simple
-      const newWindow = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes,resizable=yes')
-      if (newWindow) {
-        newWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>Reporte de Órdenes para Ruteros</title>
-              <meta charset="utf-8">
-              <style>
-                body {
-                  margin: 0;
-                  padding: 0;
-                  height: 100vh;
-                  overflow: hidden;
-                }
-                .pdf-frame {
-                  width: 100%;
-                  height: 100vh;
-                  border: none;
-                }
-              </style>
-            </head>
-            <body>
-              <iframe src="${url}" class="pdf-frame"></iframe>
-              
-              <script>
-                // Cleanup cuando se cierre la ventana
-                window.addEventListener('beforeunload', () => {
-                  window.URL.revokeObjectURL('${url}');
-                });
-              </script>
-            </body>
-          </html>
-        `)
-        newWindow.document.close()
-        
-        toast.success('Vista previa del reporte abierta en nueva ventana')
-      } else {
-        toast.error('No se pudo abrir la vista previa. Por favor, permite las ventanas emergentes.')
-      }
-    } catch (error) {
+      setPdfUrl(url)
+      setPdfViewerOpen(true)
+      toast.success('Abriendo vista previa del reporte')
+    } catch (_error) {
       toast.error('Error al generar vista previa del reporte')
-      console.error('Error previewing report:', error)
     } finally {
       setIsLoadingPreview(false)
+    }
+  }, [filters])
+
+  const handleClosePdfViewer = useCallback(() => {
+    setPdfViewerOpen(false)
+    // Cleanup del blob URL
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl)
+      setPdfUrl(null)
+    }
+  }, [pdfUrl])
+
+  const handleDownloadReport = useCallback(async () => {
+    try {
+      const reportParams: OrdersQueryParams = {
+        status_filter: filters.status_filter,
+        route_id: filters.route_id,
+        date_from: filters.date_from,
+        date_to: filters.date_to,
+        search: filters.search
+      }
+      
+      await ordersService.downloadOrdersReport(reportParams)
+      toast.success('Reporte descargado exitosamente')
+    } catch (_error) {
+      toast.error('Error al descargar el reporte')
     }
   }, [filters])
 
@@ -272,6 +261,14 @@ const DataTableToolbarComponent = <TData,>({
         </Button>
         <DataTableViewOptions table={table} />
       </div>
+
+      <ModernPDFViewer
+        pdfUrl={pdfUrl}
+        title="Reporte de Órdenes para Ruteros"
+        isOpen={pdfViewerOpen}
+        onClose={handleClosePdfViewer}
+        onDownload={handleDownloadReport}
+      />
     </div>
   )
 }
