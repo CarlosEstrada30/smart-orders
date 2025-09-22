@@ -257,7 +257,7 @@ export function EditClientPage() {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+34 123 456 789"
+                    placeholder="+50223456789"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                   />

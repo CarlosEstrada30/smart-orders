@@ -172,7 +172,7 @@ export function NewOrderPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!selectedClient || orderItems.length === 0) {
+    if (!selectedClient || !selectedRoute || orderItems.length === 0) {
       setError('Por favor completa todos los campos requeridos')
       return
     }
@@ -190,7 +190,7 @@ export function NewOrderPage() {
 
       const orderData = {
         client_id: parseInt(selectedClient),
-        route_id: selectedRoute ? parseInt(selectedRoute) : undefined,
+        route_id: parseInt(selectedRoute),
         notes: notes || undefined,
         items: apiItems
       }
@@ -281,7 +281,7 @@ export function NewOrderPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="route">Ruta de Entrega (Opcional)</Label>
+                  <Label htmlFor="route">Ruta de Entrega *</Label>
                   <Combobox
                     options={routeOptions}
                     value={selectedRoute}
@@ -483,7 +483,7 @@ export function NewOrderPage() {
             </Link>
             <Button 
               type="submit" 
-              disabled={!selectedClient || orderItems.length === 0 || loading || loadingClients || loadingProducts || loadingRoutes}
+              disabled={!selectedClient || !selectedRoute || orderItems.length === 0 || loading || loadingClients || loadingProducts || loadingRoutes}
               className="w-full sm:w-auto"
             >
               <Save className="h-4 w-4 mr-2" />

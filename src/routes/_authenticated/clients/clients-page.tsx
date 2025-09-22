@@ -528,7 +528,7 @@ export function ClientsPage() {
                 <Input
                   id="modal-phone"
                   type="tel"
-                  placeholder="+34 123 456 789"
+                  placeholder="+50223456789"
                   value={newClientForm.phone || ''}
                   onChange={(e) => setNewClientForm(prev => ({ ...prev, phone: e.target.value }))}
                 />
@@ -633,7 +633,7 @@ export function ClientsPage() {
                 <Input
                   id="edit-phone"
                   type="tel"
-                  placeholder="+34 123 456 789"
+                  placeholder="+50223456789"
                   value={editClientForm.phone || ''}
                   onChange={(e) => setEditClientForm(prev => ({ ...prev, phone: e.target.value }))}
                 />
