@@ -60,8 +60,6 @@ export function InventoryPage() {
       // Crear nuevo controller
       abortControllerRef.current = new AbortController()
       
-      console.log('Loading inventory data...')
-      
       // Usar Promise.all con manejo de errores mejorado
       const [entriesData, summaryData] = await Promise.allSettled([
         inventoryService.getEntries({ limit: 100 }),
@@ -74,8 +72,6 @@ export function InventoryPage() {
       // Manejar resultados de Promise.allSettled
       const entries = entriesData.status === 'fulfilled' ? (entriesData.value || []) : []
       const summary = summaryData.status === 'fulfilled' ? summaryData.value : null
-      
-      console.log('Inventory data loaded:', { entries, summary })
       setEntries(entries)
       setSummary(summary)
       
@@ -112,12 +108,12 @@ export function InventoryPage() {
 
   const handleEditEntry = (entry: InventoryEntryListResponse) => {
     // Navigate to edit entry
-    console.log('Edit entry:', entry)
+    // TODO: Implement edit functionality
   }
 
   const handleDeleteEntry = (entry: InventoryEntryListResponse) => {
     // Show confirmation dialog and delete
-    console.log('Delete entry:', entry)
+    // TODO: Implement delete functionality
   }
 
   const refreshData = () => {

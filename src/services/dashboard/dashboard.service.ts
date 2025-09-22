@@ -206,24 +206,8 @@ class DashboardService {
                (orderDate.getMonth() + 1) === currentMonth
       })
       
-      // Logs de debug para entender los datos
-      console.log('Dashboard Debug - Total órdenes:', ordersArray.length)
-      console.log('Dashboard Debug - Órdenes del mes actual:', currentMonthOrders.length)
-      console.log('Dashboard Debug - Mes/Año buscado:', `${currentMonth}/${currentYear}`)
-      
-      if (ordersArray.length > 0) {
-        console.log('Dashboard Debug - Primera orden ejemplo:', {
-          id: ordersArray[0].id,
-          status: ordersArray[0].status,
-          created_at: ordersArray[0].created_at,
-          total_amount: ordersArray[0].total_amount
-        })
-      }
-      
       const totalRevenue = currentMonthOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
       const currentMonthDelivered = currentMonthOrders.length
-      
-      console.log('Dashboard Debug - Total revenue calculado:', totalRevenue)
       const averageOrderValue = ordersArray.length > 0 ? totalRevenue / ordersArray.length : 0
       
       // Cálculo simple de crecimiento (simulado)

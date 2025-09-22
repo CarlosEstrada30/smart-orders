@@ -3,7 +3,7 @@
  * Maneja creación de facturas FEL con polling de estado en tiempo real
  */
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { felService } from '@/services/fel'
 import { toast } from 'sonner'
 import type {
@@ -11,9 +11,9 @@ import type {
   FELStatus,
   FELProcessResponse,
   CreateFELInvoiceRequest,
-  CreateReceiptRequest,
-  FEL_POLLING_CONFIG
+  CreateReceiptRequest
 } from '@/services/fel/types'
+import { FEL_POLLING_CONFIG } from '@/services/fel/types'
 
 interface FELProcessingState {
   isProcessing: boolean
@@ -137,6 +137,7 @@ export function useFELProcessing() {
         }
 
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error en polling FEL:', error)
         clearTimers()
         setState(prev => ({
@@ -234,6 +235,7 @@ export function useFELProcessing() {
       return response.invoice
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error creando factura FEL:', error)
       
       setState(prev => ({
@@ -291,6 +293,7 @@ export function useFELProcessing() {
       return true
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error generando comprobante:', error)
       
       setState(prev => ({
@@ -367,6 +370,7 @@ export function useFELProcessing() {
       return false
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error reintentando FEL:', error)
       
       setState(prev => ({
@@ -418,6 +422,14 @@ export function useFELProcessing() {
       timeElapsed: 0,
       canRetry: false
     })
+  }, [clearTimers])
+
+  // CRITICAL: Cleanup effect para prevenir memory leaks
+  useEffect(() => {
+    return () => {
+      // Limpiar todos los timers al desmontar el componente
+      clearTimers()
+    }
   }, [clearTimers])
 
   return {
