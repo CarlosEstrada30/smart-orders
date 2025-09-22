@@ -45,21 +45,81 @@ class DashboardService {
    * Obtiene pedidos recientes
    */
   async getRecentOrders(limit: number = 5): Promise<OrderSummary[]> {
-    return await apiClient.get<OrderSummary[]>(`/orders/?limit=${limit}`)
+    try {
+      const response = await apiClient.get<any>(`/orders/?limit=${limit}`)
+      
+      // Verificar si la respuesta usa la nueva estructura con items y pagination
+      if (response && response.items && Array.isArray(response.items)) {
+        return response.items
+      } else if (Array.isArray(response)) {
+        // Formato legacy: array directo
+        return response
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Formato legacy: objeto con data
+        return response.data
+      } else {
+        // Fallback seguro
+        console.warn('Estructura de respuesta inesperada en getRecentOrders:', response)
+        return []
+      }
+    } catch (error) {
+      console.error('Error obteniendo órdenes recientes:', error)
+      return []
+    }
   }
 
   /**
    * Obtiene pedidos por status
    */
   async getOrdersByStatus(status: string): Promise<OrderSummary[]> {
-    return await apiClient.get<OrderSummary[]>(`/orders/?status_filter=${status}`)
+    try {
+      const response = await apiClient.get<any>(`/orders/?status_filter=${status}`)
+      
+      // Verificar si la respuesta usa la nueva estructura con items y pagination
+      if (response && response.items && Array.isArray(response.items)) {
+        return response.items
+      } else if (Array.isArray(response)) {
+        // Formato legacy: array directo
+        return response
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Formato legacy: objeto con data
+        return response.data
+      } else {
+        // Fallback seguro
+        console.warn('Estructura de respuesta inesperada en getOrdersByStatus:', response)
+        return []
+      }
+    } catch (error) {
+      console.error('Error obteniendo órdenes por status:', error)
+      return []
+    }
   }
 
   /**
    * Obtiene todos los pedidos (para calcular métricas)
    */
   async getAllOrders(): Promise<OrderSummary[]> {
-    return await apiClient.get<OrderSummary[]>('/orders/')
+    try {
+      const response = await apiClient.get<any>('/orders/')
+      
+      // Verificar si la respuesta usa la nueva estructura con items y pagination
+      if (response && response.items && Array.isArray(response.items)) {
+        return response.items
+      } else if (Array.isArray(response)) {
+        // Formato legacy: array directo
+        return response
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Formato legacy: objeto con data
+        return response.data
+      } else {
+        // Fallback seguro
+        console.warn('Estructura de respuesta inesperada en getAllOrders:', response)
+        return []
+      }
+    } catch (error) {
+      console.error('Error obteniendo todas las órdenes:', error)
+      return []
+    }
   }
 
   /**
@@ -146,8 +206,24 @@ class DashboardService {
                (orderDate.getMonth() + 1) === currentMonth
       })
       
+      // Logs de debug para entender los datos
+      console.log('Dashboard Debug - Total órdenes:', ordersArray.length)
+      console.log('Dashboard Debug - Órdenes del mes actual:', currentMonthOrders.length)
+      console.log('Dashboard Debug - Mes/Año buscado:', `${currentMonth}/${currentYear}`)
+      
+      if (ordersArray.length > 0) {
+        console.log('Dashboard Debug - Primera orden ejemplo:', {
+          id: ordersArray[0].id,
+          status: ordersArray[0].status,
+          created_at: ordersArray[0].created_at,
+          total_amount: ordersArray[0].total_amount
+        })
+      }
+      
       const totalRevenue = currentMonthOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
       const currentMonthDelivered = currentMonthOrders.length
+      
+      console.log('Dashboard Debug - Total revenue calculado:', totalRevenue)
       const averageOrderValue = ordersArray.length > 0 ? totalRevenue / ordersArray.length : 0
       
       // Cálculo simple de crecimiento (simulado)
