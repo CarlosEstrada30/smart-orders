@@ -1,32 +1,35 @@
-import { useState, useCallback, useEffect, memo, useRef } from 'react'
+import React, { useState, useCallback, useEffect, memo, useRef } from 'react'
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye } from 'lucide-react'
-import { orderStatuses, getUniqueRoutes } from '../data/data'
-import { DataTableFacetedFilter } from './data-table-faceted-filter'
+import { Eye, Route, X } from 'lucide-react'
+import { orderStatuses } from '../data/data'
 import { DataTableViewOptions } from './data-table-view-options'
 import { DataTableDateFilter } from './data-table-date-filter'
-import type { Order } from '../data/schema'
 import type { OrdersQueryParams } from '@/services/orders'
 import { ordersService } from '@/services/orders'
+import { RoutesService } from '@/services/routes'
 import { toast } from 'sonner'
 import { ModernPDFViewer } from '@/components/pdf-viewer'
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>
-  data?: Order[]
   onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
   filters: OrdersQueryParams
 }
 
 const DataTableToolbarComponent = <TData,>({
   table,
-  data = [],
   onFiltersChange,
   filters,
 }: DataTableToolbarProps<TData>) => {
+  // Instancia del servicio de rutas
+  const routesService = new RoutesService()
+  
+  // Estado para todas las rutas (independiente de los datos filtrados)
+  const [allRoutes, setAllRoutes] = useState<{ value: string; label: string; icon: any }[]>([])
+  
   // Verificar si hay filtros activos basándose en el estado del backend
   const isFiltered = Boolean(
     filters.search || 
@@ -73,6 +76,34 @@ const DataTableToolbarComponent = <TData,>({
     }
   }, [localSearch, onFiltersChange]) // Incluir onFiltersChange para estabilidad
   
+  // Cargar todas las rutas al montar el componente
+  useEffect(() => {
+    const loadAllRoutes = async () => {
+      try {
+        const routes = await routesService.getRoutes({ active_only: true })
+        const formattedRoutes = routes.map(route => ({
+          value: route.id.toString(),
+          label: route.name,
+          icon: Route,
+        }))
+        
+        // Agregar opción para órdenes sin ruta
+        formattedRoutes.push({
+          value: 'null',
+          label: 'Sin ruta asignada',
+          icon: X,
+        })
+        
+        setAllRoutes(formattedRoutes)
+      } catch (error) {
+        console.error('Error al cargar rutas:', error)
+        toast.error('Error al cargar las rutas')
+      }
+    }
+    
+    loadAllRoutes()
+  }, [])
+  
   // Cleanup effect al desmontar el componente
   useEffect(() => {
     return () => {
@@ -90,7 +121,6 @@ const DataTableToolbarComponent = <TData,>({
   }, [filters.search]) // No incluir localSearch aquí para evitar loops
   
   // Obtener rutas únicas de los datos
-  const uniqueRoutes = getUniqueRoutes(data as Order[])
   
   // Información sobre los filtros activos
   const filtersCount = [
@@ -168,22 +198,6 @@ const DataTableToolbarComponent = <TData,>({
     }
   }, [pdfUrl])
 
-  const handleDownloadReport = useCallback(async () => {
-    try {
-      const reportParams: OrdersQueryParams = {
-        status_filter: filters.status_filter,
-        route_id: filters.route_id,
-        date_from: filters.date_from,
-        date_to: filters.date_to,
-        search: filters.search
-      }
-      
-      await ordersService.downloadOrdersReport(reportParams)
-      toast.success('Reporte descargado exitosamente')
-    } catch (_error) {
-      toast.error('Error al descargar el reporte')
-    }
-  }, [filters])
 
   return (
     <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
@@ -214,7 +228,7 @@ const DataTableToolbarComponent = <TData,>({
           <select
             value={filters.status_filter || ''}
             onChange={(e) => handleStatusChange([e.target.value])}
-            className="h-8 min-w-[140px] rounded-md border border-input bg-transparent px-3 text-sm"
+            className="h-8 min-w-[140px] rounded-md border border-input bg-background text-foreground px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <option value="">Todos los estados</option>
             {orderStatuses.map((status) => (
@@ -225,14 +239,14 @@ const DataTableToolbarComponent = <TData,>({
           </select>
           
           {/* Route Filter */}
-          {uniqueRoutes.length > 0 && (
+          {allRoutes.length > 0 && (
             <select
               value={filters.route_id?.toString() || ''}
               onChange={(e) => handleRouteChange([e.target.value])}
-              className="h-8 min-w-[140px] rounded-md border border-input bg-transparent px-3 text-sm"
+              className="h-8 min-w-[140px] rounded-md border border-input bg-background text-foreground px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               <option value="">Todas las rutas</option>
-              {uniqueRoutes.map((route) => (
+              {allRoutes.map((route) => (
                 <option key={route.value} value={route.value}>
                   {route.label}
                 </option>
@@ -267,7 +281,6 @@ const DataTableToolbarComponent = <TData,>({
         title="Reporte de Órdenes para Ruteros"
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
-        onDownload={handleDownloadReport}
       />
     </div>
   )
@@ -276,5 +289,5 @@ const DataTableToolbarComponent = <TData,>({
 // Memoized version to prevent unnecessary re-renders
 export const DataTableToolbar = memo(DataTableToolbarComponent) as <TData>(
   props: DataTableToolbarProps<TData>
-) => JSX.Element
+) => React.JSX.Element
 

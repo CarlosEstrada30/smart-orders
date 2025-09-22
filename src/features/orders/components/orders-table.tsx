@@ -105,33 +105,6 @@ const OrdersTableComponent = ({
     setCurrentOrderTitle('')
   }
 
-  const handleDownloadFromViewer = async () => {
-    // Extraer el ID de la orden desde el título actual
-    const orderIdMatch = currentOrderTitle.match(/Orden (\d+)/)
-    const orderNumberMatch = currentOrderTitle.match(/Comprobante - (.+)/)
-    
-    if (orderIdMatch || orderNumberMatch) {
-      try {
-        // Buscar la orden en los datos actuales
-        let orderId: number | undefined
-        
-        if (orderNumberMatch) {
-          const orderNumber = orderNumberMatch[1]
-          const order = data.find(o => o.order_number === orderNumber)
-          orderId = order?.id
-        } else if (orderIdMatch) {
-          orderId = parseInt(orderIdMatch[1])
-        }
-        
-        if (orderId) {
-          await ordersService.downloadReceipt(orderId)
-          toast.success('Comprobante descargado exitosamente')
-        }
-      } catch (_error) {
-        toast.error('Error al descargar el comprobante')
-      }
-    }
-  }
 
   const handleDownloadReceipt = async (order: Order) => {
     try {
@@ -224,7 +197,6 @@ const OrdersTableComponent = ({
     <div className='space-y-4 max-sm:has-[div[role="toolbar"]]:mb-16'>
       <DataTableToolbar 
         table={table} 
-        data={data} 
         onFiltersChange={onFiltersChange}
         filters={filters}
       />
@@ -304,7 +276,6 @@ const OrdersTableComponent = ({
         title={currentOrderTitle}
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
-        onDownload={handleDownloadFromViewer}
       />
     </div>
   )

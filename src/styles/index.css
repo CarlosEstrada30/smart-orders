@@ -86,3 +86,19 @@
   }
 }
 
+/* Fix para dropdowns de filtros - options visibles en ambos temas */
+select option {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 8px 12px;
+}
+
+select option:hover {
+  background-color: hsl(var(--muted));
+}
+
+select option:checked {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
