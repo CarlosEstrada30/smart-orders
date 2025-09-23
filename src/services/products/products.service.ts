@@ -4,7 +4,9 @@ import type {
   Product, 
   CreateProductRequest, 
   UpdateProductRequest, 
-  ProductsListParams 
+  ProductsListParams,
+  ProductsExportParams,
+  ProductBulkUploadResult
 } from './types'
 
 // Servicio para manejar operaciones de productos
@@ -60,6 +62,42 @@ export class ProductsService {
       await apiClient.delete<void>(`${this.baseEndpoint}/${id}`)
     } catch (error) {
       throw this.handleError(error, 'Error al eliminar el producto')
+    }
+  }
+
+  // Descargar plantilla de productos
+  async downloadTemplate(): Promise<Blob> {
+    try {
+      return await apiClient.downloadFile(`${this.baseEndpoint}/template/download`)
+    } catch (error) {
+      throw this.handleError(error, 'Error al descargar la plantilla de productos')
+    }
+  }
+
+  // Carga masiva de productos
+  async bulkUpload(file: File): Promise<ProductBulkUploadResult> {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      return await apiClient.post<ProductBulkUploadResult>(`${this.baseEndpoint}/bulk-upload`, formData)
+    } catch (error) {
+      throw this.handleError(error, 'Error en la carga masiva de productos')
+    }
+  }
+
+  // Exportar productos a Excel
+  async exportProducts(params: ProductsExportParams = {}): Promise<Blob> {
+    try {
+      const queryParams: Record<string, string> = {}
+      
+      if (params.active_only !== undefined) queryParams.active_only = params.active_only.toString()
+      if (params.skip !== undefined) queryParams.skip = params.skip.toString()
+      if (params.limit !== undefined) queryParams.limit = params.limit.toString()
+
+      return await apiClient.downloadFile(`${this.baseEndpoint}/export`, queryParams)
+    } catch (error) {
+      throw this.handleError(error, 'Error al exportar productos')
     }
   }
 

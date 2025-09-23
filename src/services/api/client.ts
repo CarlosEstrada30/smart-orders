@@ -22,6 +22,15 @@ class ApiClient {
     }
   }
 
+  // Métodos públicos para acceder a propiedades privadas
+  public getBaseURL(): string {
+    return this.baseURL
+  }
+
+  public getPublicHeaders(): HeadersInit {
+    return this.getHeaders()
+  }
+
   // Método para manejar errores de autenticación
   private handleAuthError(status: number) {
     if (status === 401) {
@@ -142,6 +151,43 @@ class ApiClient {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
     })
+  }
+
+  // Método específico para descargar archivos (blobs)
+  async downloadFile(endpoint: string, params?: Record<string, string>): Promise<Blob> {
+    const url = params 
+      ? `${endpoint}?${new URLSearchParams(params).toString()}`
+      : endpoint
+    
+    const fullUrl = `${this.baseURL}${url}`
+    
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    })
+
+    if (!response.ok) {
+      // Manejar errores de autenticación
+      if (this.handleAuthError(response.status)) {
+        throw new ApiError(
+          response.status,
+          'Sesión expirada',
+          'Token de autenticación inválido o expirado'
+        )
+      }
+
+      const errorData = await response.json().catch(() => ({
+        detail: `HTTP ${response.status}: ${response.statusText}`,
+      }))
+
+      throw new ApiError(
+        response.status,
+        errorData.detail || `Error ${response.status}`,
+        response.statusText
+      )
+    }
+
+    return await response.blob()
   }
 }
 

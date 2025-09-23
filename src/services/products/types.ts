@@ -32,4 +32,32 @@ export interface ProductsListParams {
   limit?: number
   active_only?: boolean
   category?: string
+}
+
+// Parámetros para exportación de productos
+export interface ProductsExportParams {
+  active_only?: boolean
+  skip?: number
+  limit?: number
+}
+
+// Tipos para carga masiva de productos
+export interface BulkUploadError {
+  row: number
+  field: string
+  error: string
+}
+
+export interface ProductBulkUploadResult {
+  total_rows: number
+  successful_uploads: number
+  failed_uploads: number
+  success_rate: number
+  errors: BulkUploadError[]
+  created_products: Array<{
+    id: number
+    name: string
+    sku: string
+    row: number
+  }>
 } 

@@ -4,6 +4,9 @@ export type {
   CreateClientRequest,
   UpdateClientRequest,
   ClientsListParams,
+  ClientsExportParams,
+  BulkUploadError,
+  BulkUploadResult,
 } from './types'
 
 // Exportar servicio

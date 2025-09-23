@@ -31,4 +31,32 @@ export interface ClientsListParams {
   skip?: number
   limit?: number
   active_only?: boolean
+}
+
+// Parámetros para exportación de clientes
+export interface ClientsExportParams {
+  active_only?: boolean
+  skip?: number
+  limit?: number
+}
+
+// Tipos para carga masiva de clientes
+export interface BulkUploadError {
+  row: number
+  field: string
+  error: string
+}
+
+export interface BulkUploadResult {
+  total_rows: number
+  successful_uploads: number
+  failed_uploads: number
+  success_rate: number
+  errors: BulkUploadError[]
+  created_clients: Array<{
+    id: number
+    name: string
+    email: string | null
+    row: number
+  }>
 } 

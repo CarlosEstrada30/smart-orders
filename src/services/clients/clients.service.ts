@@ -4,7 +4,9 @@ import type {
   Client, 
   CreateClientRequest, 
   UpdateClientRequest, 
-  ClientsListParams 
+  ClientsListParams,
+  ClientsExportParams,
+  BulkUploadResult
 } from './types'
 
 // Servicio para manejar operaciones de clientes
@@ -59,6 +61,42 @@ export class ClientsService {
       await apiClient.delete<void>(`${this.baseEndpoint}/${id}`)
     } catch (error) {
       throw this.handleError(error, 'Error al eliminar el cliente')
+    }
+  }
+
+  // Descargar plantilla de clientes
+  async downloadTemplate(): Promise<Blob> {
+    try {
+      return await apiClient.downloadFile(`${this.baseEndpoint}/template/download`)
+    } catch (error) {
+      throw this.handleError(error, 'Error al descargar la plantilla de clientes')
+    }
+  }
+
+  // Carga masiva de clientes
+  async bulkUpload(file: File): Promise<BulkUploadResult> {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      return await apiClient.post<BulkUploadResult>(`${this.baseEndpoint}/bulk-upload`, formData)
+    } catch (error) {
+      throw this.handleError(error, 'Error en la carga masiva de clientes')
+    }
+  }
+
+  // Exportar clientes a Excel
+  async exportClients(params: ClientsExportParams = {}): Promise<Blob> {
+    try {
+      const queryParams: Record<string, string> = {}
+      
+      if (params.active_only !== undefined) queryParams.active_only = params.active_only.toString()
+      if (params.skip !== undefined) queryParams.skip = params.skip.toString()
+      if (params.limit !== undefined) queryParams.limit = params.limit.toString()
+
+      return await apiClient.downloadFile(`${this.baseEndpoint}/export`, queryParams)
+    } catch (error) {
+      throw this.handleError(error, 'Error al exportar clientes')
     }
   }
 

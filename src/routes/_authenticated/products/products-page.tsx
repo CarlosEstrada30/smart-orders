@@ -41,11 +41,12 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Package, Save, Loader2, Hash } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Package, Save, Loader2, Hash, Upload, Download, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { productsService, type Product, type CreateProductRequest, type UpdateProductRequest } from '@/services/products'
+import { productsService, type Product, type CreateProductRequest, type UpdateProductRequest, type ProductBulkUploadResult } from '@/services/products'
 import { ApiError } from '@/services/api/config'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { BulkImport } from '@/components/bulk-import'
 
 export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -80,6 +81,12 @@ export function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState(false)
   const [editFormError, setEditFormError] = useState<string | null>(null)
   const [productToEdit, setProductToEdit] = useState<Product | null>(null)
+
+  // Estado para el modal de importación
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false)
 
   // Función para abrir modal de editar producto
   const handleEditProduct = (product: Product) => {
@@ -229,6 +236,75 @@ export function ProductsPage() {
     }
   }
 
+  // Funciones para importación masiva
+  const handleDownloadTemplate = async () => {
+    return await productsService.downloadTemplate()
+  }
+
+  const handleBulkUpload = async (file: File) => {
+    return await productsService.bulkUpload(file)
+  }
+
+  const handleImportComplete = (result: ProductBulkUploadResult) => {
+    // Recargar la lista de productos para mostrar los nuevos datos
+    fetchProducts()
+    
+    // Cerrar el modal de importación
+    setImportDialogOpen(false)
+  }
+
+  // Función para exportar todos los productos
+  const handleExportAll = async () => {
+    try {
+      setIsExporting(true)
+      const blob = await productsService.exportProducts({})
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `productos_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('Productos exportados exitosamente')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al exportar productos'
+      toast.error(errorMessage)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  // Función para exportar solo productos activos
+  const handleExportActive = async () => {
+    try {
+      setIsExporting(true)
+      const blob = await productsService.exportProducts({ active_only: true })
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `productos_activos_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('Productos activos exportados exitosamente')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al exportar productos activos'
+      toast.error(errorMessage)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   // Cargar productos al montar el componente
   useEffect(() => {
     fetchProducts()
@@ -343,10 +419,51 @@ export function ProductsPage() {
             </p>
           </div>
           <PermissionGuard productPermission="can_manage">
-            <Button onClick={handleNewProduct}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Producto
-            </Button>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Exportando...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar
+                      </>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Opciones de Exportación</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleExportAll} disabled={isExporting}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Todos los productos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportActive} disabled={isExporting}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Solo activos
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Importar
+              </Button>
+              <Button onClick={handleNewProduct}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Producto
+              </Button>
+            </div>
           </PermissionGuard>
         </div>
 
@@ -700,6 +817,17 @@ export function ProductsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Componente de importación masiva */}
+      <BulkImport
+        isOpen={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        title="Productos"
+        description="Importa múltiples productos desde un archivo de Excel"
+        onDownloadTemplate={handleDownloadTemplate}
+        onUploadFile={handleBulkUpload}
+        onImportComplete={handleImportComplete}
+      />
     </Main>
   )
 } 

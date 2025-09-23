@@ -4,6 +4,9 @@ export type {
   CreateProductRequest,
   UpdateProductRequest,
   ProductsListParams,
+  ProductsExportParams,
+  BulkUploadError,
+  ProductBulkUploadResult,
 } from './types'
 
 // Exportar servicio

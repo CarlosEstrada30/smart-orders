@@ -41,14 +41,15 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Phone, Save, Loader2 } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Phone, Save, Loader2, Upload, Download } from 'lucide-react'
 import { toast } from 'sonner'
-import { clientsService, type Client, type CreateClientRequest, type UpdateClientRequest } from '@/services/clients'
+import { clientsService, type Client, type CreateClientRequest, type UpdateClientRequest, type BulkUploadResult as ClientBulkUploadResult } from '@/services/clients'
 import { ApiError } from '@/services/api/config'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { BulkImport } from '@/components/bulk-import'
 
 export function ClientsPage() {
-  const { isMounted, safeAsync } = useNavigationCleanup()
+  const { isMounted } = useNavigationCleanup()
   const [searchTerm, setSearchTerm] = useState('')
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -81,6 +82,12 @@ export function ClientsPage() {
   const [editingClient, setEditingClient] = useState(false)
   const [editFormError, setEditFormError] = useState<string | null>(null)
   const [clientToEdit, setClientToEdit] = useState<Client | null>(null)
+
+  // Estado para el modal de importación
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false)
 
   // Función para abrir modal de editar cliente
   const handleEditClient = (client: Client) => {
@@ -134,7 +141,7 @@ export function ClientsPage() {
   }
 
   // Función para obtener los clientes de la API
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     if (!isMounted()) return
     
     try {
@@ -158,14 +165,13 @@ export function ClientsPage() {
         errorMessage = err.message
       }
       
-      console.error('Error loading clients:', err)
       setError(errorMessage)
     } finally {
       if (isMounted()) {
         setLoading(false)
       }
     }
-  }
+  }, [isMounted])
 
   // Función para eliminar cliente
   const handleDeleteClient = async () => {
@@ -240,10 +246,79 @@ export function ClientsPage() {
     }
   }
 
+  // Funciones para importación masiva
+  const handleDownloadTemplate = async () => {
+    return await clientsService.downloadTemplate()
+  }
+
+  const handleBulkUpload = async (file: File) => {
+    return await clientsService.bulkUpload(file)
+  }
+
+  const handleImportComplete = (_result: ClientBulkUploadResult) => {
+    // Recargar la lista de clientes para mostrar los nuevos datos
+    fetchClients()
+    
+    // Cerrar el modal de importación
+    setImportDialogOpen(false)
+  }
+
+  // Función para exportar todos los clientes
+  const handleExportAll = async () => {
+    try {
+      setIsExporting(true)
+      const blob = await clientsService.exportClients({})
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('Clientes exportados exitosamente')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al exportar clientes'
+      toast.error(errorMessage)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  // Función para exportar solo clientes activos
+  const handleExportActive = async () => {
+    try {
+      setIsExporting(true)
+      const blob = await clientsService.exportClients({ active_only: true })
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `clientes_activos_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('Clientes activos exportados exitosamente')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al exportar clientes activos'
+      toast.error(errorMessage)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   // Cargar clientes al montar el componente
   useEffect(() => {
     fetchClients()
-  }, []) // Sin dependencias para evitar bucles
+  }, [fetchClients])
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -349,10 +424,53 @@ export function ClientsPage() {
               Gestiona los clientes de la quesería
             </p>
           </div>
-          <Button onClick={handleNewClient}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Cliente
-          </Button>
+          <PermissionGuard clientPermission="can_manage">
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Exportando...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exportar
+                      </>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Opciones de Exportación</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleExportAll} disabled={isExporting}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Todos los clientes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportActive} disabled={isExporting}>
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Solo activos
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Importar
+              </Button>
+              <Button onClick={handleNewClient}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Cliente
+              </Button>
+            </div>
+          </PermissionGuard>
         </div>
 
         <Card>
@@ -687,6 +805,17 @@ export function ClientsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Componente de importación masiva */}
+      <BulkImport
+        isOpen={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        title="Clientes"
+        description="Importa múltiples clientes desde un archivo de Excel"
+        onDownloadTemplate={handleDownloadTemplate}
+        onUploadFile={handleBulkUpload}
+        onImportComplete={handleImportComplete}
+      />
     </Main>
   )
 } 
