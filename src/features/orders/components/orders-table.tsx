@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MoreHorizontal, Eye, Trash2, Download } from 'lucide-react'
+import { MoreHorizontal, Eye, Trash2, Download, Edit } from 'lucide-react'
 import { type Order } from '../data/schema'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
@@ -54,6 +54,7 @@ declare module '@tanstack/react-table' {
 type OrdersTableProps = {
   data: Order[]
   onViewOrder?: (order: Order) => void
+  onEditOrder?: (order: Order) => void
   onDeleteOrder?: (order: Order) => void
   onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
   filters: OrdersQueryParams
@@ -64,6 +65,7 @@ type OrdersTableProps = {
 const OrdersTableComponent = ({ 
   data, 
   onViewOrder, 
+  onEditOrder,
   onDeleteOrder, 
   onFiltersChange,
   filters,
@@ -143,6 +145,12 @@ const OrdersTableComponent = ({
                   <Eye className="mr-2 h-4 w-4" />
                   Ver detalles
                 </DropdownMenuItem>
+                {order.status === 'pending' && (
+                  <DropdownMenuItem onClick={() => onEditOrder?.(order)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar orden
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => await handlePreviewReceipt(order)} disabled={isLoading}>
                   <Eye className="mr-2 h-4 w-4" />

@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { ordersService, type OrderItem } from '@/services/orders'
+import { ArrowLeft, Plus, Trash2, Save, Edit } from 'lucide-react'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { ordersService, type Order, type OrderItem } from '@/services/orders'
 import { clientsService, type Client } from '@/services/clients'
 import { productsService, type Product } from '@/services/products'
 import { routesService, type Route } from '@/services'
@@ -28,7 +28,8 @@ interface OrderItemForm {
   subtotal: number
 }
 
-export function NewOrderPage() {
+export function EditOrderPage() {
+  const { orderId } = useParams({ from: '/_authenticated/edit-order/$orderId' })
   const navigate = useNavigate()
   const [selectedClient, setSelectedClient] = useState('')
   const [selectedRoute, setSelectedRoute] = useState('')
@@ -37,7 +38,9 @@ export function NewOrderPage() {
   const [selectedProduct, setSelectedProduct] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [loadingOrder, setLoadingOrder] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [order, setOrder] = useState<Order | null>(null)
 
   // Estados para datos de la API
   const [clients, setClients] = useState<Client[]>([])
@@ -47,12 +50,52 @@ export function NewOrderPage() {
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRoutes, setLoadingRoutes] = useState(true)
 
+  // Cargar orden existente
+  useEffect(() => {
+    loadOrderData()
+  }, [orderId])
+
   // Cargar clientes, productos y rutas al montar el componente
   useEffect(() => {
     loadClients()
     loadProducts()
     loadRoutes()
   }, [])
+
+  const loadOrderData = async () => {
+    try {
+      setLoadingOrder(true)
+      const orderData = await ordersService.getOrder(parseInt(orderId))
+      
+      // Verificar que la orden puede editarse
+      if (orderData.status !== 'pending') {
+        setError('Solo se pueden editar órdenes en estado PENDING')
+        return
+      }
+      
+      setOrder(orderData)
+      
+      // Pre-llenar campos del formulario
+      setSelectedClient(orderData.client_id.toString())
+      setSelectedRoute(orderData.route_id?.toString() || '')
+      setNotes(orderData.notes || '')
+      
+      // Convertir items a formato del formulario
+      const formItems: OrderItemForm[] = orderData.items.map(item => ({
+        product_id: item.product_id,
+        product_name: item.product_name || `Producto #${item.product_id}`,
+        price: item.unit_price,
+        quantity: item.quantity,
+        subtotal: item.unit_price * item.quantity
+      }))
+      setOrderItems(formItems)
+      
+    } catch (err) {
+      setError('Error al cargar la orden')
+    } finally {
+      setLoadingOrder(false)
+    }
+  }
 
   const loadClients = async () => {
     try {
@@ -119,6 +162,8 @@ export function NewOrderPage() {
       }
       setOrderItems([...orderItems, newItem])
     }
+
+    // Limpiar estados
     setSelectedProduct('')
     setQuantity(1)
   }
@@ -129,11 +174,6 @@ export function NewOrderPage() {
 
   const updateItemQuantity = (index: number, newQuantity: number) => {
     if (newQuantity <= 0) return
-
-    const item = orderItems[index]
-    const product = products.find(p => p.id === item.product_id)
-    
-    if (!product) return
 
     const updatedItems = [...orderItems]
     updatedItems[index].quantity = newQuantity
@@ -169,12 +209,17 @@ export function NewOrderPage() {
         items: apiItems
       }
 
-      await ordersService.createOrder(orderData)
+      await ordersService.updateOrderComplete(parseInt(orderId), {
+        client_id: orderData.client_id,
+        route_id: orderData.route_id,
+        notes: orderData.notes,
+        items: apiItems
+      })
       
-      // Redirigir a la lista de órdenes después de crear exitosamente
-      navigate({ to: '/orders' })
+      // Redirigir al detalle de la orden después de actualizar exitosamente
+      navigate({ to: '/order-detail/$orderId', params: { orderId } })
     } catch (err) {
-      setError('Error al crear la orden')
+      setError('Error al actualizar la orden')
     } finally {
       setLoading(false)
     }
@@ -199,22 +244,54 @@ export function NewOrderPage() {
     disabled: !route.is_active
   }))
 
+  if (loadingOrder) {
+    return (
+      <Main>
+        <div className="container mx-auto py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2">Cargando orden...</p>
+            </div>
+          </div>
+        </div>
+      </Main>
+    )
+  }
+
+  if (error && !order) {
+    return (
+      <Main>
+        <div className="container mx-auto py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-600">{error}</p>
+              <Link to="/orders">
+                <Button className="mt-4">Volver a órdenes</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Main>
+    )
+  }
+
   return (
     <Main>
       <div className="container mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <Link to="/orders">
+            <Link to="/order-detail/$orderId" params={{ orderId }}>
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Nueva Orden</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Editar Orden</h1>
               <p className="text-muted-foreground">
-                Crea una nueva orden
+                Modificar orden #{order?.order_number || orderId}
               </p>
             </div>
           </div>
@@ -234,7 +311,7 @@ export function NewOrderPage() {
             <CardHeader>
               <CardTitle>Información de la Orden</CardTitle>
               <CardDescription>
-                Selecciona el cliente y la ruta de entrega para esta orden
+                Modifica el cliente y la ruta de entrega para esta orden
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -288,13 +365,12 @@ export function NewOrderPage() {
             <CardHeader>
               <CardTitle>Productos de la Orden</CardTitle>
               <CardDescription>
-                Agrega los productos a la orden
+                Modifica los productos de la orden
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Agregar Producto */}
               <div className="space-y-4">
-                {/* Product and Quantity Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                     <Label htmlFor="product">Producto</Label>
@@ -334,11 +410,10 @@ export function NewOrderPage() {
                 </div>
               </div>
 
-
               {/* Lista de Productos */}
               {orderItems.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Productos Agregados</Label>
+                  <Label>Productos en la Orden</Label>
                   <div className="border rounded-lg">
                     {orderItems.map((item, index) => (
                       <div key={index} className="p-4 border-b last:border-b-0">
@@ -433,7 +508,7 @@ export function NewOrderPage() {
 
           {/* Botones de Acción */}
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:space-x-4">
-            <Link to="/orders" className="w-full sm:w-auto">
+            <Link to="/order-detail/$orderId" params={{ orderId }} className="w-full sm:w-auto">
               <Button type="button" variant="outline" className="w-full">
                 Cancelar
               </Button>
@@ -444,7 +519,7 @@ export function NewOrderPage() {
               className="w-full sm:w-auto"
             >
               <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Creando...' : 'Crear Orden'}
+              {loading ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
           </div>
         </form>
@@ -452,3 +527,4 @@ export function NewOrderPage() {
     </Main>
   )
 } 
+

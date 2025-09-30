@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Main } from '@/components/layout/main'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { redirectWithSubdomain } from '@/utils/subdomain'
 import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse } from '@/services/orders'
 import { OrdersTable } from '@/features/orders/components/orders-table'
 import { PermissionGuard } from '@/components/auth/permission-guard'
@@ -112,6 +113,10 @@ export function OrdersPage() {
     navigate({ to: '/order-detail/$orderId', params: { orderId: order.id!.toString() } })
   }
 
+  const handleEditOrder = (order: Order) => {
+    redirectWithSubdomain(`/edit-order/${order.id}`)
+  }
+
   const handleDeleteOrderAction = (order: Order) => {
     setOrderToDelete(order)
     setIsDeleteDialogOpen(true)
@@ -173,6 +178,7 @@ export function OrdersPage() {
             <OrdersTable
               data={ordersData.items || []}
               onViewOrder={handleViewOrder}
+              onEditOrder={handleEditOrder}
               onDeleteOrder={handleDeleteOrderAction}
               onFiltersChange={handleFiltersChange}
               filters={filters}

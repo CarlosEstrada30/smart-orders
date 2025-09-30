@@ -195,37 +195,35 @@ export const ordersService = {
     return apiClient.put<Order>(`/orders/${orderId}`, orderData)
   },
 
-  // Actualizar orden completa (incluyendo items)
+  // Actualizar orden completa (incluyendo items) - para órdenes PENDING
   async updateOrderComplete(orderId: number, orderData: {
+    client_id?: number
+    route_id?: number
     notes?: string
     items: OrderItem[]
   }): Promise<Order> {
-    // Primero actualizar los datos básicos de la orden
-    await this.updateOrder(orderId, {
-      notes: orderData.notes
-    })
-
-    // Obtener la orden actual para ver los items existentes
-    const currentOrder = await this.getOrder(orderId)
+    // Usar el endpoint PUT directo con OrderFullUpdate para órdenes PENDING
+    const fullUpdateData: Record<string, any> = {}
     
-    // Remover todos los items existentes
-    for (const item of currentOrder.items) {
-      if (item.id) {
-        await this.removeOrderItem(orderId, item.id)
-      }
+    if (orderData.client_id !== undefined) {
+      fullUpdateData.client_id = orderData.client_id
     }
-
-    // Agregar los nuevos items
-    for (const item of orderData.items) {
-      await this.addOrderItem(orderId, {
+    if (orderData.route_id !== undefined) {
+      fullUpdateData.route_id = orderData.route_id
+    }
+    if (orderData.notes !== undefined) {
+      fullUpdateData.notes = orderData.notes
+    }
+    if (orderData.items && orderData.items.length > 0) {
+      // Convertir OrderItem[] a OrderItemCreate[] para la API
+      fullUpdateData.items = orderData.items.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price
-      })
+      }))
     }
 
-    // Retornar la orden actualizada
-    return this.getOrder(orderId)
+    return apiClient.put<Order>(`/orders/${orderId}`, fullUpdateData)
   },
 
   // Eliminar una orden
