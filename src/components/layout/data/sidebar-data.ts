@@ -52,14 +52,14 @@ export const sidebarData: SidebarData = {
           icon: UserCheck,
         },
         {
-          title: 'Productos',
-          url: '/products',
-          icon: Package,
-        },
-        {
           title: 'Rutas',
           url: '/routes',
           icon: Route,
+        },
+        {
+          title: 'Productos',
+          url: '/products',
+          icon: Package,
         },
         {
           title: 'Pedidos',

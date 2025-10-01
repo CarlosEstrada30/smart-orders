@@ -27,9 +27,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { MoreHorizontal, Eye, Trash2, Download, Edit } from 'lucide-react'
-import { type Order } from '../data/schema'
+import { type Order, type OrderStatus } from '../data/schema'
+import { type BulkOrderStatusResponse } from '@/services/orders'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
+import { BulkActionsToolbar } from './bulk-actions-toolbar'
 import { ordersColumns as columns } from './orders-columns'
 import { ordersService, type OrdersQueryParams } from '@/services/orders'
 import { toast } from 'sonner'
@@ -56,6 +58,7 @@ type OrdersTableProps = {
   onViewOrder?: (order: Order) => void
   onEditOrder?: (order: Order) => void
   onDeleteOrder?: (order: Order) => void
+  onBulkStatusChange?: (orderIds: number[], newStatus: OrderStatus) => Promise<BulkOrderStatusResponse>
   onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
   filters: OrdersQueryParams
   pagination: TablePaginationInfo
@@ -66,7 +69,8 @@ const OrdersTableComponent = ({
   data, 
   onViewOrder, 
   onEditOrder,
-  onDeleteOrder, 
+  onDeleteOrder,
+  onBulkStatusChange,
   onFiltersChange,
   filters,
   pagination,
@@ -80,6 +84,17 @@ const OrdersTableComponent = ({
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [currentOrderTitle, setCurrentOrderTitle] = useState<string>('')
+
+  // Obtener IDs de órdenes seleccionadas
+  const selectedOrderIds = Object.keys(rowSelection)
+    .filter(key => rowSelection[key as keyof typeof rowSelection])
+    .map(key => data[parseInt(key)]?.id)
+    .filter(Boolean) as number[]
+
+  // Limpiar selección
+  const handleClearSelection = () => {
+    setRowSelection({})
+  }
 
   // Receipt handlers
   const handlePreviewReceipt = async (order: Order) => {
@@ -208,6 +223,15 @@ const OrdersTableComponent = ({
         onFiltersChange={onFiltersChange}
         filters={filters}
       />
+      
+      {selectedOrderIds.length > 0 && onBulkStatusChange && (
+        <BulkActionsToolbar
+          selectedOrders={selectedOrderIds}
+          onBulkStatusChange={onBulkStatusChange}
+          onClearSelection={handleClearSelection}
+          loading={isLoading}
+        />
+      )}
       <div className='overflow-hidden rounded-md border'>
         <Table>
           <TableHeader>

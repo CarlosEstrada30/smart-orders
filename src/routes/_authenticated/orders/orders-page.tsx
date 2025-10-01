@@ -13,9 +13,10 @@ import { Main } from '@/components/layout/main'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { redirectWithSubdomain } from '@/utils/subdomain'
-import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse } from '@/services/orders'
+import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse, type OrderStatus } from '@/services/orders'
 import { OrdersTable } from '@/features/orders/components/orders-table'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { toast } from 'sonner'
 
 export function OrdersPage() {
   const navigate = useNavigate()
@@ -66,6 +67,34 @@ export function OrdersPage() {
           has_previous: false
         }
       })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Función para cambio masivo de estados
+  const handleBulkStatusChange = async (orderIds: number[], newStatus: OrderStatus) => {
+    try {
+      setLoading(true)
+      const result = await ordersService.updateBulkOrderStatus(orderIds, newStatus)
+      
+      // Mostrar feedback básico
+      if (result.updated_count > 0) {
+        toast.success(`${result.updated_count} orden${result.updated_count !== 1 ? 'es' : ''} actualizada${result.updated_count !== 1 ? 's' : ''} exitosamente`)
+      }
+      
+      if (result.failed_count > 0) {
+        toast.error(`${result.failed_count} orden${result.failed_count !== 1 ? 'es' : ''} no pudo${result.failed_count !== 1 ? 'ron' : ''} ser actualizada${result.failed_count !== 1 ? 's' : ''}`)
+      }
+      
+      // Recargar órdenes para reflejar los cambios
+      await loadOrders()
+      
+      // Retornar el resultado completo para el componente de acciones masivas
+      return result
+    } catch (_err) {
+      toast.error('Error al actualizar el estado de las órdenes')
+      throw _err
     } finally {
       setLoading(false)
     }
@@ -180,6 +209,7 @@ export function OrdersPage() {
               onViewOrder={handleViewOrder}
               onEditOrder={handleEditOrder}
               onDeleteOrder={handleDeleteOrderAction}
+              onBulkStatusChange={handleBulkStatusChange}
               onFiltersChange={handleFiltersChange}
               filters={filters}
               pagination={paginationInfo}

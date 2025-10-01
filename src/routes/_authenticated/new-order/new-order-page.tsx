@@ -239,9 +239,10 @@ export function NewOrderPage() {
   const productOptions = products.map(product => {
     const routeId = selectedRoute ? parseInt(selectedRoute) : undefined
     const displayPrice = getProductPrice(product, routeId)
+    const stockText = product.stock > 0 ? `Stock: ${product.stock}` : 'Sin stock'
     return {
       value: product.id.toString(),
-      label: `${product.name} - Q${displayPrice.toFixed(2)}`,
+      label: `${product.name} - Q${displayPrice.toFixed(2)} (${stockText})`,
       disabled: !product.is_active
     }
   })

@@ -85,6 +85,50 @@ export interface OrderUpdate {
 
 export type OrderStatus = 'pending' | 'confirmed' | 'in_progress' | 'shipped' | 'delivered' | 'cancelled'
 
+// Tipos para respuesta de cambio masivo de estados
+export interface ProductUpdateDetail {
+  product_id: number
+  product_name: string
+  product_sku: string
+  quantity: number
+  unit_price: number
+}
+
+export interface ProductErrorDetail {
+  product_id: number
+  product_name: string
+  product_sku: string
+  error_type: 'product_not_found' | 'product_inactive' | 'insufficient_stock'
+  error_message: string
+  required_quantity?: number
+  available_quantity?: number
+}
+
+export interface SuccessOrderDetail {
+  order_id: number
+  order_number: string | null
+  products_updated: ProductUpdateDetail[]
+}
+
+export interface FailedOrderDetail {
+  order_id: number
+  order_number: string | null
+  error_type: 'order_not_found' | 'order_inactive' | 'invalid_status' | 'product_errors'
+  error_message: string
+  products_with_errors: ProductErrorDetail[]
+}
+
+export interface BulkOrderStatusResponse {
+  updated_count: number
+  failed_count: number
+  total_orders: number
+  status: OrderStatus
+  failed_orders: number[]
+  success_orders: number[]
+  success_details: SuccessOrderDetail[]
+  failed_details: FailedOrderDetail[]
+}
+
 // Tipos para respuestas de receipt/comprobante
 export interface ReceiptGenerateResponse {
   message: string
@@ -242,6 +286,14 @@ export const ordersService = {
   // Actualizar estado de una orden
   async updateOrderStatus(orderId: number, newStatus: OrderStatus): Promise<Order> {
     return apiClient.post<Order>(`/orders/${orderId}/status/${newStatus}`)
+  },
+
+  // Actualizar estado de múltiples órdenes
+  async updateBulkOrderStatus(orderIds: number[], newStatus: OrderStatus): Promise<BulkOrderStatusResponse> {
+    return apiClient.put<BulkOrderStatusResponse>('/orders/bulk-status', {
+      order_ids: orderIds,
+      status: newStatus
+    })
   },
 
   // Agregar item a una orden
@@ -450,6 +502,8 @@ export const useOrders = () => {
     deleteOrder: (orderId: number) => ordersService.deleteOrder(orderId),
     updateOrderStatus: (orderId: number, newStatus: OrderStatus) => 
       ordersService.updateOrderStatus(orderId, newStatus),
+    updateBulkOrderStatus: (orderIds: number[], newStatus: OrderStatus) => 
+      ordersService.updateBulkOrderStatus(orderIds, newStatus),
     addOrderItem: (orderId: number, item: OrderItem) => 
       ordersService.addOrderItem(orderId, item),
     removeOrderItem: (orderId: number, itemId: number) => 
