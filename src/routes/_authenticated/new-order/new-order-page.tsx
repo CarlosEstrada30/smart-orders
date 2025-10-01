@@ -17,7 +17,7 @@ import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ordersService, type OrderItem } from '@/services/orders'
 import { clientsService, type Client } from '@/services/clients'
-import { productsService, type Product } from '@/services/products'
+import { productsService, type Product, type RoutePrice } from '@/services/products'
 import { routesService, type Route } from '@/services'
 
 interface OrderItemForm {
@@ -32,6 +32,7 @@ export function NewOrderPage() {
   const navigate = useNavigate()
   const [selectedClient, setSelectedClient] = useState('')
   const [selectedRoute, setSelectedRoute] = useState('')
+  const [discount, setDiscount] = useState<number>(0)
   const [notes, setNotes] = useState('')
   const [orderItems, setOrderItems] = useState<OrderItemForm[]>([])
   const [selectedProduct, setSelectedProduct] = useState('')
@@ -53,6 +54,25 @@ export function NewOrderPage() {
     loadProducts()
     loadRoutes()
   }, [])
+
+  // Recalcular precios cuando cambie la ruta seleccionada
+  useEffect(() => {
+    if (selectedRoute && orderItems.length > 0) {
+      const routeId = parseInt(selectedRoute)
+      const updatedItems = orderItems.map(item => {
+        const product = products.find(p => p.id === item.product_id)
+        if (!product) return item
+        
+        const correctPrice = getProductPrice(product, routeId)
+        return {
+          ...item,
+          price: correctPrice,
+          subtotal: correctPrice * item.quantity
+        }
+      })
+      setOrderItems(updatedItems)
+    }
+  }, [selectedRoute, products])
 
   const loadClients = async () => {
     try {
@@ -90,11 +110,32 @@ export function NewOrderPage() {
     }
   }
 
+  // Función para obtener el precio correcto según la ruta seleccionada
+  const getProductPrice = (product: Product, routeId?: number): number => {
+    // Si no hay ruta seleccionada, usar precio por defecto
+    if (!routeId) {
+      return product.price
+    }
+    
+    // Si no hay precios por ruta, usar precio por defecto
+    if (!product.route_prices || product.route_prices.length === 0) {
+      return product.price
+    }
+    
+    // Buscar precio específico para la ruta
+    const routePrice = product.route_prices.find(rp => rp.route_id === routeId)
+    return routePrice ? routePrice.price : product.price
+  }
+
   const addItem = () => {
     if (!selectedProduct || quantity <= 0) return
 
     const product = products.find(p => p.id === parseInt(selectedProduct))
     if (!product) return
+
+    // Obtener el precio correcto según la ruta seleccionada (si existe)
+    const routeId = selectedRoute ? parseInt(selectedRoute) : undefined
+    const correctPrice = getProductPrice(product, routeId)
 
     // Verificar si el producto ya existe en la orden
     const existingItem = orderItems.find(item => item.product_id === product.id)
@@ -105,7 +146,7 @@ export function NewOrderPage() {
     if (existingItem) {
       const updatedItems = orderItems.map(item => 
         item.product_id === product.id 
-          ? { ...item, quantity: totalQuantity, subtotal: product.price * totalQuantity }
+          ? { ...item, quantity: totalQuantity, price: correctPrice, subtotal: correctPrice * totalQuantity }
           : item
       )
       setOrderItems(updatedItems)
@@ -113,9 +154,9 @@ export function NewOrderPage() {
       const newItem: OrderItemForm = {
         product_id: product.id,
         product_name: product.name,
-        price: product.price,
+        price: correctPrice,
         quantity: quantity,
-        subtotal: product.price * quantity
+        subtotal: correctPrice * quantity
       }
       setOrderItems([...orderItems, newItem])
     }
@@ -135,13 +176,20 @@ export function NewOrderPage() {
     
     if (!product) return
 
+    // Obtener el precio correcto según la ruta actual
+    const routeId = selectedRoute ? parseInt(selectedRoute) : null
+    const correctPrice = routeId ? getProductPrice(product, routeId) : item.price
+
     const updatedItems = [...orderItems]
     updatedItems[index].quantity = newQuantity
-    updatedItems[index].subtotal = updatedItems[index].price * newQuantity
+    updatedItems[index].price = correctPrice
+    updatedItems[index].subtotal = correctPrice * newQuantity
     setOrderItems(updatedItems)
   }
 
-  const total = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
+  const subtotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
+  const discountAmount = subtotal * (discount / 100)
+  const total = subtotal - discountAmount
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -165,6 +213,7 @@ export function NewOrderPage() {
       const orderData = {
         client_id: parseInt(selectedClient),
         route_id: parseInt(selectedRoute),
+        discount_percentage: discount > 0 ? discount : undefined,
         notes: notes || undefined,
         items: apiItems
       }
@@ -187,11 +236,15 @@ export function NewOrderPage() {
     disabled: !client.is_active
   }))
 
-  const productOptions = products.map(product => ({
-    value: product.id.toString(),
-    label: `${product.name} - Q${product.price.toFixed(2)}`,
-    disabled: !product.is_active
-  }))
+  const productOptions = products.map(product => {
+    const routeId = selectedRoute ? parseInt(selectedRoute) : undefined
+    const displayPrice = getProductPrice(product, routeId)
+    return {
+      value: product.id.toString(),
+      label: `${product.name} - Q${displayPrice.toFixed(2)}`,
+      disabled: !product.is_active
+    }
+  })
 
   const routeOptions = routes.map(route => ({
     value: route.id.toString(),
@@ -270,6 +323,36 @@ export function NewOrderPage() {
                   )}
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="discount">Descuento (%)</Label>
+                  <Input
+                    id="discount"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="Ej: 10"
+                    value={discount || ''}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value)
+                      if (isNaN(value)) {
+                        setDiscount(0)
+                      } else if (value < 0) {
+                        setDiscount(0)
+                      } else if (value > 100) {
+                        setDiscount(100)
+                      } else {
+                        setDiscount(value)
+                      }
+                    }}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Descuento opcional de 0 a 100%
+                  </p>
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Notas</Label>
                 <Textarea
@@ -309,6 +392,9 @@ export function NewOrderPage() {
                     />
                     {loadingProducts && (
                       <p className="text-sm text-muted-foreground">Cargando productos...</p>
+                    )}
+                    {!selectedRoute && (
+                      <p className="text-sm text-blue-600">Mostrando precios por defecto. Selecciona una ruta para ver precios específicos.</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -418,12 +504,24 @@ export function NewOrderPage() {
                 </div>
               )}
 
-              {/* Total */}
+              {/* Resumen del Total */}
               {orderItems.length > 0 && (
                 <div className="flex justify-end">
-                  <div className="text-right">
-                    <div className="text-lg font-bold">
-                      Total: Q{total.toFixed(2)}
+                  <div className="text-right space-y-1 min-w-[200px]">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>Q{subtotal.toFixed(2)}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>Descuento ({discount}%):</span>
+                        <span>-Q{discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <hr className="my-2" />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total:</span>
+                      <span>Q{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -58,7 +58,9 @@ export interface Order {
   id?: number
   order_number?: string
   client_id: number
+  route_id?: number
   status: OrderStatus
+  discount_percentage?: number
   notes?: string
   total_amount?: number
   created_at?: string
@@ -69,7 +71,9 @@ export interface Order {
 
 export interface OrderCreate {
   client_id: number
+  route_id?: number
   status?: OrderStatus
+  discount_percentage?: number
   notes?: string
   items: OrderItem[]
 }
@@ -199,6 +203,7 @@ export const ordersService = {
   async updateOrderComplete(orderId: number, orderData: {
     client_id?: number
     route_id?: number
+    discount_percentage?: number
     notes?: string
     items: OrderItem[]
   }): Promise<Order> {
@@ -210,6 +215,9 @@ export const ordersService = {
     }
     if (orderData.route_id !== undefined) {
       fullUpdateData.route_id = orderData.route_id
+    }
+    if (orderData.discount_percentage !== undefined) {
+      fullUpdateData.discount_percentage = orderData.discount_percentage
     }
     if (orderData.notes !== undefined) {
       fullUpdateData.notes = orderData.notes

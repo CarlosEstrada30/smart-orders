@@ -41,7 +41,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, UserCheck, MapPin, Phone, Save, Loader2, Upload, Download } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, UserCheck, MapPin, Phone, Save, Loader2, Upload, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { clientsService, type Client, type CreateClientRequest, type UpdateClientRequest, type BulkUploadResult as ClientBulkUploadResult } from '@/services/clients'
 import { ApiError } from '@/services/api/config'
@@ -543,10 +543,6 @@ export function ClientsPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver detalles
-                          </DropdownMenuItem>
                           <PermissionGuard clientPermission="can_manage">
                             <DropdownMenuItem onClick={() => handleEditClient(client)}>
                               <Edit className="mr-2 h-4 w-4" />

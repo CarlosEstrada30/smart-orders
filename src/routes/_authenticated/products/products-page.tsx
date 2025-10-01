@@ -41,12 +41,13 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Package, Save, Loader2, Hash, Upload, Download, CheckCircle } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Package, Save, Loader2, Hash, Upload, Download, CheckCircle, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 import { productsService, type Product, type CreateProductRequest, type UpdateProductRequest, type ProductBulkUploadResult } from '@/services/products'
 import { ApiError } from '@/services/api/config'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { BulkImport } from '@/components/bulk-import'
+import { RoutePricesManager } from '@/features/products/components/route-prices-manager'
 
 export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -87,6 +88,10 @@ export function ProductsPage() {
 
   // Estado para exportación
   const [isExporting, setIsExporting] = useState(false)
+
+  // Estado para el modal de precios por ruta
+  const [routePricesDialogOpen, setRoutePricesDialogOpen] = useState(false)
+  const [selectedProductForPrices, setSelectedProductForPrices] = useState<Product | null>(null)
 
   // Función para abrir modal de editar producto
   const handleEditProduct = (product: Product) => {
@@ -189,6 +194,12 @@ export function ProductsPage() {
   const openDeleteDialog = (product: Product) => {
     setProductToDelete(product)
     setDeleteDialogOpen(true)
+  }
+
+  // Función para abrir modal de precios por ruta
+  const handleManageRoutePrices = (product: Product) => {
+    setSelectedProductForPrices(product)
+    setRoutePricesDialogOpen(true)
   }
 
   // Función para abrir modal de nuevo producto
@@ -545,14 +556,16 @@ export function ProductsPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver detalles
-                          </DropdownMenuItem>
                           <PermissionGuard productPermission="can_manage">
                             <DropdownMenuItem onClick={() => handleEditProduct(product)}>
                               <Edit className="mr-2 h-4 w-4" />
                               Editar
+                            </DropdownMenuItem>
+                          </PermissionGuard>
+                          <PermissionGuard productPermission="can_view_prices">
+                            <DropdownMenuItem onClick={() => handleManageRoutePrices(product)}>
+                              <DollarSign className="mr-2 h-4 w-4" />
+                              Precios por Ruta
                             </DropdownMenuItem>
                           </PermissionGuard>
                           <PermissionGuard productPermission="can_manage">
@@ -827,6 +840,16 @@ export function ProductsPage() {
         onDownloadTemplate={handleDownloadTemplate}
         onUploadFile={handleBulkUpload}
         onImportComplete={handleImportComplete}
+      />
+
+      {/* Modal de gestión de precios por ruta */}
+      <RoutePricesManager
+        product={selectedProductForPrices}
+        isOpen={routePricesDialogOpen}
+        onClose={() => {
+          setRoutePricesDialogOpen(false)
+          setSelectedProductForPrices(null)
+        }}
       />
     </Main>
   )

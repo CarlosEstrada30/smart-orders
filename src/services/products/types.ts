@@ -9,6 +9,14 @@ export interface Product {
   is_active: boolean
   created_at: string
   updated_at: string | null
+  route_prices?: RoutePrice[]
+}
+
+export interface RoutePrice {
+  product_id: number
+  route_id: number
+  price: number
+  route_name: string
 }
 
 export interface CreateProductRequest {
