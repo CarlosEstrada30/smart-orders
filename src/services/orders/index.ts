@@ -113,7 +113,7 @@ export interface SuccessOrderDetail {
 export interface FailedOrderDetail {
   order_id: number
   order_number: string | null
-  error_type: 'order_not_found' | 'order_inactive' | 'invalid_status' | 'product_errors'
+  error_type: 'order_not_found' | 'order_inactive' | 'invalid_status' | 'product_errors' | 'stock_validation_failed'
   error_message: string
   products_with_errors: ProductErrorDetail[]
 }

@@ -13,8 +13,9 @@ import { Main } from '@/components/layout/main'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { redirectWithSubdomain } from '@/utils/subdomain'
-import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse, type OrderStatus } from '@/services/orders'
+import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse, type OrderStatus, type BulkOrderStatusResponse } from '@/services/orders'
 import { OrdersTable } from '@/features/orders/components/orders-table'
+import { StockErrorModal } from '@/features/orders/components/stock-error-modal'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { toast } from 'sonner'
 
@@ -42,6 +43,10 @@ export function OrdersPage() {
     skip: 0,
     limit: 10,
   })
+  
+  // Estado para el modal de errores de stock
+  const [showStockErrorModal, setShowStockErrorModal] = useState(false)
+  const [stockErrorResult, setStockErrorResult] = useState<BulkOrderStatusResponse | null>(null)
 
   // Función para cargar órdenes - SIN useCallback para evitar loops
   const loadOrders = async () => {
@@ -98,6 +103,24 @@ export function OrdersPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Manejar errores de stock
+  const handleStockError = (result: BulkOrderStatusResponse) => {
+    setStockErrorResult(result)
+    setShowStockErrorModal(true)
+  }
+
+  // Cerrar modal de errores de stock
+  const handleCloseStockErrorModal = () => {
+    setShowStockErrorModal(false)
+    setStockErrorResult(null)
+  }
+
+  const handleCloseStockErrorModalAndClear = () => {
+    setShowStockErrorModal(false)
+    setStockErrorResult(null)
+    // Aquí podrías agregar lógica para limpiar la selección si es necesario
   }
 
   // UseEffect directo con filters - más simple y sin loops
@@ -210,6 +233,7 @@ export function OrdersPage() {
               onEditOrder={handleEditOrder}
               onDeleteOrder={handleDeleteOrderAction}
               onBulkStatusChange={handleBulkStatusChange}
+              onStockError={handleStockError}
               onFiltersChange={handleFiltersChange}
               filters={filters}
               pagination={paginationInfo}
@@ -247,6 +271,16 @@ export function OrdersPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Modal de errores de stock */}
+        {stockErrorResult && (
+          <StockErrorModal
+            isOpen={showStockErrorModal}
+            onClose={handleCloseStockErrorModal}
+            onCloseAndClear={handleCloseStockErrorModalAndClear}
+            bulkResult={stockErrorResult}
+          />
+        )}
       </div>
     </Main>
   )

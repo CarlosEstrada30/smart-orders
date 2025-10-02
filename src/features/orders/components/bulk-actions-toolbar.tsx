@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -22,11 +22,13 @@ import { type OrderStatus } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { cn } from '@/lib/utils'
 import { type BulkOrderStatusResponse } from '@/services/orders'
+import { StockErrorModal } from './stock-error-modal'
 
 interface BulkActionsToolbarProps {
   selectedOrders: number[]
   onBulkStatusChange: (orderIds: number[], newStatus: OrderStatus) => Promise<BulkOrderStatusResponse>
   onClearSelection: () => void
+  onStockError?: (result: BulkOrderStatusResponse) => void
   loading?: boolean
 }
 
@@ -41,8 +43,9 @@ const orderStatuses: OrderStatus[] = [
 
 export function BulkActionsToolbar({ 
   selectedOrders, 
-  onBulkStatusChange, 
+  onBulkStatusChange,
   onClearSelection,
+  onStockError,
   loading = false 
 }: BulkActionsToolbarProps) {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
@@ -50,6 +53,23 @@ export function BulkActionsToolbar({
   const [isUpdating, setIsUpdating] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkOrderStatusResponse | null>(null)
   const [showResults, setShowResults] = useState(false)
+  const [showStockErrorModal, setShowStockErrorModal] = useState(false)
+
+  // Debug: Log cuando cambie el estado
+  console.log('State changed:', {
+    showStockErrorModal,
+    showResults,
+    bulkResult: !!bulkResult
+  })
+
+  // Forzar re-render cuando cambie el estado
+  useEffect(() => {
+    console.log('useEffect triggered:', {
+      showStockErrorModal,
+      showResults,
+      bulkResult: !!bulkResult
+    })
+  }, [showStockErrorModal, showResults, bulkResult])
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return
@@ -58,9 +78,31 @@ export function BulkActionsToolbar({
       setIsUpdating(true)
       const result = await onBulkStatusChange(selectedOrders, selectedStatus)
       setBulkResult(result)
-      setShowResults(true)
-      setIsStatusDialogOpen(false)
-      setSelectedStatus(null)
+      
+      // Verificar si hay órdenes que fallaron por stock
+      const hasStockErrors = result.failed_details.some(order => order.error_type === 'stock_validation_failed')
+      
+      console.log('Bulk result:', result)
+      console.log('Has stock errors:', hasStockErrors)
+      console.log('Failed details:', result.failed_details)
+      
+      if (hasStockErrors) {
+        // Pasar el resultado al componente padre para mostrar el modal de errores de stock
+        console.log('Passing stock error to parent component')
+        if (onStockError) {
+          onStockError(result)
+        }
+        setIsStatusDialogOpen(false)
+        setSelectedStatus(null)
+      } else {
+        // Mostrar resultados normales
+        console.log('Showing normal results modal')
+        setShowResults(true)
+        setShowStockErrorModal(false) // Asegurar que el modal de stock no se muestre
+        
+        setIsStatusDialogOpen(false)
+        setSelectedStatus(null)
+      }
     } catch (error) {
       console.error('Error updating bulk status:', error)
     } finally {
@@ -73,6 +115,25 @@ export function BulkActionsToolbar({
     setBulkResult(null)
     onClearSelection()
   }
+
+  const handleCloseStockErrorModal = () => {
+    setShowStockErrorModal(false)
+    setBulkResult(null)
+    // No llamar onClearSelection() aquí para evitar recargar la página
+  }
+
+  const handleCloseStockErrorModalAndClear = () => {
+    setShowStockErrorModal(false)
+    setBulkResult(null)
+    onClearSelection()
+  }
+
+  console.log('BulkActionsToolbar render:', {
+    selectedOrders: selectedOrders.length,
+    showStockErrorModal,
+    showResults,
+    bulkResult: !!bulkResult
+  })
 
   if (selectedOrders.length === 0) {
     return null
@@ -318,6 +379,30 @@ export function BulkActionsToolbar({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal especial para errores de stock */}
+      {console.log('Render check:', { 
+        hasBulkResult: !!bulkResult,
+        showStockErrorModal,
+        showResults,
+        bulkResult
+      })}
+      {bulkResult && (
+        <>
+          {console.log('Rendering StockErrorModal with:', { 
+            isOpen: showStockErrorModal, 
+            hasBulkResult: !!bulkResult,
+            showResults,
+            showStockErrorModal 
+          })}
+          <StockErrorModal
+            isOpen={showStockErrorModal}
+            onClose={handleCloseStockErrorModal}
+            onCloseAndClear={handleCloseStockErrorModalAndClear}
+            bulkResult={bulkResult}
+          />
+        </>
+      )}
     </>
   )
 }

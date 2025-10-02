@@ -59,6 +59,7 @@ type OrdersTableProps = {
   onEditOrder?: (order: Order) => void
   onDeleteOrder?: (order: Order) => void
   onBulkStatusChange?: (orderIds: number[], newStatus: OrderStatus) => Promise<BulkOrderStatusResponse>
+  onStockError?: (result: BulkOrderStatusResponse) => void
   onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
   filters: OrdersQueryParams
   pagination: TablePaginationInfo
@@ -71,6 +72,7 @@ const OrdersTableComponent = ({
   onEditOrder,
   onDeleteOrder,
   onBulkStatusChange,
+  onStockError,
   onFiltersChange,
   filters,
   pagination,
@@ -84,6 +86,7 @@ const OrdersTableComponent = ({
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [currentOrderTitle, setCurrentOrderTitle] = useState<string>('')
+  
 
   // Obtener IDs de órdenes seleccionadas
   const selectedOrderIds = Object.keys(rowSelection)
@@ -95,6 +98,7 @@ const OrdersTableComponent = ({
   const handleClearSelection = () => {
     setRowSelection({})
   }
+
 
   // Receipt handlers
   const handlePreviewReceipt = async (order: Order) => {
@@ -229,6 +233,7 @@ const OrdersTableComponent = ({
           selectedOrders={selectedOrderIds}
           onBulkStatusChange={onBulkStatusChange}
           onClearSelection={handleClearSelection}
+          onStockError={onStockError}
           loading={isLoading}
         />
       )}
@@ -309,6 +314,7 @@ const OrdersTableComponent = ({
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
       />
+
     </div>
   )
 }
