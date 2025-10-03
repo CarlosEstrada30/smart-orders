@@ -10,6 +10,7 @@ import {
   FileText,
   Receipt,
   Building,
+  TrendingUp,
 } from 'lucide-react'
 
 import { type SidebarData } from '../types'
@@ -75,6 +76,16 @@ export const sidebarData: SidebarData = {
           title: 'Dashboard',
           url: '/',
           icon: LayoutDashboard,
+        },
+      ],
+    },
+    {
+      title: 'Producción',
+      items: [
+        {
+          title: 'Dashboard Producción',
+          url: '/production',
+          icon: TrendingUp,
         },
       ],
     },

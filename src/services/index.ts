@@ -15,6 +15,7 @@ export { dashboardService } from './dashboard'
 export { felService } from './fel'
 export { companiesService } from './companies'
 export { SettingsService } from './settings'
+export { productionService } from './production'
 
 // Exportar tipos
 export type { Client, CreateClientRequest, UpdateClientRequest, ClientsListParams } from './clients'
@@ -47,3 +48,10 @@ export type {
 } from './fel' 
 export type { Company, CompanyCreate, CompanyUpdate, CompaniesListParams, CompaniesListResponse } from './companies'
 export type { CompanySettings, CompanySettingsCreate, CompanySettingsUpdate, SettingsFormData } from './settings'
+export type { 
+  ProductionData, 
+  ProductionSummary, 
+  RouteInfo, 
+  ProductionQueryParams, 
+  ProductionResponse 
+} from './production'

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // Esquemas basados en los tipos del servicio de inventario
-export const entryTypeSchema = z.enum(['production', 'purchase', 'return', 'adjustment', 'transfer', 'initial'])
+export const entryTypeSchema = z.enum(['production', 'return', 'adjustment', 'initial'])
 export const entryStatusSchema = z.enum(['draft', 'pending', 'approved', 'completed', 'cancelled'])
 
 export const inventoryEntryItemSchema = z.object({

@@ -28,6 +28,7 @@ import { Route as AuthenticatedUsersRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedRoutesRouteRouteImport } from './routes/_authenticated/routes/route'
 import { Route as AuthenticatedProductsRouteRouteImport } from './routes/_authenticated/products/route'
+import { Route as AuthenticatedProductionRouteRouteImport } from './routes/_authenticated/production/route'
 import { Route as AuthenticatedOrdersRouteRouteImport } from './routes/_authenticated/orders/route'
 import { Route as AuthenticatedNewOrderRouteRouteImport } from './routes/_authenticated/new-order/route'
 import { Route as AuthenticatedInventoryRouteRouteImport } from './routes/_authenticated/inventory/route'
@@ -149,6 +150,12 @@ const AuthenticatedProductsRouteRoute =
   AuthenticatedProductsRouteRouteImport.update({
     id: '/products',
     path: '/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProductionRouteRoute =
+  AuthenticatedProductionRouteRouteImport.update({
+    id: '/production',
+    path: '/production',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedOrdersRouteRoute =
@@ -314,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
+  '/production': typeof AuthenticatedProductionRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
   '/routes': typeof AuthenticatedRoutesRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteRoute
@@ -356,6 +364,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
+  '/production': typeof AuthenticatedProductionRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
   '/settings': typeof AuthenticatedSettingsRouteRoute
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -402,6 +411,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/_authenticated/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteRoute
+  '/_authenticated/production': typeof AuthenticatedProductionRouteRoute
   '/_authenticated/products': typeof AuthenticatedProductsRouteRoute
   '/_authenticated/routes': typeof AuthenticatedRoutesRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRoute
@@ -451,6 +461,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/new-order'
     | '/orders'
+    | '/production'
     | '/products'
     | '/routes'
     | '/settings'
@@ -493,6 +504,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/new-order'
     | '/orders'
+    | '/production'
     | '/products'
     | '/settings'
     | '/clerk'
@@ -538,6 +550,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory'
     | '/_authenticated/new-order'
     | '/_authenticated/orders'
+    | '/_authenticated/production'
     | '/_authenticated/products'
     | '/_authenticated/routes'
     | '/_authenticated/settings'
@@ -726,6 +739,13 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/products'
       preLoaderRoute: typeof AuthenticatedProductsRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/production': {
+      id: '/_authenticated/production'
+      path: '/production'
+      fullPath: '/production'
+      preLoaderRoute: typeof AuthenticatedProductionRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/orders': {
@@ -1021,6 +1041,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryRouteRoute: typeof AuthenticatedInventoryRouteRouteWithChildren
   AuthenticatedNewOrderRouteRoute: typeof AuthenticatedNewOrderRouteRoute
   AuthenticatedOrdersRouteRoute: typeof AuthenticatedOrdersRouteRoute
+  AuthenticatedProductionRouteRoute: typeof AuthenticatedProductionRouteRoute
   AuthenticatedProductsRouteRoute: typeof AuthenticatedProductsRouteRoute
   AuthenticatedRoutesRouteRoute: typeof AuthenticatedRoutesRouteRouteWithChildren
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRoute
@@ -1045,6 +1066,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedInventoryRouteRouteWithChildren,
   AuthenticatedNewOrderRouteRoute: AuthenticatedNewOrderRouteRoute,
   AuthenticatedOrdersRouteRoute: AuthenticatedOrdersRouteRoute,
+  AuthenticatedProductionRouteRoute: AuthenticatedProductionRouteRoute,
   AuthenticatedProductsRouteRoute: AuthenticatedProductsRouteRoute,
   AuthenticatedRoutesRouteRoute: AuthenticatedRoutesRouteRouteWithChildren,
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRoute,

@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input'
 import { NumericInput, PriceInput, QuantityInput } from '@/components/ui/numeric-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
+import { Combobox } from '@/components/ui/combobox'
 import {
   Select,
   SelectContent,
@@ -44,11 +46,33 @@ interface FormItem extends InventoryEntryItemCreate {
 }
 
 export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormProps) {
-  const [entryType, setEntryType] = useState<EntryType>('purchase')
-  const [supplierInfo, setSupplierInfo] = useState('')
-  const [expectedDate, setExpectedDate] = useState('')
+  const [entryType, setEntryType] = useState<EntryType>('production')
+  const [expectedDate, setExpectedDate] = useState(() => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  })
+
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const parseDateString = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setExpectedDate(formatDate(date))
+    }
+  }
   const [notes, setNotes] = useState('')
-  const [referenceDocument, setReferenceDocument] = useState('')
   
   const [items, setItems] = useState<FormItem[]>([])
   const [newItem, setNewItem] = useState({
@@ -80,6 +104,12 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
       setLoadingProducts(false)
     }
   }
+
+  // Crear opciones para el Combobox de productos
+  const productOptions = products.map(product => ({
+    value: product.id.toString(),
+    label: `${product.name} (${product.sku})`
+  }))
 
   const addItem = () => {
     if (!newItem.product_id || newItem.quantity <= 0) {
@@ -162,10 +192,8 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
       
       const entryData: InventoryEntryCreate = {
         entry_type: entryType,
-        supplier_info: supplierInfo || null,
         expected_date: formatDateToISO(expectedDate),
         notes: notes || null,
-        reference_document: referenceDocument || null,
         items: items.map(item => ({
           product_id: item.product_id,
           quantity: item.quantity,
@@ -222,37 +250,16 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
               </Select>
             </div>
 
-            {entryType === 'purchase' && (
-              <div className="space-y-2">
-                <Label htmlFor="supplier_info">Proveedor</Label>
-                <Input
-                  id="supplier_info"
-                  value={supplierInfo}
-                  onChange={(e) => setSupplierInfo(e.target.value)}
-                  placeholder="Nombre del proveedor"
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="expected_date">Fecha Esperada</Label>
-              <Input
-                id="expected_date"
-                type="date"
-                value={expectedDate}
-                onChange={(e) => setExpectedDate(e.target.value)}
+              <DatePicker
+                selected={expectedDate ? parseDateString(expectedDate) : new Date()}
+                onSelect={handleDateChange}
+                placeholder="Selecciona una fecha"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="reference_document">Documento de Referencia</Label>
-              <Input
-                id="reference_document"
-                value={referenceDocument}
-                onChange={(e) => setReferenceDocument(e.target.value)}
-                placeholder="Número de factura, orden, etc."
-              />
-            </div>
           </div>
 
           <div className="space-y-2">
@@ -280,28 +287,15 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
           <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
             <div className="space-y-2 md:col-span-2">
               <Label>Producto</Label>
-              <Select 
-                value={newItem.product_id} 
+              <Combobox
+                options={productOptions}
+                value={newItem.product_id}
                 onValueChange={(value) => setNewItem(prev => ({ ...prev, product_id: value }))}
+                placeholder={loadingProducts ? "Cargando..." : "Selecciona producto"}
+                searchPlaceholder="Buscar producto por nombre..."
+                emptyMessage="No se encontraron productos."
                 disabled={loadingProducts}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={loadingProducts ? "Cargando..." : "Selecciona producto"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id.toString()}>
-                      <div className="flex items-center space-x-2">
-                        <Package className="h-4 w-4" />
-                        <span>{product.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          (Stock: {product.stock})
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div className="space-y-2">
