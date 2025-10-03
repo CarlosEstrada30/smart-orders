@@ -28,6 +28,7 @@ import { Route as AuthenticatedUsersRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedRoutesRouteRouteImport } from './routes/_authenticated/routes/route'
 import { Route as AuthenticatedProductsRouteRouteImport } from './routes/_authenticated/products/route'
+import { Route as AuthenticatedProductionRouteRouteImport } from './routes/_authenticated/production/route'
 import { Route as AuthenticatedOrdersRouteRouteImport } from './routes/_authenticated/orders/route'
 import { Route as AuthenticatedNewOrderRouteRouteImport } from './routes/_authenticated/new-order/route'
 import { Route as AuthenticatedInventoryRouteRouteImport } from './routes/_authenticated/inventory/route'
@@ -52,6 +53,7 @@ import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenti
 import { Route as AuthenticatedOrderDetailOrderIdRouteRouteImport } from './routes/_authenticated/order-detail/$orderId/route'
 import { Route as AuthenticatedInventoryNewEntryRouteRouteImport } from './routes/_authenticated/inventory/new-entry/route'
 import { Route as AuthenticatedInventoryDetailEntryIdRouteRouteImport } from './routes/_authenticated/inventory-detail/$entryId/route'
+import { Route as AuthenticatedEditOrderOrderIdRouteRouteImport } from './routes/_authenticated/edit-order/$orderId/route'
 import { Route as AuthenticatedClientsNewClientRouteRouteImport } from './routes/_authenticated/clients/new-client/route'
 import { Route as AuthenticatedClientsEditClientClientIdRouteRouteImport } from './routes/_authenticated/clients/edit-client/$clientId/route'
 
@@ -148,6 +150,12 @@ const AuthenticatedProductsRouteRoute =
   AuthenticatedProductsRouteRouteImport.update({
     id: '/products',
     path: '/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProductionRouteRoute =
+  AuthenticatedProductionRouteRouteImport.update({
+    id: '/production',
+    path: '/production',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedOrdersRouteRoute =
@@ -286,6 +294,12 @@ const AuthenticatedInventoryDetailEntryIdRouteRoute =
     path: '/inventory-detail/$entryId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEditOrderOrderIdRouteRoute =
+  AuthenticatedEditOrderOrderIdRouteRouteImport.update({
+    id: '/edit-order/$orderId',
+    path: '/edit-order/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClientsNewClientRouteRoute =
   AuthenticatedClientsNewClientRouteRouteImport.update({
     id: '/new-client',
@@ -307,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
+  '/production': typeof AuthenticatedProductionRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
   '/routes': typeof AuthenticatedRoutesRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteRoute
@@ -324,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/clients/new-client': typeof AuthenticatedClientsNewClientRouteRoute
+  '/edit-order/$orderId': typeof AuthenticatedEditOrderOrderIdRouteRoute
   '/inventory-detail/$entryId': typeof AuthenticatedInventoryDetailEntryIdRouteRoute
   '/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
@@ -348,6 +364,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
+  '/production': typeof AuthenticatedProductionRouteRoute
   '/products': typeof AuthenticatedProductsRouteRoute
   '/settings': typeof AuthenticatedSettingsRouteRoute
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -363,6 +380,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/clients/new-client': typeof AuthenticatedClientsNewClientRouteRoute
+  '/edit-order/$orderId': typeof AuthenticatedEditOrderOrderIdRouteRoute
   '/inventory-detail/$entryId': typeof AuthenticatedInventoryDetailEntryIdRouteRoute
   '/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
@@ -393,6 +411,7 @@ export interface FileRoutesById {
   '/_authenticated/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/_authenticated/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteRoute
+  '/_authenticated/production': typeof AuthenticatedProductionRouteRoute
   '/_authenticated/products': typeof AuthenticatedProductsRouteRoute
   '/_authenticated/routes': typeof AuthenticatedRoutesRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRoute
@@ -411,6 +430,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/new-client': typeof AuthenticatedClientsNewClientRouteRoute
+  '/_authenticated/edit-order/$orderId': typeof AuthenticatedEditOrderOrderIdRouteRoute
   '/_authenticated/inventory-detail/$entryId': typeof AuthenticatedInventoryDetailEntryIdRouteRoute
   '/_authenticated/inventory/new-entry': typeof AuthenticatedInventoryNewEntryRouteRoute
   '/_authenticated/order-detail/$orderId': typeof AuthenticatedOrderDetailOrderIdRouteRoute
@@ -441,6 +461,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/new-order'
     | '/orders'
+    | '/production'
     | '/products'
     | '/routes'
     | '/settings'
@@ -458,6 +479,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/clients/new-client'
+    | '/edit-order/$orderId'
     | '/inventory-detail/$entryId'
     | '/inventory/new-entry'
     | '/order-detail/$orderId'
@@ -482,6 +504,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/new-order'
     | '/orders'
+    | '/production'
     | '/products'
     | '/settings'
     | '/clerk'
@@ -497,6 +520,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/clients/new-client'
+    | '/edit-order/$orderId'
     | '/inventory-detail/$entryId'
     | '/inventory/new-entry'
     | '/order-detail/$orderId'
@@ -526,6 +550,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inventory'
     | '/_authenticated/new-order'
     | '/_authenticated/orders'
+    | '/_authenticated/production'
     | '/_authenticated/products'
     | '/_authenticated/routes'
     | '/_authenticated/settings'
@@ -544,6 +569,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/'
     | '/_authenticated/clients/new-client'
+    | '/_authenticated/edit-order/$orderId'
     | '/_authenticated/inventory-detail/$entryId'
     | '/_authenticated/inventory/new-entry'
     | '/_authenticated/order-detail/$orderId'
@@ -715,6 +741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/production': {
+      id: '/_authenticated/production'
+      path: '/production'
+      fullPath: '/production'
+      preLoaderRoute: typeof AuthenticatedProductionRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/orders': {
       id: '/_authenticated/orders'
       path: '/orders'
@@ -883,6 +916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryDetailEntryIdRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/edit-order/$orderId': {
+      id: '/_authenticated/edit-order/$orderId'
+      path: '/edit-order/$orderId'
+      fullPath: '/edit-order/$orderId'
+      preLoaderRoute: typeof AuthenticatedEditOrderOrderIdRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients/new-client': {
       id: '/_authenticated/clients/new-client'
       path: '/new-client'
@@ -1001,11 +1041,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventoryRouteRoute: typeof AuthenticatedInventoryRouteRouteWithChildren
   AuthenticatedNewOrderRouteRoute: typeof AuthenticatedNewOrderRouteRoute
   AuthenticatedOrdersRouteRoute: typeof AuthenticatedOrdersRouteRoute
+  AuthenticatedProductionRouteRoute: typeof AuthenticatedProductionRouteRoute
   AuthenticatedProductsRouteRoute: typeof AuthenticatedProductsRouteRoute
   AuthenticatedRoutesRouteRoute: typeof AuthenticatedRoutesRouteRouteWithChildren
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRoute
   AuthenticatedUsersRouteRoute: typeof AuthenticatedUsersRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedEditOrderOrderIdRouteRoute: typeof AuthenticatedEditOrderOrderIdRouteRoute
   AuthenticatedInventoryDetailEntryIdRouteRoute: typeof AuthenticatedInventoryDetailEntryIdRouteRoute
   AuthenticatedOrderDetailOrderIdRouteRoute: typeof AuthenticatedOrderDetailOrderIdRouteRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
@@ -1024,11 +1066,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedInventoryRouteRouteWithChildren,
   AuthenticatedNewOrderRouteRoute: AuthenticatedNewOrderRouteRoute,
   AuthenticatedOrdersRouteRoute: AuthenticatedOrdersRouteRoute,
+  AuthenticatedProductionRouteRoute: AuthenticatedProductionRouteRoute,
   AuthenticatedProductsRouteRoute: AuthenticatedProductsRouteRoute,
   AuthenticatedRoutesRouteRoute: AuthenticatedRoutesRouteRouteWithChildren,
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRoute,
   AuthenticatedUsersRouteRoute: AuthenticatedUsersRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedEditOrderOrderIdRouteRoute:
+    AuthenticatedEditOrderOrderIdRouteRoute,
   AuthenticatedInventoryDetailEntryIdRouteRoute:
     AuthenticatedInventoryDetailEntryIdRouteRoute,
   AuthenticatedOrderDetailOrderIdRouteRoute:

@@ -39,9 +39,15 @@ const DataTableToolbarComponent = <TData,>({
     filters.date_to
   )
   
+  // Función helper para parsear fechas desde el backend (formato YYYY-MM-DD)
+  const parseDateFromBackend = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day) // month - 1 porque Date usa 0-indexado
+  }
+
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | null>(
     filters.date_from && filters.date_to 
-      ? { from: new Date(filters.date_from), to: new Date(filters.date_to) }
+      ? { from: parseDateFromBackend(filters.date_from), to: parseDateFromBackend(filters.date_to) }
       : null
   )
   
@@ -145,11 +151,19 @@ const DataTableToolbarComponent = <TData,>({
     onFiltersChange({ route_id: routeId })
   }, [onFiltersChange])
 
+  // Función helper para formatear fechas localmente
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   const handleDateRangeChange = useCallback((range: { from?: Date; to?: Date } | null) => {
     setDateRange(range)
     onFiltersChange({
-      date_from: range?.from ? range.from.toISOString().split('T')[0] : undefined,
-      date_to: range?.to ? range.to.toISOString().split('T')[0] : undefined
+      date_from: range?.from ? formatLocalDate(range.from) : undefined,
+      date_to: range?.to ? formatLocalDate(range.to) : undefined
     })
   }, [onFiltersChange])
 

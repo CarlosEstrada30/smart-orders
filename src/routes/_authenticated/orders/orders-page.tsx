@@ -12,9 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Main } from '@/components/layout/main'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse } from '@/services/orders'
+import { redirectWithSubdomain } from '@/utils/subdomain'
+import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse, type OrderStatus, type BulkOrderStatusResponse } from '@/services/orders'
 import { OrdersTable } from '@/features/orders/components/orders-table'
+import { StockErrorModal } from '@/features/orders/components/stock-error-modal'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { toast } from 'sonner'
 
 export function OrdersPage() {
   const navigate = useNavigate()
@@ -40,6 +43,10 @@ export function OrdersPage() {
     skip: 0,
     limit: 10,
   })
+  
+  // Estado para el modal de errores de stock
+  const [showStockErrorModal, setShowStockErrorModal] = useState(false)
+  const [stockErrorResult, setStockErrorResult] = useState<BulkOrderStatusResponse | null>(null)
 
   // Función para cargar órdenes - SIN useCallback para evitar loops
   const loadOrders = async () => {
@@ -68,6 +75,52 @@ export function OrdersPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Función para cambio masivo de estados
+  const handleBulkStatusChange = async (orderIds: number[], newStatus: OrderStatus) => {
+    try {
+      setLoading(true)
+      const result = await ordersService.updateBulkOrderStatus(orderIds, newStatus)
+      
+      // Mostrar feedback básico
+      if (result.updated_count > 0) {
+        toast.success(`${result.updated_count} orden${result.updated_count !== 1 ? 'es' : ''} actualizada${result.updated_count !== 1 ? 's' : ''} exitosamente`)
+      }
+      
+      if (result.failed_count > 0) {
+        toast.error(`${result.failed_count} orden${result.failed_count !== 1 ? 'es' : ''} no pudo${result.failed_count !== 1 ? 'ron' : ''} ser actualizada${result.failed_count !== 1 ? 's' : ''}`)
+      }
+      
+      // Recargar órdenes para reflejar los cambios
+      await loadOrders()
+      
+      // Retornar el resultado completo para el componente de acciones masivas
+      return result
+    } catch (_err) {
+      toast.error('Error al actualizar el estado de las órdenes')
+      throw _err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Manejar errores de stock
+  const handleStockError = (result: BulkOrderStatusResponse) => {
+    setStockErrorResult(result)
+    setShowStockErrorModal(true)
+  }
+
+  // Cerrar modal de errores de stock
+  const handleCloseStockErrorModal = () => {
+    setShowStockErrorModal(false)
+    setStockErrorResult(null)
+  }
+
+  const handleCloseStockErrorModalAndClear = () => {
+    setShowStockErrorModal(false)
+    setStockErrorResult(null)
+    // Aquí podrías agregar lógica para limpiar la selección si es necesario
   }
 
   // UseEffect directo con filters - más simple y sin loops
@@ -110,6 +163,10 @@ export function OrdersPage() {
 
   const handleViewOrder = (order: Order) => {
     navigate({ to: '/order-detail/$orderId', params: { orderId: order.id!.toString() } })
+  }
+
+  const handleEditOrder = (order: Order) => {
+    redirectWithSubdomain(`/edit-order/${order.id}`)
   }
 
   const handleDeleteOrderAction = (order: Order) => {
@@ -173,7 +230,10 @@ export function OrdersPage() {
             <OrdersTable
               data={ordersData.items || []}
               onViewOrder={handleViewOrder}
+              onEditOrder={handleEditOrder}
               onDeleteOrder={handleDeleteOrderAction}
+              onBulkStatusChange={handleBulkStatusChange}
+              onStockError={handleStockError}
               onFiltersChange={handleFiltersChange}
               filters={filters}
               pagination={paginationInfo}
@@ -211,6 +271,16 @@ export function OrdersPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Modal de errores de stock */}
+        {stockErrorResult && (
+          <StockErrorModal
+            isOpen={showStockErrorModal}
+            onClose={handleCloseStockErrorModal}
+            onCloseAndClear={handleCloseStockErrorModalAndClear}
+            bulkResult={stockErrorResult}
+          />
+        )}
       </div>
     </Main>
   )

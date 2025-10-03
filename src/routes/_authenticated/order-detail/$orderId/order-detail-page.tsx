@@ -38,7 +38,8 @@ import {
   Package, 
   Truck, 
   CheckCircle,
-  X
+  X,
+  Edit
 } from 'lucide-react'
 import { ordersService, type Order, type OrderStatus } from '@/services/orders'
 import { OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
@@ -225,6 +226,19 @@ export function OrderDetailPage() {
                 <span className="sm:hidden">Estado</span>
               </Button>
             </PermissionGuard>
+
+            {order.status === 'pending' && (
+              <PermissionGuard orderPermission="can_manage">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => redirectWithSubdomain(`/edit-order/${orderId}`)}
+                >
+                  <Edit className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Editar</span>
+                </Button>
+              </PermissionGuard>
+            )}
 
             {order.status !== 'cancelled' && (
               <PermissionGuard orderPermission="can_manage">

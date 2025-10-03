@@ -609,6 +609,75 @@
         }
       }
     },
+    "/api/v1/clients/export": {
+      "get": {
+        "tags": [
+          "clients"
+        ],
+        "summary": "Export Clients",
+        "description": "Export clients to Excel file (requires authentication)\n\nParameters:\n- active_only: Export only active clients (default: false)\n- skip: Number of records to skip (default: 0)  \n- limit: Maximum number of records to export (default: 10000)\n\nReturns an Excel file with the same format as the import template.",
+        "operationId": "export_clients_api_v1_clients_export_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Active Only"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/clients/{client_id}": {
       "get": {
         "tags": [
@@ -798,6 +867,80 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/clients/bulk-upload": {
+      "post": {
+        "tags": [
+          "clients"
+        ],
+        "summary": "Bulk Upload Clients",
+        "description": "Bulk upload clients from Excel file (requires authentication)\n\nThe Excel file should preferably have a 'Clientes' sheet, but any sheet will work.\nAccepts column names in Spanish or English:\n\nREQUIRED COLUMNS (any of these names):\n- name / nombre / Name / Nombre / NOMBRE: Client name\n\nOPTIONAL COLUMNS (any of these names):\n- email / correo / Email / Correo: Client email\n- phone / telefono / teléfono / Phone / Teléfono: Client phone\n- nit / NIT / Nit: Client NIT\n- address / direccion / dirección / Address / Dirección: Client address\n- is_active / activo / Active / Activo: true/false for active status\n\nDownload the template using GET /api/v1/clients/template/download for the correct format.",
+        "operationId": "bulk_upload_clients_api_v1_clients_bulk_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_bulk_upload_clients_api_v1_clients_bulk_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientBulkUploadResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/clients/template/download": {
+      "get": {
+        "tags": [
+          "clients"
+        ],
+        "summary": "Download Clients Template",
+        "description": "Download Excel template for bulk client upload (requires authentication)",
+        "operationId": "download_clients_template_api_v1_clients_template_download_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/products/": {
@@ -1006,6 +1149,75 @@
                     "$ref": "#/components/schemas/ProductResponse"
                   },
                   "title": "Response Get Low Stock Products Api V1 Products Low Stock Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products/export": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Export Products",
+        "description": "Export products to Excel file (requires authentication)\n\nParameters:\n- active_only: Export only active products (default: false)\n- skip: Number of records to skip (default: 0)  \n- limit: Maximum number of records to export (default: 10000)\n\nReturns an Excel file with the same format as the import template.",
+        "operationId": "export_products_api_v1_products_export_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Active Only"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
                 }
               }
             }
@@ -1317,6 +1529,80 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/products/bulk-upload": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Bulk Upload Products",
+        "description": "Bulk upload products from Excel file (requires authentication)\n\nThe Excel file should preferably have a 'Productos' sheet, but any sheet will work.\nAccepts column names in Spanish or English:\n\nREQUIRED COLUMNS (any of these names):\n- nombre / name / Name / Nombre / NOMBRE: Product name\n- precio / price / Price / Precio / PRECIO: Product price (must be \u003E 0)\n- sku / SKU / codigo / código / Codigo / Código: Product SKU (must be unique)\n\nOPTIONAL COLUMNS (any of these names):\n- descripcion / description / Description / Descripción: Product description\n- stock / Stock / inventario / Inventario: Stock quantity (default: 0)\n- activo / is_active / active / Active: true/false for active status (default: true)\n\nDownload the template using GET /api/v1/products/template/download for the correct format.",
+        "operationId": "bulk_upload_products_api_v1_products_bulk_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_bulk_upload_products_api_v1_products_bulk_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductBulkUploadResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/products/template/download": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Download Products Template",
+        "description": "Download Excel template for bulk product upload (requires authentication)",
+        "operationId": "download_products_template_api_v1_products_template_download_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/routes/": {
@@ -1912,7 +2198,7 @@
           "orders"
         ],
         "summary": "Update Order",
-        "description": "Update an order (requires authentication)",
+        "description": "Update an order\n\nBehavior depends on order status:\n- PENDING orders: Complete update allowed (client, items, route, notes)\n- Other status: Only basic fields (route, notes, status)",
         "operationId": "update_order_api_v1_orders__order_id__put",
         "security": [
           {
@@ -2487,6 +2773,187 @@
         "responses": {
           "200": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/analytics/monthly-summary": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Monthly Orders Analytics",
+        "description": "Get monthly summary analytics for orders by status\n\nReturns aggregated data showing order count and total amount by month.\nPerfect for creating bar charts or line graphs showing monthly trends.\n\nParameters:\n- status_filter: Order status (pending, confirmed, in_progress, shipped, delivered, cancelled)\n- year: Optional filter by specific year\n- start_date: Optional start date for analysis period\n- end_date: Optional end date for analysis period\n\nResponse includes:\n- monthly_data: List of monthly summaries with year, month, count, and total amount\n- total_orders: Sum of all orders in the period\n- total_amount: Sum of all amounts in the period\n- period_start/end: Date range analyzed",
+        "operationId": "get_monthly_orders_analytics_api_v1_orders_analytics_monthly_summary_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Filter by order status (required)",
+              "title": "Status Filter"
+            },
+            "description": "Filter by order status (required)"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by specific year",
+              "title": "Year"
+            },
+            "description": "Filter by specific year"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Start date for analysis (YYYY-MM-DD)",
+              "title": "Start Date"
+            },
+            "description": "Start date for analysis (YYYY-MM-DD)"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "End date for analysis (YYYY-MM-DD)",
+              "title": "End Date"
+            },
+            "description": "End date for analysis (YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderAnalyticsSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/analytics/status-distribution": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Status Distribution",
+        "description": "Get order status distribution for donut chart\n\nReturns the count and percentage of orders by status for a specific month.\nPerfect for creating donut charts showing order status distribution.\n\nParameters:\n- year: Year for analysis (optional, defaults to current year)\n- month: Month for analysis (1-12, optional, defaults to current month)\n\nResponse includes:\n- status_data: List with each status, its name, count, and percentage\n- total_orders: Total orders in the period\n- month/year: Period analyzed \n- period_name: Human-readable period name\n\nExample response for donut chart:\n{\n  \"status_data\": [\n    {\"status\": \"delivered\", \"status_name\": \"Entregado\", \"count\": 15, \"percentage\": 50.0},\n    {\"status\": \"pending\", \"status_name\": \"Pendiente\", \"count\": 10, \"percentage\": 33.3},\n    {\"status\": \"cancelled\", \"status_name\": \"Cancelado\", \"count\": 5, \"percentage\": 16.7}\n  ],\n  \"total_orders\": 30,\n  \"month\": 9,\n  \"year\": 2025,\n  \"period_name\": \"Septiembre 2025\"\n}",
+        "operationId": "get_status_distribution_api_v1_orders_analytics_status_distribution_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Year for analysis (defaults to current year)",
+              "title": "Year"
+            },
+            "description": "Year for analysis (defaults to current year)"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Month for analysis (1-12, defaults to current month)",
+              "title": "Month"
+            },
+            "description": "Month for analysis (1-12, defaults to current month)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusDistributionSummary"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -5122,6 +5589,352 @@
         ]
       }
     },
+    "/api/v1/product-route-prices/": {
+      "post": {
+        "summary": "Create Product Route Price",
+        "description": "Crear un precio específico para un producto en una ruta",
+        "operationId": "create_product_route_price_api_v1_product_route_prices__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRoutePriceCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRoutePriceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get All Product Route Prices",
+        "description": "Obtener todos los precios por ruta con paginación",
+        "operationId": "get_all_product_route_prices_api_v1_product_route_prices__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductRoutePriceResponse"
+                  },
+                  "title": "Response Get All Product Route Prices Api V1 Product Route Prices  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/product-route-prices/product/{product_id}": {
+      "get": {
+        "summary": "Get Product Route Prices",
+        "description": "Obtener todos los precios por ruta de un producto",
+        "operationId": "get_product_route_prices_api_v1_product_route_prices_product__product_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductRoutePriceResponse"
+                  },
+                  "title": "Response Get Product Route Prices Api V1 Product Route Prices Product  Product Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/product-route-prices/{route_price_id}": {
+      "get": {
+        "summary": "Get Product Route Price",
+        "description": "Obtener un precio específico por ruta por ID",
+        "operationId": "get_product_route_price_api_v1_product_route_prices__route_price_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "route_price_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Route Price Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRoutePriceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Product Route Price",
+        "description": "Actualizar el precio de un producto para una ruta específica",
+        "operationId": "update_product_route_price_api_v1_product_route_prices__route_price_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "route_price_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Route Price Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRoutePriceUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductRoutePriceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Product Route Price",
+        "description": "Eliminar un precio específico de un producto para una ruta por ID",
+        "operationId": "delete_product_route_price_api_v1_product_route_prices__route_price_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "route_price_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Route Price Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/product-route-prices/product/{product_id}/route/{route_id}": {
+      "delete": {
+        "summary": "Delete Product Route Price By Product Route",
+        "description": "Eliminar el precio específico de un producto para una ruta",
+        "operationId": "delete_product_route_price_by_product_route_api_v1_product_route_prices_product__product_id__route__route_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Route Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -5204,6 +6017,36 @@
         "title": "BatchUpdateRequest",
         "description": "For batch operations"
       },
+      "Body_bulk_upload_clients_api_v1_clients_bulk_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Excel file with client data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_bulk_upload_clients_api_v1_clients_bulk_upload_post"
+      },
+      "Body_bulk_upload_products_api_v1_products_bulk_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Excel file with product data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_bulk_upload_products_api_v1_products_bulk_upload_post"
+      },
       "Body_save_company_settings_api_v1_settings__post": {
         "properties": {
           "company_name": {
@@ -5282,6 +6125,74 @@
           "nit"
         ],
         "title": "Body_save_company_settings_api_v1_settings__post"
+      },
+      "BulkUploadError": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "row",
+          "error"
+        ],
+        "title": "BulkUploadError"
+      },
+      "ClientBulkUploadResult": {
+        "properties": {
+          "total_rows": {
+            "type": "integer",
+            "title": "Total Rows"
+          },
+          "successful_uploads": {
+            "type": "integer",
+            "title": "Successful Uploads"
+          },
+          "failed_uploads": {
+            "type": "integer",
+            "title": "Failed Uploads"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/BulkUploadError"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          },
+          "created_clients": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Created Clients",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_rows",
+          "successful_uploads",
+          "failed_uploads"
+        ],
+        "title": "ClientBulkUploadResult"
       },
       "ClientCreate": {
         "properties": {
@@ -6870,6 +7781,89 @@
         ],
         "title": "LoginRequest"
       },
+      "MonthlySummary": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "month": {
+            "type": "integer",
+            "title": "Month"
+          },
+          "month_name": {
+            "type": "string",
+            "title": "Month Name"
+          },
+          "order_count": {
+            "type": "integer",
+            "title": "Order Count"
+          },
+          "total_amount": {
+            "type": "number",
+            "title": "Total Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "month",
+          "month_name",
+          "order_count",
+          "total_amount"
+        ],
+        "title": "MonthlySummary",
+        "description": "Schema for monthly orders summary"
+      },
+      "OrderAnalyticsSummary": {
+        "properties": {
+          "monthly_data": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlySummary"
+            },
+            "type": "array",
+            "title": "Monthly Data"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "total_amount": {
+            "type": "number",
+            "title": "Total Amount"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "monthly_data",
+          "total_orders",
+          "total_amount"
+        ],
+        "title": "OrderAnalyticsSummary",
+        "description": "Schema for orders analytics summary response"
+      },
       "OrderCreate": {
         "properties": {
           "client_id": {
@@ -6894,6 +7888,18 @@
               }
             ],
             "default": "pending"
+          },
+          "discount_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percentage",
+            "default": 0
           },
           "notes": {
             "anyOf": [
@@ -7040,6 +8046,18 @@
             ],
             "default": "pending"
           },
+          "discount_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percentage",
+            "default": 0
+          },
           "notes": {
             "anyOf": [
               {
@@ -7133,6 +8151,17 @@
       },
       "OrderUpdate": {
         "properties": {
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
           "route_id": {
             "anyOf": [
               {
@@ -7154,6 +8183,17 @@
               }
             ]
           },
+          "discount_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Percentage"
+          },
           "notes": {
             "anyOf": [
               {
@@ -7164,10 +8204,25 @@
               }
             ],
             "title": "Notes"
+          },
+          "items": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OrderItemCreate"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items"
           }
         },
         "type": "object",
-        "title": "OrderUpdate"
+        "title": "OrderUpdate",
+        "description": "Schema for order editing (complete for PENDING orders, basic for others)"
       },
       "PaginatedResponse_OrderResponse_": {
         "properties": {
@@ -7300,6 +8355,45 @@
         ],
         "title": "PaymentMethod"
       },
+      "ProductBulkUploadResult": {
+        "properties": {
+          "total_rows": {
+            "type": "integer",
+            "title": "Total Rows"
+          },
+          "successful_uploads": {
+            "type": "integer",
+            "title": "Successful Uploads"
+          },
+          "failed_uploads": {
+            "type": "integer",
+            "title": "Failed Uploads"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/BulkUploadError"
+            },
+            "type": "array",
+            "title": "Errors",
+            "default": []
+          },
+          "created_products": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Created Products",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_rows",
+          "successful_uploads",
+          "failed_uploads"
+        ],
+        "title": "ProductBulkUploadResult"
+      },
       "ProductCreate": {
         "properties": {
           "name": {
@@ -7399,6 +8493,20 @@
               }
             ],
             "title": "Updated At"
+          },
+          "route_prices": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Prices"
           }
         },
         "type": "object",
@@ -7410,6 +8518,96 @@
           "created_at"
         ],
         "title": "ProductResponse"
+      },
+      "ProductRoutePriceCreate": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "route_id": {
+            "type": "integer",
+            "title": "Route Id"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "route_id",
+          "price"
+        ],
+        "title": "ProductRoutePriceCreate"
+      },
+      "ProductRoutePriceResponse": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "route_id": {
+            "type": "integer",
+            "title": "Route Id"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "route_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "route_id",
+          "price",
+          "id"
+        ],
+        "title": "ProductRoutePriceResponse"
+      },
+      "ProductRoutePriceUpdate": {
+        "properties": {
+          "price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          }
+        },
+        "type": "object",
+        "title": "ProductRoutePriceUpdate"
       },
       "ProductUpdate": {
         "properties": {
@@ -7671,6 +8869,72 @@
           "created_at"
         ],
         "title": "SettingsResponse"
+      },
+      "StatusDistribution": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "status_name": {
+            "type": "string",
+            "title": "Status Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "status_name",
+          "count",
+          "percentage"
+        ],
+        "title": "StatusDistribution",
+        "description": "Schema for status distribution (donut chart data)"
+      },
+      "StatusDistributionSummary": {
+        "properties": {
+          "status_data": {
+            "items": {
+              "$ref": "#/components/schemas/StatusDistribution"
+            },
+            "type": "array",
+            "title": "Status Data"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "month": {
+            "type": "integer",
+            "title": "Month"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "period_name": {
+            "type": "string",
+            "title": "Period Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status_data",
+          "total_orders",
+          "month",
+          "year",
+          "period_name"
+        ],
+        "title": "StatusDistributionSummary",
+        "description": "Schema for status distribution summary response (donut chart)"
       },
       "StockAdjustmentRequest": {
         "properties": {

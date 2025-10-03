@@ -138,24 +138,6 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
     enableSorting: false,
   },
   {
-    id: 'supplier_info',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Proveedor' />
-    ),
-    cell: ({ row }) => {
-      const supplierInfo = row.original.supplier_info
-      
-      return supplierInfo ? (
-        <div className="max-w-32 truncate font-medium">
-          {supplierInfo}
-        </div>
-      ) : (
-        <span className="text-sm text-muted-foreground">-</span>
-      )
-    },
-    enableSorting: false,
-  },
-  {
     id: 'items_summary',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Items' />

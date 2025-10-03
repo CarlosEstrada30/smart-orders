@@ -24,12 +24,6 @@ export const getEntryTypeData = (type: EntryType) => {
       color: 'bg-blue-100 text-blue-800 border-blue-200',
       description: 'Entrada por producción interna'
     },
-    purchase: {
-      label: ENTRY_TYPE_LABELS.purchase,
-      icon: ShoppingCart,
-      color: 'bg-green-100 text-green-800 border-green-200',
-      description: 'Compra a proveedores'
-    },
     return: {
       label: ENTRY_TYPE_LABELS.return,
       icon: RotateCcw,
@@ -41,12 +35,6 @@ export const getEntryTypeData = (type: EntryType) => {
       icon: Settings,
       color: 'bg-purple-100 text-purple-800 border-purple-200',
       description: 'Ajuste de inventario'
-    },
-    transfer: {
-      label: ENTRY_TYPE_LABELS.transfer,
-      icon: ArrowLeftRight,
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      description: 'Transferencia entre ubicaciones'
     },
     initial: {
       label: ENTRY_TYPE_LABELS.initial,
@@ -105,10 +93,8 @@ export const getEntryStatusData = (status: EntryStatus) => {
 // Opciones para filtros
 export const entryTypeOptions = [
   { value: 'production', label: ENTRY_TYPE_LABELS.production },
-  { value: 'purchase', label: ENTRY_TYPE_LABELS.purchase },
   { value: 'return', label: ENTRY_TYPE_LABELS.return },
   { value: 'adjustment', label: ENTRY_TYPE_LABELS.adjustment },
-  { value: 'transfer', label: ENTRY_TYPE_LABELS.transfer },
   { value: 'initial', label: ENTRY_TYPE_LABELS.initial }
 ]
 

@@ -24,11 +24,19 @@ interface DateFilterProps {
 export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilterProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [quickSelect, setQuickSelect] = useState<string>('')
+  // Función helper para formatear fechas localmente
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   const [fromDate, setFromDate] = useState<string>(
-    dateRange?.from ? dateRange.from.toISOString().split('T')[0] : ''
+    dateRange?.from ? formatLocalDate(dateRange.from) : ''
   )
   const [toDate, setToDate] = useState<string>(
-    dateRange?.to ? dateRange.to.toISOString().split('T')[0] : ''
+    dateRange?.to ? formatLocalDate(dateRange.to) : ''
   )
 
   const handleQuickSelect = (value: string) => {
@@ -67,8 +75,16 @@ export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilter
     }
 
     if (range) {
-      setFromDate(range.from.toISOString().split('T')[0])
-      setToDate(range.to.toISOString().split('T')[0])
+      // Usar métodos locales en lugar de toISOString() para evitar problemas de zona horaria
+      const formatLocalDate = (date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      }
+      
+      setFromDate(formatLocalDate(range.from))
+      setToDate(formatLocalDate(range.to))
       onDateRangeChange(range)
     }
 

@@ -26,10 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MoreHorizontal, Eye, Trash2, Download } from 'lucide-react'
-import { type Order } from '../data/schema'
+import { MoreHorizontal, Eye, Trash2, Download, Edit } from 'lucide-react'
+import { type Order, type OrderStatus } from '../data/schema'
+import { type BulkOrderStatusResponse } from '@/services/orders'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
+import { BulkActionsToolbar } from './bulk-actions-toolbar'
 import { ordersColumns as columns } from './orders-columns'
 import { ordersService, type OrdersQueryParams } from '@/services/orders'
 import { toast } from 'sonner'
@@ -54,7 +56,10 @@ declare module '@tanstack/react-table' {
 type OrdersTableProps = {
   data: Order[]
   onViewOrder?: (order: Order) => void
+  onEditOrder?: (order: Order) => void
   onDeleteOrder?: (order: Order) => void
+  onBulkStatusChange?: (orderIds: number[], newStatus: OrderStatus) => Promise<BulkOrderStatusResponse>
+  onStockError?: (result: BulkOrderStatusResponse) => void
   onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
   filters: OrdersQueryParams
   pagination: TablePaginationInfo
@@ -64,7 +69,10 @@ type OrdersTableProps = {
 const OrdersTableComponent = ({ 
   data, 
   onViewOrder, 
-  onDeleteOrder, 
+  onEditOrder,
+  onDeleteOrder,
+  onBulkStatusChange,
+  onStockError,
   onFiltersChange,
   filters,
   pagination,
@@ -78,6 +86,19 @@ const OrdersTableComponent = ({
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [currentOrderTitle, setCurrentOrderTitle] = useState<string>('')
+  
+
+  // Obtener IDs de órdenes seleccionadas
+  const selectedOrderIds = Object.keys(rowSelection)
+    .filter(key => rowSelection[key as keyof typeof rowSelection])
+    .map(key => data[parseInt(key)]?.id)
+    .filter(Boolean) as number[]
+
+  // Limpiar selección
+  const handleClearSelection = () => {
+    setRowSelection({})
+  }
+
 
   // Receipt handlers
   const handlePreviewReceipt = async (order: Order) => {
@@ -143,6 +164,12 @@ const OrdersTableComponent = ({
                   <Eye className="mr-2 h-4 w-4" />
                   Ver detalles
                 </DropdownMenuItem>
+                {order.status === 'pending' && (
+                  <DropdownMenuItem onClick={() => onEditOrder?.(order)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar orden
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => await handlePreviewReceipt(order)} disabled={isLoading}>
                   <Eye className="mr-2 h-4 w-4" />
@@ -200,6 +227,16 @@ const OrdersTableComponent = ({
         onFiltersChange={onFiltersChange}
         filters={filters}
       />
+      
+      {selectedOrderIds.length > 0 && onBulkStatusChange && (
+        <BulkActionsToolbar
+          selectedOrders={selectedOrderIds}
+          onBulkStatusChange={onBulkStatusChange}
+          onClearSelection={handleClearSelection}
+          onStockError={onStockError}
+          loading={isLoading}
+        />
+      )}
       <div className='overflow-hidden rounded-md border'>
         <Table>
           <TableHeader>
@@ -277,6 +314,7 @@ const OrdersTableComponent = ({
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
       />
+
     </div>
   )
 }

@@ -49,9 +49,24 @@ class LogoutErrorBoundary extends Component<
       return <div className="min-h-screen bg-background animate-pulse" />
     }
 
-    // Si hay error y NO está haciendo logout, propagar el error normalmente
+    // Si hay error y NO está haciendo logout, mostrar mensaje de error
     if (this.state.hasError) {
-      throw new Error('Application error (not during logout)')
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold text-destructive">Error de Aplicación</h1>
+            <p className="text-muted-foreground">
+              Ha ocurrido un error inesperado. Por favor, recarga la página.
+            </p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Recargar Página
+            </button>
+          </div>
+        </div>
+      )
     }
 
     return this.props.children

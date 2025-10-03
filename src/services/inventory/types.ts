@@ -1,6 +1,6 @@
 // Tipos basados en la API de Smart Orders - Inventario
 
-export type EntryType = 'production' | 'purchase' | 'return' | 'adjustment' | 'transfer' | 'initial'
+export type EntryType = 'production' | 'return' | 'adjustment' | 'initial'
 export type EntryStatus = 'draft' | 'pending' | 'approved' | 'completed' | 'cancelled'
 
 export interface InventoryEntryItem {
@@ -138,10 +138,8 @@ export interface InventoryOperationResponse {
 // Constantes para labels
 export const ENTRY_TYPE_LABELS: Record<EntryType, string> = {
   production: 'Producción',
-  purchase: 'Compra',
   return: 'Devolución',
   adjustment: 'Ajuste',
-  transfer: 'Transferencia',
   initial: 'Inventario Inicial'
 }
 

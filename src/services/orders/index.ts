@@ -58,7 +58,9 @@ export interface Order {
   id?: number
   order_number?: string
   client_id: number
+  route_id?: number
   status: OrderStatus
+  discount_percentage?: number
   notes?: string
   total_amount?: number
   created_at?: string
@@ -69,7 +71,9 @@ export interface Order {
 
 export interface OrderCreate {
   client_id: number
+  route_id?: number
   status?: OrderStatus
+  discount_percentage?: number
   notes?: string
   items: OrderItem[]
 }
@@ -80,6 +84,50 @@ export interface OrderUpdate {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'in_progress' | 'shipped' | 'delivered' | 'cancelled'
+
+// Tipos para respuesta de cambio masivo de estados
+export interface ProductUpdateDetail {
+  product_id: number
+  product_name: string
+  product_sku: string
+  quantity: number
+  unit_price: number
+}
+
+export interface ProductErrorDetail {
+  product_id: number
+  product_name: string
+  product_sku: string
+  error_type: 'product_not_found' | 'product_inactive' | 'insufficient_stock'
+  error_message: string
+  required_quantity?: number
+  available_quantity?: number
+}
+
+export interface SuccessOrderDetail {
+  order_id: number
+  order_number: string | null
+  products_updated: ProductUpdateDetail[]
+}
+
+export interface FailedOrderDetail {
+  order_id: number
+  order_number: string | null
+  error_type: 'order_not_found' | 'order_inactive' | 'invalid_status' | 'product_errors' | 'stock_validation_failed'
+  error_message: string
+  products_with_errors: ProductErrorDetail[]
+}
+
+export interface BulkOrderStatusResponse {
+  updated_count: number
+  failed_count: number
+  total_orders: number
+  status: OrderStatus
+  failed_orders: number[]
+  success_orders: number[]
+  success_details: SuccessOrderDetail[]
+  failed_details: FailedOrderDetail[]
+}
 
 // Tipos para respuestas de receipt/comprobante
 export interface ReceiptGenerateResponse {
@@ -195,37 +243,39 @@ export const ordersService = {
     return apiClient.put<Order>(`/orders/${orderId}`, orderData)
   },
 
-  // Actualizar orden completa (incluyendo items)
+  // Actualizar orden completa (incluyendo items) - para órdenes PENDING
   async updateOrderComplete(orderId: number, orderData: {
+    client_id?: number
+    route_id?: number
+    discount_percentage?: number
     notes?: string
     items: OrderItem[]
   }): Promise<Order> {
-    // Primero actualizar los datos básicos de la orden
-    await this.updateOrder(orderId, {
-      notes: orderData.notes
-    })
-
-    // Obtener la orden actual para ver los items existentes
-    const currentOrder = await this.getOrder(orderId)
+    // Usar el endpoint PUT directo con OrderFullUpdate para órdenes PENDING
+    const fullUpdateData: Record<string, any> = {}
     
-    // Remover todos los items existentes
-    for (const item of currentOrder.items) {
-      if (item.id) {
-        await this.removeOrderItem(orderId, item.id)
-      }
+    if (orderData.client_id !== undefined) {
+      fullUpdateData.client_id = orderData.client_id
     }
-
-    // Agregar los nuevos items
-    for (const item of orderData.items) {
-      await this.addOrderItem(orderId, {
+    if (orderData.route_id !== undefined) {
+      fullUpdateData.route_id = orderData.route_id
+    }
+    if (orderData.discount_percentage !== undefined) {
+      fullUpdateData.discount_percentage = orderData.discount_percentage
+    }
+    if (orderData.notes !== undefined) {
+      fullUpdateData.notes = orderData.notes
+    }
+    if (orderData.items && orderData.items.length > 0) {
+      // Convertir OrderItem[] a OrderItemCreate[] para la API
+      fullUpdateData.items = orderData.items.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price
-      })
+      }))
     }
 
-    // Retornar la orden actualizada
-    return this.getOrder(orderId)
+    return apiClient.put<Order>(`/orders/${orderId}`, fullUpdateData)
   },
 
   // Eliminar una orden
@@ -236,6 +286,14 @@ export const ordersService = {
   // Actualizar estado de una orden
   async updateOrderStatus(orderId: number, newStatus: OrderStatus): Promise<Order> {
     return apiClient.post<Order>(`/orders/${orderId}/status/${newStatus}`)
+  },
+
+  // Actualizar estado de múltiples órdenes
+  async updateBulkOrderStatus(orderIds: number[], newStatus: OrderStatus): Promise<BulkOrderStatusResponse> {
+    return apiClient.put<BulkOrderStatusResponse>('/orders/bulk-status', {
+      order_ids: orderIds,
+      status: newStatus
+    })
   },
 
   // Agregar item a una orden
@@ -444,6 +502,8 @@ export const useOrders = () => {
     deleteOrder: (orderId: number) => ordersService.deleteOrder(orderId),
     updateOrderStatus: (orderId: number, newStatus: OrderStatus) => 
       ordersService.updateOrderStatus(orderId, newStatus),
+    updateBulkOrderStatus: (orderIds: number[], newStatus: OrderStatus) => 
+      ordersService.updateBulkOrderStatus(orderIds, newStatus),
     addOrderItem: (orderId: number, item: OrderItem) => 
       ordersService.addOrderItem(orderId, item),
     removeOrderItem: (orderId: number, itemId: number) => 
