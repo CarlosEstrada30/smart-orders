@@ -22,18 +22,28 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { useLogout } from '@/hooks/use-logout'
+import { backendFieldsToRole, getRoleConfig } from '@/services/users/role-mapping'
 
 type NavUserProps = {
   user: {
     name: string
     email: string
     avatar: string
+    role?: string
   }
 }
 
 export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar()
   const { logout, isLoggingOut } = useLogout()
+  
+  // Obtener el rol mapeado y su configuración
+  const userRole = user.role ? backendFieldsToRole(
+    false, // is_superuser - no disponible en NavUserProps
+    user.email, 
+    user.role
+  ) : null
+  const roleConfig = userRole ? getRoleConfig(userRole) : null
 
   return (
     <SidebarMenu>
@@ -50,7 +60,7 @@ export function NavUser({ user }: NavUserProps) {
               </Avatar>
               <div className='grid flex-1 text-start text-sm leading-tight'>
                 <span className='truncate font-semibold'>{user.name}</span>
-                <span className='truncate text-xs'>{user.email}</span>
+                <span className='truncate text-xs'>{roleConfig?.displayName || user.email}</span>
               </div>
               <ChevronsUpDown className='ms-auto size-4' />
             </SidebarMenuButton>
@@ -69,7 +79,7 @@ export function NavUser({ user }: NavUserProps) {
                 </Avatar>
                 <div className='grid flex-1 text-start text-sm leading-tight'>
                   <span className='truncate font-semibold'>{user.name}</span>
-                  <span className='truncate text-xs'>{user.email}</span>
+                  <span className='truncate text-xs'>{roleConfig?.displayName || user.role || user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

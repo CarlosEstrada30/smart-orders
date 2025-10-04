@@ -27,7 +27,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => {
   const cookieState = getCookie(ACCESS_TOKEN)
-  const initToken = cookieState ? JSON.parse(cookieState) : ''
+  const initToken = cookieState || ''
   
   // Verificar si el token inicial está expirado
   if (initToken && isTokenExpired(initToken)) {
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         accessToken: '',
         setAccessToken: (accessToken) =>
           set((state) => {
-            setCookie(ACCESS_TOKEN, JSON.stringify(accessToken))
+            setCookie(ACCESS_TOKEN, accessToken)
             return { ...state, auth: { ...state.auth, accessToken } }
           }),
         resetAccessToken: () =>
@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       accessToken: initToken,
       setAccessToken: (accessToken) =>
         set((state) => {
-          setCookie(ACCESS_TOKEN, JSON.stringify(accessToken))
+          setCookie(ACCESS_TOKEN, accessToken)
           return { ...state, auth: { ...state.auth, accessToken } }
         }),
       resetAccessToken: () =>

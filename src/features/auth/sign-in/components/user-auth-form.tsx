@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
 import { authService } from '@/services'
 import type { LoginRequest } from '@/services/auth'
+import { getUserFromToken } from '@/utils/jwt'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -53,10 +54,23 @@ export function UserAuthForm({
       // Guardar token
       setAccessToken(response.access_token)
       
-      // Guardar usuario si viene en la respuesta
-      if (response.user) {
-        setUser(response.user)
+      // Decodificar JWT para obtener información del usuario
+      const userInfo = getUserFromToken(response.access_token)
+      
+      // Crear usuario con información del JWT
+      const user = {
+        email: userInfo?.email || credentials.email,
+        full_name: userInfo?.full_name,
+        username: userInfo?.username,
+        role: userInfo?.role,
+        is_active: userInfo?.is_active,
+        is_superuser: userInfo?.is_superuser,
+        exp: userInfo?.exp || (Date.now() + (24 * 60 * 60 * 1000)),
+        tenant: userInfo?.tenant
       }
+      
+      // Guardar usuario
+      setUser(user)
       
       // Mostrar mensaje de éxito
       toast.success('¡Bienvenido! Sesión iniciada correctamente')

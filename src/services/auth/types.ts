@@ -11,8 +11,14 @@ export interface LoginResponse {
 }
 
 export interface AuthUser {
-  accountNo: string
   email: string
-  role: string[]
+  full_name?: string
+  username?: string
+  role?: string
+  is_active?: boolean
+  is_superuser?: boolean
   exp: number
+  tenant?: {
+    tenant_schema: string
+  }
 } 

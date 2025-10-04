@@ -50,10 +50,14 @@ function SignInPage() {
       
       // Crear usuario con información del JWT
       const user = {
-        accountNo: 'ACC001',
         email: userInfo?.email || email,
-        role: ['admin'], // Puedes ajustar según tu JWT
-        exp: userInfo?.exp || (Date.now() + (24 * 60 * 60 * 1000))
+        full_name: userInfo?.full_name,
+        username: userInfo?.username,
+        role: userInfo?.role,
+        is_active: userInfo?.is_active,
+        is_superuser: userInfo?.is_superuser,
+        exp: userInfo?.exp || (Date.now() + (24 * 60 * 60 * 1000)),
+        tenant: userInfo?.tenant
       }
 
       // Guardar token y usuario en el store

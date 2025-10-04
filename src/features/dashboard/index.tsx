@@ -112,7 +112,6 @@ export function Dashboard() {
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
-            <Button disabled>Generar Reporte</Button>
           </div>
         </div>
       

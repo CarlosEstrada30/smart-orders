@@ -155,28 +155,28 @@ describe('Dashboard Component', () => {
   })
 
   describe('Actions', () => {
-    it('should render generate report button', () => {
+    it('should render refresh button', () => {
       render(<Dashboard />)
       
-      const reportButton = screen.getByText('Generar Reporte')
-      expect(reportButton).toBeInTheDocument()
-      expect(reportButton.tagName).toBe('BUTTON')
+      const refreshButton = screen.getByText('Actualizar')
+      expect(refreshButton).toBeInTheDocument()
+      expect(refreshButton.tagName).toBe('BUTTON')
     })
 
-    it('should handle report button click', async () => {
+    it('should handle refresh button click', async () => {
       const user = userEvent.setup()
       render(<Dashboard />)
       
-      const reportButton = screen.getByText('Generar Reporte')
+      const refreshButton = screen.getByText('Actualizar')
       
       // Verificar que el botón sea clickeable
-      expect(reportButton).toBeEnabled()
+      expect(refreshButton).toBeEnabled()
       
-      // Click en el botón (por ahora no hace nada, pero no debería romper)
-      await user.click(reportButton)
+      // Click en el botón
+      await user.click(refreshButton)
       
       // No debería haber errores
-      expect(reportButton).toBeInTheDocument()
+      expect(refreshButton).toBeInTheDocument()
     })
   })
 

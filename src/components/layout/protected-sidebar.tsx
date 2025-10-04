@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useCompaniesPermissions } from '@/hooks/use-companies-permissions'
 import { useCompanySettings } from '@/hooks/use-company-settings'
 import { useAuthStore } from '@/stores/auth-store'
+import { getUserFromToken } from '@/utils/jwt'
 import { sidebarData } from './data/sidebar-data'
 import { type SidebarData } from './types'
 
@@ -12,8 +13,18 @@ import { type SidebarData } from './types'
 export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
   const { permissions, isLoading: permissionsLoading } = usePermissions()
   const { canAccessCompanies } = useCompaniesPermissions()
-  const { user } = useAuthStore(state => state.auth)
+  const { user, accessToken, setUser } = useAuthStore(state => state.auth)
   const { companySettings, isLoading: settingsLoading, hasSettings } = useCompanySettings()
+
+  // Extraer información del usuario del JWT si está disponible
+  const jwtUser = accessToken ? getUserFromToken(accessToken) : null
+  
+  // Si tenemos datos del JWT pero no hay usuario en el store, guardarlo
+  useEffect(() => {
+    if (jwtUser && !user) {
+      setUser(jwtUser)
+    }
+  }, [jwtUser, user, setUser])
 
   return useMemo(() => {
     // Si los permisos están cargando, mostrar solo dashboard básico
@@ -60,12 +71,14 @@ export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
         isLoading: false
       }
     }
+    
     // Crear datos dinámicos del sidebar
     const dynamicSidebarData: SidebarData = {
-      user: user ? {
-        name: user.name || user.username || 'Usuario',
-        email: user.email || 'usuario@ejemplo.com',
+      user: jwtUser ? {
+        name: jwtUser.full_name || jwtUser.username || 'Usuario',
+        email: jwtUser.email || 'usuario@ejemplo.com',
         avatar: '/avatars/shadcn.jpg', // TODO: agregar avatar del usuario si está disponible
+        role: jwtUser.role,
       } : sidebarData.user,
       teams: hasSettings && companySettings ? [
         {
@@ -144,5 +157,5 @@ export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
       ...result,
       isLoading: settingsLoading || permissionsLoading
     }
-  }, [permissions, permissionsLoading, canAccessCompanies, user, companySettings, settingsLoading, hasSettings])
+  }, [permissions, permissionsLoading, canAccessCompanies, user, accessToken, jwtUser, companySettings, settingsLoading, hasSettings])
 }

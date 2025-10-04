@@ -22,13 +22,18 @@ class LogoutErrorBoundary extends Component<
     this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(_: Error): LogoutInterceptorState {
+  static getDerivedStateFromError(error: Error, props: LogoutInterceptorProps & { isLoggingOut: boolean }): LogoutInterceptorState {
+    // Si está haciendo logout, NUNCA establecer estado de error
+    if (props.isLoggingOut) {
+      return { hasError: false }
+    }
     return { hasError: true }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Si está haciendo logout, no loggeamos el error ni lo propagamos
     if (this.props.isLoggingOut) {
+      console.log('Error durante logout ignorado:', error.message)
       return
     }
     
@@ -44,13 +49,20 @@ class LogoutErrorBoundary extends Component<
   }
 
   render() {
-    // Si está haciendo logout, mostrar pantalla en blanco independientemente del error
+    // Si está haciendo logout, SIEMPRE mostrar pantalla de carga (ignorar cualquier error)
     if (this.props.isLoggingOut) {
-      return <div className="min-h-screen bg-background animate-pulse" />
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-muted-foreground">Cerrando sesión...</p>
+          </div>
+        </div>
+      )
     }
 
-    // Si hay error y NO está haciendo logout, mostrar mensaje de error
-    if (this.state.hasError) {
+    // Si hay error Y NO está haciendo logout, mostrar mensaje de error
+    if (this.state.hasError && !this.props.isLoggingOut) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center space-y-4">

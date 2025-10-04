@@ -28,11 +28,17 @@ export function isTokenExpired(token: string): boolean {
 // Función para obtener información del usuario del JWT
 export function getUserFromToken(token: string) {
   const decoded = decodeJWT(token)
+  
   if (!decoded) return null
   
   return {
-    email: decoded.sub || decoded.email,
+    email: decoded.sub || decoded.user?.email,
+    full_name: decoded.user?.full_name,
+    username: decoded.user?.username,
+    role: decoded.user?.role,
+    is_active: decoded.user?.is_active,
+    is_superuser: decoded.user?.is_superuser,
     exp: decoded.exp,
-    // Agregar más campos según tu JWT
+    tenant: decoded.tenant,
   }
 } 

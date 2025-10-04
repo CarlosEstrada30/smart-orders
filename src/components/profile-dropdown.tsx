@@ -12,10 +12,19 @@ import {
 import { useAuthStore } from '@/stores/auth-store'
 import { useLogout } from '@/hooks/use-logout'
 import { LogOut } from 'lucide-react'
+import { backendFieldsToRole, getRoleConfig } from '@/services/users/role-mapping'
 
 export function ProfileDropdown() {
   const { user } = useAuthStore((state) => state.auth)
   const { logout, isLoggingOut } = useLogout()
+  
+  // Obtener el rol mapeado y su configuración
+  const userRole = user ? backendFieldsToRole(
+    user.is_superuser || false, 
+    user.email, 
+    user.role
+  ) : null
+  const roleConfig = userRole ? getRoleConfig(userRole) : null
 
   return (
     <DropdownMenu modal={false}>
@@ -33,10 +42,10 @@ export function ProfileDropdown() {
         <DropdownMenuLabel className='font-normal'>
           <div className='flex flex-col gap-1.5'>
             <p className='text-sm leading-none font-medium'>
-              {user?.email || 'Usuario'}
+              {user?.full_name || user?.username || user?.email || 'Usuario'}
             </p>
             <p className='text-muted-foreground text-xs leading-none'>
-              {user?.role?.join(', ') || 'Usuario'}
+              {roleConfig?.displayName || user?.role || 'Usuario'}
             </p>
           </div>
         </DropdownMenuLabel>
