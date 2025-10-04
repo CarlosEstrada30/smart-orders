@@ -111,9 +111,9 @@ export function ProductsPage() {
   const handleUpdateProduct = async () => {
     if (!productToEdit) return
 
-    // Validación básica
-    if (!editProductForm.name.trim() || !editProductForm.description.trim() || !editProductForm.sku.trim()) {
-      setEditFormError('Nombre, descripción y SKU son obligatorios')
+    // Validación básica - solo nombre y precio son requeridos
+    if (!editProductForm.name.trim()) {
+      setEditFormError('El nombre es obligatorio')
       return
     }
 
@@ -211,9 +211,9 @@ export function ProductsPage() {
 
   // Función para crear nuevo producto
   const handleCreateProduct = async () => {
-    // Validación básica
-    if (!newProductForm.name.trim() || !newProductForm.description.trim() || !newProductForm.sku.trim()) {
-      setFormError('Nombre, descripción y SKU son obligatorios')
+    // Validación básica - solo nombre y precio son requeridos
+    if (!newProductForm.name.trim()) {
+      setFormError('El nombre es obligatorio')
       return
     }
 
@@ -635,14 +635,13 @@ export function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="modal-sku">SKU *</Label>
+                <Label htmlFor="modal-sku">SKU</Label>
                 <Input
                   id="modal-sku"
                   type="text"
                   placeholder="SKU del producto"
                   value={newProductForm.sku}
                   onChange={(e) => setNewProductForm(prev => ({ ...prev, sku: e.target.value }))}
-                  required
                 />
               </div>
             </div>
@@ -658,26 +657,24 @@ export function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="modal-stock">Stock *</Label>
+                <Label htmlFor="modal-stock">Stock</Label>
                 <QuantityInput
                   id="modal-stock"
                   placeholder="0"
                   value={newProductForm.stock}
                   onValueChange={(value) => setNewProductForm(prev => ({ ...prev, stock: value }))}
                   min={0}
-                  required
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="modal-description">Descripción *</Label>
+              <Label htmlFor="modal-description">Descripción</Label>
               <Textarea
                 id="modal-description"
                 placeholder="Descripción del producto"
                 value={newProductForm.description}
                 onChange={(e) => setNewProductForm(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
-                required
               />
             </div>
             
@@ -743,14 +740,13 @@ export function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-sku">SKU *</Label>
+                <Label htmlFor="edit-sku">SKU</Label>
                 <Input
                   id="edit-sku"
                   type="text"
                   placeholder="SKU del producto"
                   value={editProductForm.sku}
                   onChange={(e) => setEditProductForm(prev => ({ ...prev, sku: e.target.value }))}
-                  required
                 />
               </div>
             </div>
@@ -769,7 +765,7 @@ export function ProductsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-stock">Stock *</Label>
+                <Label htmlFor="edit-stock">Stock</Label>
                 <Input
                   id="edit-stock"
                   type="number"
@@ -777,19 +773,17 @@ export function ProductsPage() {
                   placeholder="0"
                   value={editProductForm.stock}
                   onChange={(e) => setEditProductForm(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
-                  required
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Descripción *</Label>
+              <Label htmlFor="edit-description">Descripción</Label>
               <Textarea
                 id="edit-description"
                 placeholder="Descripción del producto"
                 value={editProductForm.description}
                 onChange={(e) => setEditProductForm(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
-                required
               />
             </div>
             
