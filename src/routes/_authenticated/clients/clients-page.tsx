@@ -125,6 +125,9 @@ export function ClientsPage() {
 
       await clientsService.updateClient(clientToEdit.id, editClientForm)
 
+      // Verificar que el componente aún está montado antes de actualizar estado
+      if (!isMounted()) return
+
       // Cliente actualizado exitosamente
       toast.success('Cliente actualizado exitosamente')
       setEditClientDialogOpen(false)
@@ -132,11 +135,15 @@ export function ClientsPage() {
       // Recargar la lista de clientes
       fetchClients()
     } catch (err) {
+      if (!isMounted()) return
+      
       const errorMessage = err instanceof ApiError ? err.detail : 'Error desconocido al actualizar el cliente'
       setEditFormError(errorMessage)
       toast.error(errorMessage)
     } finally {
-      setEditingClient(false)
+      if (isMounted()) {
+        setEditingClient(false)
+      }
     }
   }
 
@@ -232,6 +239,9 @@ export function ClientsPage() {
 
       await clientsService.createClient(newClientForm)
 
+      // Verificar que el componente aún está montado antes de actualizar estado
+      if (!isMounted()) return
+
       // Cliente creado exitosamente
       toast.success('Cliente creado exitosamente')
       setNewClientDialogOpen(false)
@@ -239,10 +249,14 @@ export function ClientsPage() {
       // Recargar la lista de clientes
       fetchClients()
     } catch (err) {
+      if (!isMounted()) return
+      
       const errorMessage = err instanceof ApiError ? err.detail : 'Error desconocido al crear el cliente'
       setFormError(errorMessage)
     } finally {
-      setCreatingClient(false)
+      if (isMounted()) {
+        setCreatingClient(false)
+      }
     }
   }
 
@@ -269,23 +283,36 @@ export function ClientsPage() {
       setIsExporting(true)
       const blob = await clientsService.exportClients({})
       
+      // Verificar que el componente aún está montado antes de manipular el DOM
+      if (!isMounted()) return
+      
       // Crear enlace de descarga
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.style.display = 'none'
       a.href = url
       a.download = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      
+      // Verificar que el body existe antes de manipularlo
+      if (document.body) {
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      }
 
-      toast.success('Clientes exportados exitosamente')
+      if (isMounted()) {
+        toast.success('Clientes exportados exitosamente')
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al exportar clientes'
-      toast.error(errorMessage)
+      if (isMounted()) {
+        const errorMessage = error instanceof Error ? error.message : 'Error al exportar clientes'
+        toast.error(errorMessage)
+      }
     } finally {
-      setIsExporting(false)
+      if (isMounted()) {
+        setIsExporting(false)
+      }
     }
   }
 
@@ -295,23 +322,36 @@ export function ClientsPage() {
       setIsExporting(true)
       const blob = await clientsService.exportClients({ active_only: true })
       
+      // Verificar que el componente aún está montado antes de manipular el DOM
+      if (!isMounted()) return
+      
       // Crear enlace de descarga
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.style.display = 'none'
       a.href = url
       a.download = `clientes_activos_${new Date().toISOString().split('T')[0]}.xlsx`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      
+      // Verificar que el body existe antes de manipularlo
+      if (document.body) {
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      }
 
-      toast.success('Clientes activos exportados exitosamente')
+      if (isMounted()) {
+        toast.success('Clientes activos exportados exitosamente')
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al exportar clientes activos'
-      toast.error(errorMessage)
+      if (isMounted()) {
+        const errorMessage = error instanceof Error ? error.message : 'Error al exportar clientes activos'
+        toast.error(errorMessage)
+      }
     } finally {
-      setIsExporting(false)
+      if (isMounted()) {
+        setIsExporting(false)
+      }
     }
   }
 

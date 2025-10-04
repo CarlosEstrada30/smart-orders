@@ -22,11 +22,9 @@ class LogoutErrorBoundary extends Component<
     this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(error: Error, props: LogoutInterceptorProps & { isLoggingOut: boolean }): LogoutInterceptorState {
-    // Si está haciendo logout, NUNCA establecer estado de error
-    if (props.isLoggingOut) {
-      return { hasError: false }
-    }
+  static getDerivedStateFromError(error: Error): LogoutInterceptorState {
+    // Siempre establecer estado de error cuando hay un error
+    // La lógica de logout se maneja en el render()
     return { hasError: true }
   }
 
