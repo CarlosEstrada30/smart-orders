@@ -324,20 +324,7 @@ export const ordersService = {
   // Descargar comprobante de orden como PDF
   async downloadReceipt(orderId: number): Promise<void> {
     try {
-      const token = useAuthStore.getState().auth.accessToken
-      
-      const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/receipt`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error al descargar el comprobante: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
+      const blob = await apiClient.downloadFile(`/orders/${orderId}/receipt`)
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -355,20 +342,7 @@ export const ordersService = {
   // Obtener blob del comprobante para preview
   async getReceiptPreviewBlob(orderId: number): Promise<string> {
     try {
-      const token = useAuthStore.getState().auth.accessToken
-      
-      const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/receipt/preview`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error al obtener vista previa: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
+      const blob = await apiClient.downloadFile(`/orders/${orderId}/receipt/preview`)
       const url = window.URL.createObjectURL(blob)
       return url
     } catch (error) {
@@ -395,12 +369,11 @@ export const ordersService = {
   // Verificar si un comprobante existe para una orden
   async checkReceiptExists(orderId: number): Promise<boolean> {
     try {
-      // Intentar obtener información del comprobante
+      // Usar apiClient para obtener headers con X-Timezone, pero hacer HEAD request
+      const headers = apiClient.getPublicHeaders()
       const response = await fetch(`${API_CONFIG.BASE_URL}/orders/${orderId}/receipt`, {
         method: 'HEAD', // Solo verificar headers, no descargar contenido
-        headers: {
-          'Authorization': `Bearer ${useAuthStore.getState().auth.accessToken}`,
-        }
+        headers
       })
       return response.ok
     } catch {
@@ -411,32 +384,17 @@ export const ordersService = {
   // ===== FUNCIONES DE REPORTE PDF PARA RUTEROS =====
 
   // Obtener blob del reporte para vista previa
-  async getOrdersReportPreviewBlob(params?: OrdersQueryParams): Promise<string> {
+async getOrdersReportPreviewBlob(params?: OrdersQueryParams): Promise<string> {
     try {
-      const token = useAuthStore.getState().auth.accessToken
-      
       // Construir query params para el endpoint
-      const queryParams = new URLSearchParams()
-      if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
-      if (params?.route_id) queryParams.append('route_id', params.route_id.toString())
-      if (params?.date_from) queryParams.append('date_from', params.date_from)
-      if (params?.date_to) queryParams.append('date_to', params.date_to)
-      if (params?.search) queryParams.append('search', params.search)
+      const queryParams: Record<string, string> = {}
+      if (params?.status_filter) queryParams.status_filter = params.status_filter
+      if (params?.route_id) queryParams.route_id = params.route_id.toString()
+      if (params?.date_from) queryParams.date_from = params.date_from
+      if (params?.date_to) queryParams.date_to = params.date_to
+      if (params?.search) queryParams.search = params.search
 
-      const url = `${API_CONFIG.BASE_URL}/orders/report/pdf${queryParams.toString() ? '?' + queryParams.toString() : ''}`
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error al obtener vista previa del reporte: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
+      const blob = await apiClient.downloadFile('/orders/report/pdf', queryParams)
       const url_blob = window.URL.createObjectURL(blob)
       return url_blob
     } catch (error) {
@@ -447,30 +405,15 @@ export const ordersService = {
   // Descargar reporte PDF de órdenes para ruteros
   async downloadOrdersReport(params?: OrdersQueryParams): Promise<void> {
     try {
-      const token = useAuthStore.getState().auth.accessToken
-      
       // Construir query params para el endpoint
-      const queryParams = new URLSearchParams()
-      if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
-      if (params?.route_id) queryParams.append('route_id', params.route_id.toString())
-      if (params?.date_from) queryParams.append('date_from', params.date_from)
-      if (params?.date_to) queryParams.append('date_to', params.date_to)
-      if (params?.search) queryParams.append('search', params.search)
+      const queryParams: Record<string, string> = {}
+      if (params?.status_filter) queryParams.status_filter = params.status_filter
+      if (params?.route_id) queryParams.route_id = params.route_id.toString()
+      if (params?.date_from) queryParams.date_from = params.date_from
+      if (params?.date_to) queryParams.date_to = params.date_to
+      if (params?.search) queryParams.search = params.search
 
-      const url = `${API_CONFIG.BASE_URL}/orders/report/pdf${queryParams.toString() ? '?' + queryParams.toString() : ''}`
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error al descargar el reporte: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
+      const blob = await apiClient.downloadFile('/orders/report/pdf', queryParams)
       const downloadUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = downloadUrl

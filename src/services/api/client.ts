@@ -1,6 +1,7 @@
 import { API_CONFIG, ApiError } from './config'
 import { useAuthStore } from '@/stores/auth-store'
 import { redirectWithSubdomain } from '@/utils/subdomain'
+import { getClientTimezone } from '@/utils/timezone'
 import { toast } from 'sonner'
 
 // Cliente HTTP base
@@ -13,12 +14,15 @@ class ApiClient {
     this.defaultHeaders = API_CONFIG.HEADERS
   }
 
-  // Método para obtener headers con token
+  // Método para obtener headers con token y zona horaria
   private getHeaders(): HeadersInit {
     const token = useAuthStore.getState().auth.accessToken
+    const timezone = getClientTimezone()
+    
     return {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
+      'X-Timezone': timezone,
     }
   }
 
