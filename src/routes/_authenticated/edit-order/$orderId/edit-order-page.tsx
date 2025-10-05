@@ -284,7 +284,7 @@ export function EditOrderPage() {
   // Preparar opciones para los comboboxes
   const clientOptions = clients.map(client => ({
     value: client.id.toString(),
-    label: `${client.name}${client.email ? ` (${client.email})` : ''}`,
+    label: `${client.name}${client.phone ? ` (${client.phone})` : ''}`,
     disabled: !client.is_active
   }))
 
@@ -384,7 +384,7 @@ export function EditOrderPage() {
                     value={selectedClient}
                     onValueChange={setSelectedClient}
                     placeholder="Selecciona un cliente"
-                    searchPlaceholder="Buscar cliente por nombre o email..."
+                    searchPlaceholder="Buscar cliente por nombre o teléfono..."
                     emptyMessage="No se encontraron clientes."
                     disabled={loadingClients}
                   />
