@@ -13,9 +13,12 @@ export function useLogout() {
     // Marcar como haciendo logout INMEDIATAMENTE
     setLoggingOut(true)
     
-    // Redirección inmediata sin limpiar el store (se limpiará en la nueva página)
-    window.location.href = '/sign-in'
-  }, [isLoggingOut, setLoggingOut])
+    // Limpiar el store y la cookie ANTES de redirigir
+    reset()
+    
+    // Redirección inmediata usando replace para evitar que el router procese la navegación
+    window.location.replace('/sign-in')
+  }, [isLoggingOut, setLoggingOut, reset])
 
   return {
     logout,

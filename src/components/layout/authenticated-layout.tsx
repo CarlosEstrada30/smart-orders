@@ -6,6 +6,7 @@ import { SearchProvider } from '@/context/search-provider'
 import { useAutoLoadPermissions, usePermissions } from '@/hooks/use-permissions'
 import { PermissionsLoadingCompact } from './permissions-loading'
 import { useCompanySettings } from '@/hooks/use-company-settings'
+import { useAuthStore } from '@/stores/auth-store'
 import {
   SidebarContent,
   SidebarFooter,
@@ -33,6 +34,7 @@ type AuthenticatedLayoutProps = {
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie('sidebar_state') !== 'false'
+  const { isLoggingOut } = useAuthStore((state) => state.auth)
   
   // Verificar expiración del token
   useTokenExpiration()
@@ -48,6 +50,19 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   
   // Obtener datos del sidebar filtrados por permisos
   const { isLoading: sidebarLoading, ...filteredSidebarData } = useFilteredSidebarData()
+  
+  // Mostrar loading durante logout para evitar mostrar "Acceso Denegado"
+  if (isLoggingOut) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold">Cerrando sesión...</h2>
+          <p className="text-muted-foreground">Por favor espera un momento</p>
+        </div>
+      </div>
+    )
+  }
   
   // Mostrar loading mientras cargan los permisos iniciales
   if (permissionsLoading) {

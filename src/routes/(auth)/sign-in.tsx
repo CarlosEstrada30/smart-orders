@@ -1,5 +1,5 @@
 import { createFileRoute, useSearch } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,7 @@ import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { authService } from '@/services/auth'
 import { ApiError } from '@/services/api/config'
-import { getUserFromToken } from '@/utils/jwt'
+import { getUserFromToken, isTokenExpired } from '@/utils/jwt'
 import { extractSubdomain, redirectWithSubdomain } from '@/utils/subdomain'
 import { toast } from 'sonner'
 
@@ -24,8 +24,30 @@ function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   
-  const { setAccessToken, setUser } = useAuthStore((state) => state.auth)
+  const { setAccessToken, setUser, reset, isLoggingOut, setLoggingOut, accessToken } = useAuthStore((state) => state.auth)
+
+  // Verificar si el usuario ya está autenticado y redirigir al dashboard
+  useEffect(() => {
+    if (accessToken && !isTokenExpired(accessToken)) {
+      // Usuario ya está logueado, redirigir al dashboard
+      const redirectTo = (search as { redirect?: string }).redirect || '/'
+      redirectWithSubdomain(redirectTo)
+    } else {
+      // No hay token válido, mostrar formulario de login
+      setCheckingAuth(false)
+    }
+  }, [accessToken, search])
+
+  // Limpiar el estado de autenticación al cargar la página de sign-in
+  useEffect(() => {
+    // Si se está haciendo logout, limpiar el estado
+    if (isLoggingOut) {
+      setLoggingOut(false)
+      reset()
+    }
+  }, [isLoggingOut, reset, setLoggingOut])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,6 +99,19 @@ function SignInPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold">Verificando sesión...</h2>
+          <p className="text-muted-foreground">Por favor espera un momento</p>
+        </div>
+      </div>
+    )
   }
 
   return (

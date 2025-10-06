@@ -1,6 +1,7 @@
 import React from 'react'
 import { usePermissions, useRole } from '@/hooks/use-permissions'
 import { permissionsService, type UserRole } from '@/services/auth/permissions.service'
+import { useAuthStore } from '@/stores/auth-store'
 
 interface PermissionGuardProps {
   children: React.ReactNode
@@ -41,6 +42,12 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 }) => {
   const { permissions, isLoading } = usePermissions()
   const { hasRole, isSuperuser } = useRole()
+  const { isLoggingOut } = useAuthStore((state) => state.auth)
+
+  // Si se está haciendo logout, no mostrar nada
+  if (isLoggingOut) {
+    return null
+  }
 
   // Si los permisos están cargando, mostrar un placeholder suave
   if (isLoading) {

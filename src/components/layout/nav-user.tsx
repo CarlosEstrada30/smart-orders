@@ -30,12 +30,17 @@ type NavUserProps = {
     email: string
     avatar: string
     role?: string
-  }
+  } | null
 }
 
 export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar()
   const { logout, isLoggingOut } = useLogout()
+  
+  // Si no hay usuario o se está haciendo logout, no mostrar nada
+  if (!user || isLoggingOut) {
+    return null
+  }
   
   // Obtener el rol mapeado y su configuración
   const userRole = user.role ? backendFieldsToRole(
