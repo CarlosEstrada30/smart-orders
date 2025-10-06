@@ -97,7 +97,7 @@ export function RoutesTable({ data, search, navigate }: DataTableProps) {
   return (
     <div className='space-y-4 max-sm:has-[div[role="toolbar"]]:mb-16'>
       <DataTableToolbar table={table} />
-      <div className='overflow-hidden rounded-md border'>
+      <div className='overflow-x-auto rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

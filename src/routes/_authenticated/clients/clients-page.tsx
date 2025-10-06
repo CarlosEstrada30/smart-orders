@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { useNavigationCleanup } from '@/hooks/use-navigation-cleanup'
 import { Input } from '@/components/ui/input'
@@ -47,6 +47,7 @@ import { clientsService, type Client, type CreateClientRequest, type UpdateClien
 import { ApiError } from '@/services/api/config'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { BulkImport } from '@/components/bulk-import'
+import { ClientPagination } from '@/components/ui/client-pagination'
 
 export function ClientsPage() {
   const { isMounted } = useNavigationCleanup()
@@ -57,6 +58,10 @@ export function ClientsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
+  
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   
   // Estado para el modal de nuevo cliente
   const [newClientDialogOpen, setNewClientDialogOpen] = useState(false)
@@ -360,13 +365,32 @@ export function ClientsPage() {
     fetchClients()
   }, [fetchClients])
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (client.nit && client.nit.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (client.phone && client.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (client.address && client.address.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
+  // Filtrar clientes basado en el término de búsqueda
+  const filteredClients = useMemo(() => {
+    return clients.filter(client =>
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.nit && client.nit.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.phone && client.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.address && client.address.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+  }, [clients, searchTerm])
+
+  // Calcular datos de paginación
+  const totalPages = Math.ceil(filteredClients.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedClients = filteredClients.slice(startIndex, endIndex)
+
+  // Resetear página cuando cambie el filtro
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
+
+  // Resetear página cuando cambie el tamaño de página
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [pageSize])
 
   const getStatusBadgeVariant = (isActive: boolean) => {
     return isActive ? 'default' : 'destructive'
@@ -457,7 +481,7 @@ export function ClientsPage() {
   return (
     <Main>
       <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
             <p className="text-muted-foreground">
@@ -465,22 +489,25 @@ export function ClientsPage() {
             </p>
           </div>
           <PermissionGuard clientPermission="can_manage">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline" 
                     disabled={isExporting}
+                    className="w-full sm:w-auto"
                   >
                     {isExporting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Exportando...
+                        <span className="hidden sm:inline">Exportando...</span>
+                        <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <Download className="mr-2 h-4 w-4" />
-                        Exportar
+                        <span className="hidden sm:inline">Exportar</span>
+                        <span className="sm:hidden">Exportar</span>
                       </>
                     )}
                   </Button>
@@ -501,13 +528,16 @@ export function ClientsPage() {
               <Button 
                 variant="outline" 
                 onClick={() => setImportDialogOpen(true)}
+                className="w-full sm:w-auto"
               >
                 <Upload className="mr-2 h-4 w-4" />
-                Importar
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Importar</span>
               </Button>
-              <Button onClick={handleNewClient}>
+              <Button onClick={handleNewClient} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
-                Nuevo Cliente
+                <span className="hidden sm:inline">Nuevo Cliente</span>
+                <span className="sm:hidden">Nuevo</span>
               </Button>
             </div>
           </PermissionGuard>
@@ -519,92 +549,108 @@ export function ClientsPage() {
             <CardDescription>
               {filteredClients.length} clientes encontrados
             </CardDescription>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="relative w-full sm:w-[300px]">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar clientes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-[300px]"
+                  className="pl-8 w-full"
                 />
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>NIT</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead>Dirección</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClients.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center space-x-2">
-                        <UserCheck className="h-4 w-4 text-muted-foreground" />
-                        <span>{client.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{client.email || '-'}</TableCell>
-                    <TableCell>{client.nit || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Phone className="h-3 w-3 mr-1" />
-                        {client.phone || '-'}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        <span className="truncate max-w-[200px]">{client.address || '-'}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(client.is_active)}>
-                        {client.is_active ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menú</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <PermissionGuard clientPermission="can_manage">
-                            <DropdownMenuItem onClick={() => handleEditClient(client)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                          </PermissionGuard>
-                          <PermissionGuard clientPermission="can_manage">
-                            <DropdownMenuItem 
-                              className="text-red-600"
-                              onClick={() => openDeleteDialog(client)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
-                            </DropdownMenuItem>
-                          </PermissionGuard>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[150px]">Nombre</TableHead>
+                    <TableHead className="hidden sm:table-cell min-w-[120px]">Email</TableHead>
+                    <TableHead className="hidden md:table-cell min-w-[100px]">NIT</TableHead>
+                    <TableHead className="hidden lg:table-cell min-w-[120px]">Teléfono</TableHead>
+                    <TableHead className="hidden xl:table-cell min-w-[150px]">Dirección</TableHead>
+                    <TableHead className="min-w-[80px]">Estado</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedClients.map((client) => (
+                    <TableRow key={client.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center space-x-2">
+                          <UserCheck className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{client.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="truncate block max-w-[120px]">{client.email || '-'}</span>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <span className="truncate block max-w-[100px]">{client.nit || '-'}</span>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center">
+                          <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
+                          <span className="truncate">{client.phone || '-'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell">
+                        <div className="flex items-center">
+                          <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                          <span className="truncate max-w-[150px]">{client.address || '-'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(client.is_active)}>
+                          {client.is_active ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menú</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <PermissionGuard clientPermission="can_manage">
+                              <DropdownMenuItem onClick={() => handleEditClient(client)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                            </PermissionGuard>
+                            <PermissionGuard clientPermission="can_manage">
+                              <DropdownMenuItem 
+                                className="text-red-600"
+                                onClick={() => openDeleteDialog(client)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </PermissionGuard>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {filteredClients.length > 0 && (
+              <ClientPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredClients.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+              />
+            )}
           </CardContent>
         </Card>
       </div>

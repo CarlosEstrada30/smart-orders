@@ -42,10 +42,10 @@ export const routesColumns: ColumnDef<Route>[] = [
       <DataTableColumnHeader column={column} title='Nombre' />
     ),
     cell: ({ row }) => (
-      <LongText className='max-w-48 ps-3 font-medium'>{row.getValue('name')}</LongText>
+      <LongText className='max-w-48 ps-3 font-medium min-w-[120px]'>{row.getValue('name')}</LongText>
     ),
     meta: {
-      className: cn(''),
+      className: cn('min-w-[120px]'),
     },
   },
   {
@@ -74,6 +74,9 @@ export const routesColumns: ColumnDef<Route>[] = [
       const status = isActive ? 'active' : 'inactive'
       return value.includes(status)
     },
+    meta: {
+      className: cn('min-w-[100px]'),
+    },
   },
   {
     accessorKey: 'created_at',
@@ -83,7 +86,7 @@ export const routesColumns: ColumnDef<Route>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue('created_at'))
       return (
-        <div className='text-sm text-muted-foreground'>
+        <div className='text-sm text-muted-foreground min-w-[120px]'>
           {date.toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'short',
@@ -91,6 +94,9 @@ export const routesColumns: ColumnDef<Route>[] = [
           })}
         </div>
       )
+    },
+    meta: {
+      className: cn('hidden md:table-cell min-w-[120px]'),
     },
   },
   {
@@ -101,11 +107,11 @@ export const routesColumns: ColumnDef<Route>[] = [
     cell: ({ row }) => {
       const updatedAt = row.getValue('updated_at') as string | null
       if (!updatedAt) {
-        return <div className='text-sm text-muted-foreground'>-</div>
+        return <div className='text-sm text-muted-foreground min-w-[120px]'>-</div>
       }
       const date = new Date(updatedAt)
       return (
-        <div className='text-sm text-muted-foreground'>
+        <div className='text-sm text-muted-foreground min-w-[120px]'>
           {date.toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'short',
@@ -113,6 +119,9 @@ export const routesColumns: ColumnDef<Route>[] = [
           })}
         </div>
       )
+    },
+    meta: {
+      className: cn('hidden lg:table-cell min-w-[120px]'),
     },
   },
   {

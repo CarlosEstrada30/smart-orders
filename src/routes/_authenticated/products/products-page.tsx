@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PriceInput, QuantityInput } from '@/components/ui/numeric-input'
@@ -48,6 +48,7 @@ import { ApiError } from '@/services/api/config'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { BulkImport } from '@/components/bulk-import'
 import { RoutePricesManager } from '@/features/products/components/route-prices-manager'
+import { ClientPagination } from '@/components/ui/client-pagination'
 
 export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,6 +58,10 @@ export function ProductsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
+  
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   
   // Estado para el modal de nuevo producto
   const [newProductDialogOpen, setNewProductDialogOpen] = useState(false)
@@ -321,11 +326,30 @@ export function ProductsPage() {
     fetchProducts()
   }, [])
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filtrar productos basado en el término de búsqueda
+  const filteredProducts = useMemo(() => {
+    return products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+  }, [products, searchTerm])
+
+  // Calcular datos de paginación
+  const totalPages = Math.ceil(filteredProducts.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex)
+
+  // Resetear página cuando cambie el filtro
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
+
+  // Resetear página cuando cambie el tamaño de página
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [pageSize])
 
   const getStatusBadgeVariant = (isActive: boolean, stock: number) => {
     if (!isActive) return 'destructive'
@@ -422,7 +446,7 @@ export function ProductsPage() {
   return (
     <Main>
       <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
             <p className="text-muted-foreground">
@@ -430,22 +454,25 @@ export function ProductsPage() {
             </p>
           </div>
           <PermissionGuard productPermission="can_manage">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline" 
                     disabled={isExporting}
+                    className="w-full sm:w-auto"
                   >
                     {isExporting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Exportando...
+                        <span className="hidden sm:inline">Exportando...</span>
+                        <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <Download className="mr-2 h-4 w-4" />
-                        Exportar
+                        <span className="hidden sm:inline">Exportar</span>
+                        <span className="sm:hidden">Exportar</span>
                       </>
                     )}
                   </Button>
@@ -466,13 +493,16 @@ export function ProductsPage() {
               <Button 
                 variant="outline" 
                 onClick={() => setImportDialogOpen(true)}
+                className="w-full sm:w-auto"
               >
                 <Upload className="mr-2 h-4 w-4" />
-                Importar
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Importar</span>
               </Button>
-              <Button onClick={handleNewProduct}>
+              <Button onClick={handleNewProduct} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
-                Nuevo Producto
+                <span className="hidden sm:inline">Nuevo Producto</span>
+                <span className="sm:hidden">Nuevo</span>
               </Button>
             </div>
           </PermissionGuard>
@@ -484,106 +514,118 @@ export function ProductsPage() {
             <CardDescription>
               {filteredProducts.length} productos encontrados
             </CardDescription>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="relative w-full sm:w-[300px]">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nombre, SKU o descripción..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-[300px]"
+                  className="pl-8 w-full"
                 />
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Producto</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <PermissionGuard productPermission="can_view_prices">
-                    <TableHead>Precio</TableHead>
-                  </PermissionGuard>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center space-x-2">
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                        <span>{product.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-sm">{product.sku}</span>
-                    </TableCell>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[150px]">Producto</TableHead>
+                    <TableHead className="hidden sm:table-cell min-w-[100px]">SKU</TableHead>
                     <PermissionGuard productPermission="can_view_prices">
-                      <TableCell>
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-1">Q</span>
-                          {product.price.toFixed(2)}
+                      <TableHead className="hidden md:table-cell min-w-[80px]">Precio</TableHead>
+                    </PermissionGuard>
+                    <TableHead className="hidden lg:table-cell min-w-[80px]">Stock</TableHead>
+                    <TableHead className="min-w-[100px]">Estado</TableHead>
+                    <TableHead className="hidden xl:table-cell min-w-[150px]">Descripción</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center space-x-2">
+                          <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{product.name}</span>
                         </div>
                       </TableCell>
-                    </PermissionGuard>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Hash className="h-3 w-3 mr-1" />
-                        {product.stock}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(product.is_active, product.stock)}>
-                        {getStatusText(product.is_active, product.stock)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="truncate max-w-[200px] block">{product.description}</span>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menú</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <PermissionGuard productPermission="can_manage">
-                            <DropdownMenuItem onClick={() => handleEditProduct(product)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                          </PermissionGuard>
-                          <PermissionGuard productPermission="can_view_prices">
-                            <DropdownMenuItem onClick={() => handleManageRoutePrices(product)}>
-                              <DollarSign className="mr-2 h-4 w-4" />
-                              Precios por Ruta
-                            </DropdownMenuItem>
-                          </PermissionGuard>
-                          <PermissionGuard productPermission="can_manage">
-                            <DropdownMenuItem 
-                              className="text-red-600"
-                              onClick={() => openDeleteDialog(product)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
-                            </DropdownMenuItem>
-                          </PermissionGuard>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="font-mono text-sm truncate block max-w-[100px]">{product.sku}</span>
+                      </TableCell>
+                      <PermissionGuard productPermission="can_view_prices">
+                        <TableCell className="hidden md:table-cell">
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium mr-1">Q</span>
+                            <span className="truncate">{product.price.toFixed(2)}</span>
+                          </div>
+                        </TableCell>
+                      </PermissionGuard>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center">
+                          <Hash className="h-3 w-3 mr-1 flex-shrink-0" />
+                          <span>{product.stock}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(product.is_active, product.stock)}>
+                          {getStatusText(product.is_active, product.stock)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell">
+                        <span className="truncate max-w-[150px] block">{product.description}</span>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menú</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <PermissionGuard productPermission="can_manage">
+                              <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                            </PermissionGuard>
+                            <PermissionGuard productPermission="can_view_prices">
+                              <DropdownMenuItem onClick={() => handleManageRoutePrices(product)}>
+                                <DollarSign className="mr-2 h-4 w-4" />
+                                Precios por Ruta
+                              </DropdownMenuItem>
+                            </PermissionGuard>
+                            <PermissionGuard productPermission="can_manage">
+                              <DropdownMenuItem 
+                                className="text-red-600"
+                                onClick={() => openDeleteDialog(product)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </PermissionGuard>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {filteredProducts.length > 0 && (
+              <ClientPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredProducts.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
