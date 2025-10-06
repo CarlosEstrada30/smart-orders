@@ -20,7 +20,6 @@ import { SkipToMain } from '@/components/skip-to-main'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { useFilteredSidebarData } from './protected-sidebar'
 import { NavGroup } from './nav-group'
@@ -107,7 +106,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               <div className='ms-auto flex items-center space-x-4'>
                 <Search />
                 <ThemeSwitch />
-                <ConfigDrawer />
                 <ProfileDropdown />
               </div>
             </Header>
