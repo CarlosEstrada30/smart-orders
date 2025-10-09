@@ -795,26 +795,22 @@ export function ProductsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-price">Precio *</Label>
-                <Input
+                <PriceInput
                   id="edit-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
                   placeholder="0.00"
                   value={editProductForm.price}
-                  onChange={(e) => setEditProductForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  onValueChange={(value) => setEditProductForm(prev => ({ ...prev, price: value }))}
                   required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-stock">Stock</Label>
-                <Input
+                <QuantityInput
                   id="edit-stock"
-                  type="number"
-                  min="0"
                   placeholder="0"
                   value={editProductForm.stock}
-                  onChange={(e) => setEditProductForm(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
+                  onValueChange={(value) => setEditProductForm(prev => ({ ...prev, stock: value }))}
+                  min={0}
                 />
               </div>
             </div>
