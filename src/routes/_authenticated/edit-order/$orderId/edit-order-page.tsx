@@ -13,11 +13,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { ArrowLeft, Plus, Trash2, Save, Edit, UserPlus } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Save, UserPlus } from 'lucide-react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { ordersService, type Order, type OrderItem } from '@/services/orders'
 import { clientsService, type Client } from '@/services/clients'
-import { productsService, type Product, type RoutePrice } from '@/services/products'
+import { productsService, type Product } from '@/services/products'
 import { routesService, type Route } from '@/services'
 import { CreateClientModal } from '@/components/clients/create-client-modal'
 
@@ -391,7 +391,7 @@ export function EditOrderPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between h-6">
                     <Label htmlFor="client">Cliente *</Label>
                     <Button
                       type="button"
@@ -418,7 +418,9 @@ export function EditOrderPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="route">Ruta de Entrega *</Label>
+                  <div className="h-6 flex items-center">
+                    <Label htmlFor="route">Ruta de Entrega *</Label>
+                  </div>
                   <Combobox
                     options={routeOptions}
                     value={selectedRoute}

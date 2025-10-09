@@ -14,10 +14,10 @@ import {
 } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
 import { ArrowLeft, Plus, Trash2, Save, UserPlus } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { ordersService, type OrderItem } from '@/services/orders'
 import { clientsService, type Client } from '@/services/clients'
-import { productsService, type Product, type RoutePrice } from '@/services/products'
+import { productsService, type Product } from '@/services/products'
 import { routesService, type Route } from '@/services'
 import { CreateClientModal } from '@/components/clients/create-client-modal'
 import { toast } from 'sonner'
@@ -31,7 +31,6 @@ interface OrderItemForm {
 }
 
 export function NewOrderPage() {
-  const navigate = useNavigate()
   const [selectedClient, setSelectedClient] = useState('')
   const [selectedRoute, setSelectedRoute] = useState('')
   const [discount, setDiscount] = useState<number>(0)
@@ -60,10 +59,9 @@ export function NewOrderPage() {
     loadRoutes()
   }, [])
 
-  // Recalcular precios cuando cambie la ruta seleccionada
-  useEffect(() => {
-    if (selectedRoute && orderItems.length > 0) {
-      const routeId = parseInt(selectedRoute)
+  // Función para recalcular precios cuando cambie la ruta
+  const updatePricesForRoute = (routeId: number) => {
+    if (orderItems.length > 0) {
       const updatedItems = orderItems.map(item => {
         const product = products.find(p => p.id === item.product_id)
         if (!product) return item
@@ -77,14 +75,14 @@ export function NewOrderPage() {
       })
       setOrderItems(updatedItems)
     }
-  }, [selectedRoute, products])
+  }
 
   const loadClients = async () => {
     try {
       setLoadingClients(true)
       const clientsData = await clientsService.getClients({ active_only: true })
       setClients(clientsData)
-    } catch (err) {
+    } catch (_err) {
       setError('Error al cargar los clientes')
     } finally {
       setLoadingClients(false)
@@ -96,7 +94,7 @@ export function NewOrderPage() {
       setLoadingProducts(true)
       const productsData = await productsService.getProducts({ active_only: true })
       setProducts(productsData)
-    } catch (err) {
+    } catch (_err) {
       setError('Error al cargar los productos')
     } finally {
       setLoadingProducts(false)
@@ -108,7 +106,7 @@ export function NewOrderPage() {
       setLoadingRoutes(true)
       const routesData = await routesService.getRoutes({ active_only: true })
       setRoutes(routesData)
-    } catch (err) {
+    } catch (_err) {
       setError('Error al cargar las rutas')
     } finally {
       setLoadingRoutes(false)
@@ -245,7 +243,7 @@ export function NewOrderPage() {
       setSelectedProduct('')
       setQuantity(1)
       
-    } catch (err) {
+    } catch (_err) {
       setError('Error al crear la orden')
     } finally {
       setLoading(false)
@@ -317,11 +315,19 @@ export function NewOrderPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="route">Ruta de Entrega *</Label>
+                  <div className="h-6 flex items-center">
+                    <Label htmlFor="route">Ruta de Entrega *</Label>
+                  </div>
                   <Combobox
                     options={routeOptions}
                     value={selectedRoute}
-                    onValueChange={setSelectedRoute}
+                    onValueChange={(value) => {
+                      setSelectedRoute(value)
+                      if (value) {
+                        const routeId = parseInt(value)
+                        updatePricesForRoute(routeId)
+                      }
+                    }}
                     placeholder="Selecciona una ruta"
                     searchPlaceholder="Buscar ruta por nombre..."
                     emptyMessage="No se encontraron rutas."
@@ -332,7 +338,7 @@ export function NewOrderPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between h-6">
                     <Label htmlFor="client">Cliente *</Label>
                     <Button
                       type="button"
