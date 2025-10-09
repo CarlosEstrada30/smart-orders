@@ -13,12 +13,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Main } from '@/components/layout/main'
-import { ArrowLeft, Plus, Trash2, Save, Edit } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Save, Edit, UserPlus } from 'lucide-react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { ordersService, type Order, type OrderItem } from '@/services/orders'
 import { clientsService, type Client } from '@/services/clients'
 import { productsService, type Product, type RoutePrice } from '@/services/products'
 import { routesService, type Route } from '@/services'
+import { CreateClientModal } from '@/components/clients/create-client-modal'
 
 interface OrderItemForm {
   product_id: number
@@ -50,6 +51,9 @@ export function EditOrderPage() {
   const [loadingClients, setLoadingClients] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingRoutes, setLoadingRoutes] = useState(true)
+
+  // Estado para el modal de crear cliente
+  const [createClientModalOpen, setCreateClientModalOpen] = useState(false)
 
   // Cargar orden existente
   useEffect(() => {
@@ -169,6 +173,15 @@ export function EditOrderPage() {
     } finally {
       setLoadingRoutes(false)
     }
+  }
+
+  // Función para manejar cuando se crea un nuevo cliente
+  const handleClientCreated = (newClient: Client) => {
+    // Agregar el nuevo cliente a la lista
+    setClients(prev => [...prev, newClient])
+    
+    // Seleccionar automáticamente el nuevo cliente
+    setSelectedClient(newClient.id.toString())
   }
 
   const addItem = () => {
@@ -378,7 +391,19 @@ export function EditOrderPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="client">Cliente *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="client">Cliente *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCreateClientModalOpen(true)}
+                      className="h-8 px-2"
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      Nuevo
+                    </Button>
+                  </div>
                   <Combobox
                     options={clientOptions}
                     value={selectedClient}
@@ -522,12 +547,11 @@ export function EditOrderPage() {
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-2">
                               <Label htmlFor={`quantity-${index}`} className="text-sm">Cantidad:</Label>
-                              <Input
+                              <QuantityInput
                                 id={`quantity-${index}`}
-                                type="number"
-                                min="1"
                                 value={item.quantity}
-                                onChange={(e) => updateItemQuantity(index, parseInt(e.target.value) || 1)}
+                                onValueChange={(value) => updateItemQuantity(index, value)}
+                                min={1}
                                 className="w-20"
                               />
                             </div>
@@ -560,12 +584,11 @@ export function EditOrderPage() {
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center space-x-2">
                               <Label htmlFor={`quantity-mobile-${index}`} className="text-sm whitespace-nowrap">Cantidad:</Label>
-                              <Input
+                              <QuantityInput
                                 id={`quantity-mobile-${index}`}
-                                type="number"
-                                min="1"
                                 value={item.quantity}
-                                onChange={(e) => updateItemQuantity(index, parseInt(e.target.value) || 1)}
+                                onValueChange={(value) => updateItemQuantity(index, value)}
+                                min={1}
                                 className="w-16 h-8 text-sm"
                               />
                             </div>
@@ -629,6 +652,13 @@ export function EditOrderPage() {
             </Button>
           </div>
         </form>
+
+        {/* Modal para crear cliente */}
+        <CreateClientModal
+          open={createClientModalOpen}
+          onOpenChange={setCreateClientModalOpen}
+          onClientCreated={handleClientCreated}
+        />
       </div>
     </Main>
   )
