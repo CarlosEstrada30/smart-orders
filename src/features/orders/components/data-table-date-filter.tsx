@@ -94,15 +94,21 @@ export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilter
   const handleCustomDateChange = () => {
     let range = null
     
+    // Helper para crear fecha en zona horaria local
+    const createLocalDate = (dateString: string) => {
+      const [year, month, day] = dateString.split('-').map(Number)
+      return new Date(year, month - 1, day)
+    }
+    
     if (fromDate && toDate) {
       range = {
-        from: new Date(fromDate),
-        to: new Date(toDate)
+        from: createLocalDate(fromDate),
+        to: createLocalDate(toDate)
       }
     } else if (fromDate) {
       range = {
-        from: new Date(fromDate),
-        to: new Date(fromDate)
+        from: createLocalDate(fromDate),
+        to: createLocalDate(fromDate)
       }
     }
 
@@ -120,8 +126,15 @@ export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilter
   const formatDateRange = () => {
     if (!dateRange?.from) return null
     
-    const from = dateRange.from.toLocaleDateString()
-    const to = dateRange.to ? dateRange.to.toLocaleDateString() : from
+    const formatDate = (date: Date) => {
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    }
+    
+    const from = formatDate(dateRange.from)
+    const to = dateRange.to ? formatDate(dateRange.to) : from
     
     return from === to ? from : `${from} - ${to}`
   }

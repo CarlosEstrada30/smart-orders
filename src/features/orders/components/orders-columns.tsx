@@ -16,6 +16,14 @@ import { type Order } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
 
+// Helper para formatear fechas en formato DD/MM/YYYY
+const formatDate = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
+}
+
 export const ordersColumns: ColumnDef<Order>[] = [
   {
     id: 'select',
@@ -204,10 +212,10 @@ export const ordersColumns: ColumnDef<Order>[] = [
       
       return (
         <div className="text-sm">
-          <div>{createdAt ? new Date(createdAt).toLocaleDateString() : '-'}</div>
+          <div>{createdAt ? formatDate(new Date(createdAt)) : '-'}</div>
           {updatedAt && updatedAt !== createdAt && (
             <div className="text-xs text-muted-foreground">
-              Actualizado: {new Date(updatedAt).toLocaleDateString()}
+              Actualizado: {formatDate(new Date(updatedAt))}
             </div>
           )}
         </div>
