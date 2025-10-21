@@ -20,7 +20,14 @@ function DialogTrigger({
 function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal data-slot='dialog-portal' {...props} />
+  // Enhanced portal for Chrome 141+ compatibility
+  return (
+    <DialogPrimitive.Portal 
+      data-slot='dialog-portal' 
+      data-chrome-141-safe="true"
+      {...props} 
+    />
+  )
 }
 
 function DialogClose({

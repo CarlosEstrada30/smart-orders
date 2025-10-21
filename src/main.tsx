@@ -10,6 +10,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { handleServerError } from '@/utils/handle-server-error'
+import { setupDOMErrorHandler } from '@/utils/dom-cleanup'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
@@ -85,6 +86,9 @@ declare module '@tanstack/react-router' {
     router: typeof router
   }
 }
+
+// Setup DOM error handler to prevent removeChild errors
+setupDOMErrorHandler()
 
 // Render the app
 const rootElement = document.getElementById('root')!

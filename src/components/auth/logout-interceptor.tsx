@@ -35,6 +35,13 @@ class LogoutErrorBoundary extends Component<
       return
     }
     
+    // Handle DOM manipulation errors specifically
+    if (error.name === 'NotFoundError' && error.message.includes('removeChild')) {
+      console.warn('DOM manipulation error during logout:', error.message)
+      // Don't treat this as a critical error
+      return
+    }
+    
     // Si no está haciendo logout, es un error real
     console.error('Error en aplicación:', error, errorInfo)
   }

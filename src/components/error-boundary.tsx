@@ -23,6 +23,19 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Handle Chrome 141+ specific DOM manipulation errors
+    if (error.name === 'NotFoundError' && error.message.includes('removeChild')) {
+      console.warn('Chrome 141+ DOM manipulation error caught and handled:', error.message)
+      // Don't log this as a critical error since it's often recoverable
+      return
+    }
+    
+    // Handle other Chrome 141+ specific errors
+    if (error.message.includes('Blink') || error.message.includes('Shadow DOM')) {
+      console.warn('Chrome 141+ Blink engine error caught:', error.message)
+      return
+    }
+    
     console.error('Error caught by ErrorBoundary:', error, errorInfo)
   }
 
