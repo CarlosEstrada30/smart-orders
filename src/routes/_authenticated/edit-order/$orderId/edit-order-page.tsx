@@ -119,7 +119,7 @@ export function EditOrderPage() {
       // Pre-llenar campos del formulario
       setSelectedClient(orderData.client_id.toString())
       setSelectedRoute(orderData.route_id?.toString() || '')
-      setDiscount(orderData.discount_percentage || 0)
+      setDiscount(orderData.discount_amount || 0)
       setNotes(orderData.notes || '')
       
       // Convertir items a formato del formulario
@@ -247,7 +247,7 @@ export function EditOrderPage() {
   }
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
-  const discountAmount = subtotal * (discount / 100)
+  const discountAmount = discount // Ahora es un monto fijo, no porcentaje
   const total = subtotal - discountAmount
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -272,7 +272,7 @@ export function EditOrderPage() {
       const orderData = {
         client_id: parseInt(selectedClient),
         route_id: parseInt(selectedRoute),
-        discount_percentage: discount > 0 ? discount : undefined,
+        discount_amount: discount > 0 ? discount : undefined,
         notes: notes || undefined,
         items: apiItems
       }
@@ -280,7 +280,7 @@ export function EditOrderPage() {
       await ordersService.updateOrderComplete(parseInt(orderId), {
         client_id: orderData.client_id,
         route_id: orderData.route_id,
-        discount_percentage: orderData.discount_percentage,
+        discount_amount: orderData.discount_amount,
         notes: orderData.notes,
         items: apiItems
       })
@@ -437,14 +437,13 @@ export function EditOrderPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="discount">Descuento (%)</Label>
+                  <Label htmlFor="discount">Descuento (Q)</Label>
                   <Input
                     id="discount"
                     type="number"
                     min="0"
-                    max="100"
                     step="0.01"
-                    placeholder="Ej: 10"
+                    placeholder="Ej: 50.00"
                     value={discount || ''}
                     onChange={(e) => {
                       const value = parseFloat(e.target.value)
@@ -452,8 +451,6 @@ export function EditOrderPage() {
                         setDiscount(0)
                       } else if (value < 0) {
                         setDiscount(0)
-                      } else if (value > 100) {
-                        setDiscount(100)
                       } else {
                         setDiscount(value)
                       }
@@ -461,7 +458,7 @@ export function EditOrderPage() {
                     className="w-full"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Descuento opcional de 0 a 100%
+                    Descuento opcional en monto fijo
                   </p>
                 </div>
               </div>
@@ -622,7 +619,7 @@ export function EditOrderPage() {
                     </div>
                     {discount > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
-                        <span>Descuento ({discount}%):</span>
+                        <span>Descuento:</span>
                         <span>-Q{discountAmount.toFixed(2)}</span>
                       </div>
                     )}

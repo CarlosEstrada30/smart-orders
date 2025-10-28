@@ -151,16 +151,16 @@ export const ordersColumns: ColumnDef<Order>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'discount_percentage',
+    accessorKey: 'discount_amount',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Descuento' />
     ),
     cell: ({ row }) => {
-      const discount = row.getValue('discount_percentage') as number || 0
+      const discount = row.getValue('discount_amount') as number || 0
       if (discount > 0) {
         return (
           <Badge variant="secondary" className="text-green-700 bg-green-50 border-green-200">
-            {discount}%
+            Q{discount.toFixed(2)}
           </Badge>
         )
       }

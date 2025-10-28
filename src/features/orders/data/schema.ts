@@ -38,7 +38,7 @@ export const orderSchema = z.object({
   client_id: z.number(),
   route_id: z.number().nullable().optional(),
   status: z.enum(['pending', 'confirmed', 'in_progress', 'shipped', 'delivered', 'cancelled']),
-  discount_percentage: z.number().min(0).max(100).optional(),
+  discount_amount: z.number().min(0).optional(),
   notes: z.string().optional(),
   total_amount: z.number().optional(),
   created_at: z.string().optional(),

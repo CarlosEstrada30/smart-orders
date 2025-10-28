@@ -424,9 +424,23 @@ export function OrderDetailPage() {
                   </span>
                 </div>
                 <div className="border-t pt-3 mt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-base font-semibold">Total:</span>
-                    <span className="text-lg font-bold">Q{order.total_amount?.toFixed(2) || '0.00'}</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Subtotal:</span>
+                      <span className="font-medium">
+                        Q{order.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
+                      </span>
+                    </div>
+                    {order.discount_amount && order.discount_amount > 0 && (
+                      <div className="flex justify-between items-center text-sm text-green-600">
+                        <span className="text-muted-foreground">Descuento:</span>
+                        <span className="font-medium">-Q{order.discount_amount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <span className="text-base font-semibold">Total:</span>
+                      <span className="text-lg font-bold">Q{order.total_amount?.toFixed(2) || '0.00'}</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
