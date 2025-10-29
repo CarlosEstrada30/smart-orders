@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, Route, X } from 'lucide-react'
 import { orderStatuses } from '../data/data'
-import { DataTableViewOptions } from './data-table-view-options'
 import { DataTableDateFilter } from './data-table-date-filter'
 import type { OrdersQueryParams } from '@/services/orders'
 import { ordersService } from '@/services/orders'
@@ -287,7 +286,6 @@ const DataTableToolbarComponent = <TData,>({
           <Eye className='mr-2 h-4 w-4' />
           {isLoadingPreview ? 'Cargando...' : 'Ver Reporte'}
         </Button>
-        <DataTableViewOptions table={table} />
       </div>
 
       <ModernPDFViewer
