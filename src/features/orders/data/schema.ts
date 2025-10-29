@@ -4,9 +4,9 @@ import { z } from 'zod'
 export const orderItemSchema = z.object({
   id: z.number().optional(),
   product_id: z.number(),
-  quantity: z.number(),
-  unit_price: z.number(),
-  total_price: z.number().optional(),
+  quantity: z.number().positive('La cantidad debe ser mayor a 0'),
+  unit_price: z.number().min(0, 'El precio unitario no puede ser negativo'),
+  total_price: z.number().min(0, 'El precio total no puede ser negativo').optional(),
   product_name: z.string().optional(),
   product_sku: z.string().optional(),
   product_description: z.string().optional(),

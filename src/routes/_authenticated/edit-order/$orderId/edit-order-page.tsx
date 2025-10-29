@@ -511,8 +511,12 @@ export function EditOrderPage() {
                       id="quantity"
                       value={quantity}
                       onValueChange={setQuantity}
-                      min={1}
+                      min={0.01}
+                      allowDecimals={true}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Puedes ingresar cantidades decimales (ej: 1.5, 2.25)
+                    </p>
                   </div>
                   <div className="flex items-end sm:col-span-2 lg:col-span-1">
                     <Button 
@@ -550,7 +554,8 @@ export function EditOrderPage() {
                                 id={`quantity-${index}`}
                                 value={item.quantity}
                                 onValueChange={(value) => updateItemQuantity(index, value)}
-                                min={1}
+                                min={0.01}
+                                allowDecimals={true}
                                 className="w-20"
                               />
                             </div>
@@ -587,7 +592,8 @@ export function EditOrderPage() {
                                 id={`quantity-mobile-${index}`}
                                 value={item.quantity}
                                 onValueChange={(value) => updateItemQuantity(index, value)}
-                                min={1}
+                                min={0.01}
+                                allowDecimals={true}
                                 className="w-16 h-8 text-sm"
                               />
                             </div>

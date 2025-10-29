@@ -111,17 +111,20 @@ export function PriceInput({
 /**
  * Input especializado para cantidades/stock
  */
-interface QuantityInputProps extends Omit<NumericInputProps, 'allowDecimals' | 'allowNegative'> {}
+interface QuantityInputProps extends Omit<NumericInputProps, 'allowNegative'> {
+  allowDecimals?: boolean
+}
 
 export function QuantityInput({
   value,
   onValueChange,
   min = 0,
   max,
+  allowDecimals = false,
   className,
   ...props
 }: QuantityInputProps) {
-  const quantityInput = useQuantityInput(value, onValueChange, min)
+  const quantityInput = useQuantityInput(value, onValueChange, min, allowDecimals)
 
   // Sincronizar con prop value cuando cambie externamente
   React.useEffect(() => {
@@ -136,6 +139,7 @@ export function QuantityInput({
       type="number"
       min={min}
       max={max}
+      step={allowDecimals ? 0.01 : 1}
       value={quantityInput.displayValue}
       onChange={quantityInput.onChange}
       onBlur={quantityInput.onBlur}

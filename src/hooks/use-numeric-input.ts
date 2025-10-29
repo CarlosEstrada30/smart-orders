@@ -149,12 +149,12 @@ export function usePriceInput(initialValue?: number, onValueChange?: (value: num
 /**
  * Hook especializado para cantidades/stock
  */
-export function useQuantityInput(initialValue?: number, onValueChange?: (value: number) => void, min: number = 0) {
+export function useQuantityInput(initialValue?: number, onValueChange?: (value: number) => void, min: number = 0, allowDecimals: boolean = false) {
   return useNumericInput({
     initialValue,
     onValueChange,
     min,
-    allowDecimals: false,
+    allowDecimals,
     allowNegative: false
   })
 }
