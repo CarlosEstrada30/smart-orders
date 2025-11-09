@@ -3,7 +3,8 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, Route, X } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Eye, Route, X, Info } from 'lucide-react'
 import { orderStatuses } from '../data/data'
 import { DataTableDateFilter } from './data-table-date-filter'
 import type { OrdersQueryParams } from '@/services/orders'
@@ -33,6 +34,7 @@ const DataTableToolbarComponent = <TData,>({
   const isFiltered = Boolean(
     filters.search || 
     filters.status_filter || 
+    filters.payment_status_filter ||
     filters.route_id || 
     filters.date_from || 
     filters.date_to
@@ -130,7 +132,8 @@ const DataTableToolbarComponent = <TData,>({
   // Información sobre los filtros activos
   const filtersCount = [
     filters.search,
-    filters.status_filter, 
+    filters.status_filter,
+    filters.payment_status_filter,
     filters.route_id,
     filters.date_from,
     filters.date_to
@@ -148,6 +151,12 @@ const DataTableToolbarComponent = <TData,>({
   const handleRouteChange = useCallback((values: string[]) => {
     const routeId = values[0] ? parseInt(values[0]) : undefined
     onFiltersChange({ route_id: routeId })
+  }, [onFiltersChange])
+
+  const handlePaymentStatusChange = useCallback((value: string) => {
+    onFiltersChange({ 
+      payment_status_filter: value ? (value as 'unpaid' | 'partial' | 'paid') : undefined 
+    })
   }, [onFiltersChange])
 
   // Función helper para formatear fechas localmente
@@ -172,6 +181,7 @@ const DataTableToolbarComponent = <TData,>({
     onFiltersChange({
       search: undefined,
       status_filter: undefined,
+      payment_status_filter: undefined,
       route_id: undefined,
       date_from: undefined,
       date_to: undefined
@@ -182,7 +192,8 @@ const DataTableToolbarComponent = <TData,>({
     try {
       setIsLoadingPreview(true)
       
-      // Preparar parámetros para el reporte (excluyendo skip y limit)
+      // Preparar parámetros para el reporte (excluyendo skip, limit y payment_status_filter)
+      // El filtro de pagos NO se incluye en el reporte
       const reportParams: OrdersQueryParams = {
         status_filter: filters.status_filter,
         route_id: filters.route_id,
@@ -272,6 +283,33 @@ const DataTableToolbarComponent = <TData,>({
             dateRange={dateRange}
             onDateRangeChange={handleDateRangeChange}
           />
+          
+          {/* Payment Status Filter - Solo para visualización */}
+          <div className='flex items-center gap-1'>
+            <select
+              value={filters.payment_status_filter || ''}
+              onChange={(e) => handlePaymentStatusChange(e.target.value)}
+              className="h-8 min-w-[160px] rounded-md border border-input bg-background text-foreground px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+              <option value="">Todos los pagos</option>
+              <option value="unpaid">Sin Pagar</option>
+              <option value="partial">Pago Parcial</option>
+              <option value="paid">Pagado</option>
+            </select>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className='inline-flex items-center cursor-help'>
+                  <Info className='h-4 w-4 text-muted-foreground' />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='max-w-xs'>
+                  Este filtro solo afecta la visualización de la tabla.<br />
+                  No se incluye en la generación del reporte PDF.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
       

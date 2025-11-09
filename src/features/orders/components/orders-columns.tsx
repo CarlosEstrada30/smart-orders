@@ -11,15 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, Route, MoreHorizontal, Eye, Trash2, StickyNote } from 'lucide-react'
-import { type Order } from '../data/schema'
-import { getOrderStatusData } from '../data/data'
-import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { User, Route, MoreHorizontal, Eye, Trash2, StickyNote, DollarSign } from 'lucide-react'
+import { type Order } from '../data/schema'
+import { getOrderStatusData } from '../data/data'
+import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
 
 // Helper para formatear fechas en formato DD/MM/YYYY
 const formatDate = (date: Date) => {
@@ -197,6 +197,85 @@ export const ordersColumns: ColumnDef<Order>[] = [
       const amount = row.getValue('total_amount') as number || 0
       return <div className="font-medium">Q{amount.toFixed(2)}</div>
     },
+  },
+  {
+    id: 'payment_status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado de Pago' />
+    ),
+    cell: ({ row }) => {
+      const order = row.original
+      const paymentStatus = order.payment_status || 'unpaid'
+      const paidAmount = order.paid_amount || 0
+      const totalAmount = order.total_amount || 0
+      // Usar nullish coalescing para que 0 no se trate como falsy
+      const balanceDue = order.balance_due ?? (totalAmount - paidAmount)
+
+      const paymentStatusConfig = {
+        unpaid: {
+          label: 'Sin Pagar',
+          variant: 'outline' as const,
+          className: 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100',
+          icon: DollarSign,
+        },
+        partial: {
+          label: 'Pago Parcial',
+          variant: 'secondary' as const,
+          className: '',
+          icon: DollarSign,
+        },
+        paid: {
+          label: 'Pagado',
+          variant: 'default' as const,
+          className: '',
+          icon: DollarSign,
+        },
+      }
+
+      const config = paymentStatusConfig[paymentStatus] || paymentStatusConfig.unpaid
+      const Icon = config.icon
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge 
+              variant={config.variant} 
+              className={cn("cursor-help", config.className)}
+            >
+              <Icon className="h-3 w-3 mr-1" />
+              {config.label}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-1 text-sm">
+              <div className="font-semibold">Información de Pagos</div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total:</span>
+                <span className="font-medium">Q{totalAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Pagado:</span>
+                <span className="font-medium text-green-600">Q{paidAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Saldo Pendiente:</span>
+                <span className={cn(
+                  "font-medium",
+                  balanceDue > 0 ? "text-orange-600" : "text-green-600"
+                )}>
+                  Q{balanceDue.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      )
+    },
+    filterFn: (row, _id, value) => {
+      const paymentStatus = row.original.payment_status || 'unpaid'
+      return value.includes(paymentStatus)
+    },
+    enableSorting: false,
   },
   {
     accessorKey: 'status',

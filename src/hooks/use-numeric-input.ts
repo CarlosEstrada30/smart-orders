@@ -34,8 +34,37 @@ export function useNumericInput({
   allowNegative = false
 }: UseNumericInputProps = {}): UseNumericInputReturn {
   
-  const [displayValue, setDisplayValue] = useState(initialValue.toString())
-  const [numericValue, setNumericValue] = useState(initialValue)
+  // Función auxiliar para formatear el valor de display
+  const formatDisplayValue = useCallback((value: number): string => {
+    if (allowDecimals && step !== undefined && step < 1) {
+      // Formatear según la precisión del step
+      const decimals = Math.abs(Math.log10(step))
+      return value.toFixed(decimals)
+    } else if (allowDecimals) {
+      // Por defecto, 2 decimales para montos/precios
+      return value.toFixed(2)
+    } else {
+      return value.toString()
+    }
+  }, [allowDecimals, step])
+
+  // Validar y formatear el valor inicial
+  const validatedInitialValue = (() => {
+    let val = initialValue
+    if (step !== undefined && step > 0) {
+      val = Math.round(val / step) * step
+    }
+    if (allowDecimals && step !== undefined && step < 1) {
+      const decimals = Math.abs(Math.log10(step))
+      val = Math.round(val * Math.pow(10, decimals)) / Math.pow(10, decimals)
+    } else if (allowDecimals) {
+      val = Math.round(val * 100) / 100
+    }
+    return val
+  })()
+
+  const [displayValue, setDisplayValue] = useState(formatDisplayValue(validatedInitialValue))
+  const [numericValue, setNumericValue] = useState(validatedInitialValue)
   const [isEditing, setIsEditing] = useState(false)
 
   // Validar y sanitizar el valor numérico
@@ -58,6 +87,14 @@ export function useNumericInput({
     // Redondear decimales si no se permiten
     if (!allowDecimals) {
       validatedValue = Math.round(validatedValue)
+    } else if (step !== undefined && step < 1) {
+      // Redondear a la precisión del step para evitar errores de punto flotante
+      // Si step es 0.01, redondear a 2 decimales; si es 0.1, a 1 decimal, etc.
+      const decimals = Math.abs(Math.log10(step))
+      validatedValue = Math.round(validatedValue * Math.pow(10, decimals)) / Math.pow(10, decimals)
+    } else if (allowDecimals) {
+      // Por defecto, redondear a 2 decimales para montos/precios
+      validatedValue = Math.round(validatedValue * 100) / 100
     }
 
     // Manejar valores negativos
@@ -105,10 +142,13 @@ export function useNumericInput({
       }
     }
 
+    // Formatear el displayValue para evitar errores de precisión de punto flotante
+    const formattedDisplay = formatDisplayValue(finalValue)
+
     setNumericValue(finalValue)
-    setDisplayValue(finalValue.toString())
+    setDisplayValue(formattedDisplay)
     onValueChange?.(finalValue)
-  }, [displayValue, numericValue, validateValue, allowDecimals, min, onValueChange])
+  }, [displayValue, numericValue, validateValue, formatDisplayValue, min, onValueChange])
 
   const onFocus = useCallback(() => {
     setIsEditing(true)
@@ -116,10 +156,14 @@ export function useNumericInput({
 
   const setValue = useCallback((value: number) => {
     const validatedValue = validateValue(value)
+    
+    // Formatear el displayValue para evitar errores de precisión de punto flotante
+    const formattedDisplay = formatDisplayValue(validatedValue)
+    
     setNumericValue(validatedValue)
-    setDisplayValue(validatedValue.toString())
+    setDisplayValue(formattedDisplay)
     onValueChange?.(validatedValue)
-  }, [validateValue, onValueChange])
+  }, [validateValue, formatDisplayValue, onValueChange])
 
   return {
     displayValue,

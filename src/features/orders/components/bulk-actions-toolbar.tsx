@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,19 +16,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { X, CheckCircle, AlertCircle, Info, Package, AlertTriangle } from 'lucide-react'
-import { type OrderStatus } from '../data/schema'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { X, CheckCircle, AlertCircle, Package, AlertTriangle, DollarSign } from 'lucide-react'
+import { type OrderStatus, type Order } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { cn } from '@/lib/utils'
 import { type BulkOrderStatusResponse } from '@/services/orders'
 import { StockErrorModal } from './stock-error-modal'
+import { BulkPaymentsModal } from './bulk-payments-modal'
 
 interface BulkActionsToolbarProps {
   selectedOrders: number[]
+  orders: Order[] // Órdenes completas para pagos múltiples
   onBulkStatusChange: (orderIds: number[], newStatus: OrderStatus) => Promise<BulkOrderStatusResponse>
   onClearSelection: () => void
   onStockError?: (result: BulkOrderStatusResponse) => void
+  onPaymentsCreated?: () => void
   loading?: boolean
 }
 
@@ -42,34 +45,21 @@ const orderStatuses: OrderStatus[] = [
 ]
 
 export function BulkActionsToolbar({ 
-  selectedOrders, 
+  selectedOrders,
+  orders,
   onBulkStatusChange,
   onClearSelection,
   onStockError,
+  onPaymentsCreated,
   loading = false 
 }: BulkActionsToolbarProps) {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
+  const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [bulkResult, setBulkResult] = useState<BulkOrderStatusResponse | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [showStockErrorModal, setShowStockErrorModal] = useState(false)
-
-  // Debug: Log cuando cambie el estado
-  console.log('State changed:', {
-    showStockErrorModal,
-    showResults,
-    bulkResult: !!bulkResult
-  })
-
-  // Forzar re-render cuando cambie el estado
-  useEffect(() => {
-    console.log('useEffect triggered:', {
-      showStockErrorModal,
-      showResults,
-      bulkResult: !!bulkResult
-    })
-  }, [showStockErrorModal, showResults, bulkResult])
 
   const handleStatusChange = async () => {
     if (!selectedStatus) return
@@ -82,13 +72,8 @@ export function BulkActionsToolbar({
       // Verificar si hay órdenes que fallaron por stock
       const hasStockErrors = result.failed_details.some(order => order.error_type === 'stock_validation_failed')
       
-      console.log('Bulk result:', result)
-      console.log('Has stock errors:', hasStockErrors)
-      console.log('Failed details:', result.failed_details)
-      
       if (hasStockErrors) {
         // Pasar el resultado al componente padre para mostrar el modal de errores de stock
-        console.log('Passing stock error to parent component')
         if (onStockError) {
           onStockError(result)
         }
@@ -96,15 +81,14 @@ export function BulkActionsToolbar({
         setSelectedStatus(null)
       } else {
         // Mostrar resultados normales
-        console.log('Showing normal results modal')
         setShowResults(true)
         setShowStockErrorModal(false) // Asegurar que el modal de stock no se muestre
         
         setIsStatusDialogOpen(false)
         setSelectedStatus(null)
       }
-    } catch (error) {
-      console.error('Error updating bulk status:', error)
+    } catch (_error) {
+      // Error handled by parent component
     } finally {
       setIsUpdating(false)
     }
@@ -128,13 +112,6 @@ export function BulkActionsToolbar({
     onClearSelection()
   }
 
-  console.log('BulkActionsToolbar render:', {
-    selectedOrders: selectedOrders.length,
-    showStockErrorModal,
-    showResults,
-    bulkResult: !!bulkResult
-  })
-
   if (selectedOrders.length === 0) {
     return null
   }
@@ -150,6 +127,17 @@ export function BulkActionsToolbar({
         </div>
         
         <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPaymentsModalOpen(true)}
+            disabled={loading || isUpdating}
+            className="gap-2"
+          >
+            <DollarSign className="h-4 w-4" />
+            Registrar Pagos
+          </Button>
+          
           <Button
             variant="outline"
             size="sm"
@@ -381,20 +369,8 @@ export function BulkActionsToolbar({
       </Dialog>
 
       {/* Modal especial para errores de stock */}
-      {console.log('Render check:', { 
-        hasBulkResult: !!bulkResult,
-        showStockErrorModal,
-        showResults,
-        bulkResult
-      })}
       {bulkResult && (
         <>
-          {console.log('Rendering StockErrorModal with:', { 
-            isOpen: showStockErrorModal, 
-            hasBulkResult: !!bulkResult,
-            showResults,
-            showStockErrorModal 
-          })}
           <StockErrorModal
             isOpen={showStockErrorModal}
             onClose={handleCloseStockErrorModal}
@@ -403,6 +379,17 @@ export function BulkActionsToolbar({
           />
         </>
       )}
+
+      {/* Modal de pagos múltiples */}
+      <BulkPaymentsModal
+        open={isPaymentsModalOpen}
+        onOpenChange={setIsPaymentsModalOpen}
+        orders={orders}
+        onPaymentsCreated={() => {
+          onPaymentsCreated?.()
+          onClearSelection()
+        }}
+      />
     </>
   )
 }

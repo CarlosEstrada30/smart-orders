@@ -43,6 +43,7 @@ import {
 } from 'lucide-react'
 import { ordersService, type Order, type OrderStatus } from '@/services/orders'
 import { OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
+import { PaymentSummaryCard, PaymentsList } from '@/features/orders/components'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 
 export function OrderDetailPage() {
@@ -53,6 +54,7 @@ export function OrderDetailPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [newStatus, setNewStatus] = useState<OrderStatus>('pending')
+  const [paymentRefreshKey, setPaymentRefreshKey] = useState(0)
 
   const loadOrder = useCallback(async () => {
     try {
@@ -404,6 +406,23 @@ export function OrderDetailPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Pagos de la Orden */}
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Pagos de la Orden</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PaymentsList
+                  key={paymentRefreshKey}
+                  orderId={order.id!}
+                  onPaymentCancelled={() => {
+                    setPaymentRefreshKey((prev) => prev + 1)
+                    loadOrder()
+                  }}
+                />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Resumen */}
@@ -445,7 +464,7 @@ export function OrderDetailPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Sección de Comprobante */}
             <Card>
               <CardHeader className="pb-4">
@@ -463,6 +482,18 @@ export function OrderDetailPage() {
                 />
               </CardContent>
             </Card>
+
+            {/* Resumen de Pagos */}
+            <PaymentSummaryCard
+              key={paymentRefreshKey}
+              orderId={order.id!}
+              orderNumber={order.order_number}
+              totalAmount={order.total_amount || 0}
+              onPaymentCreated={() => {
+                setPaymentRefreshKey((prev) => prev + 1)
+                loadOrder()
+              }}
+            />
           </div>
         </div>
 

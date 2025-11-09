@@ -92,9 +92,11 @@ export const API_ENDPOINTS = {
     ORDERS_CHART: '/dashboard/orders-chart',
   },
   
-  // Pagos (para implementación futura)
+  // Pagos
   PAYMENTS: {
     BASE: '/payments',
+    BY_ID: (id: number) => `/payments/${id}`,
+    CANCEL: (id: number) => `/payments/${id}/cancel`,
     BY_ORDER: (orderId: number) => `/orders/${orderId}/payments`,
     SUMMARY: (orderId: number) => `/orders/${orderId}/payment-summary`,
   },
