@@ -86,6 +86,7 @@ const OrdersTableComponent = ({
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [currentOrderTitle, setCurrentOrderTitle] = useState<string>('')
+  const [currentOrderId, setCurrentOrderId] = useState<number | undefined>(undefined)
   
 
   // Obtener IDs de órdenes seleccionadas
@@ -107,6 +108,7 @@ const OrdersTableComponent = ({
       const url = await ordersService.getReceiptPreviewBlob(order.id!)
       setPdfUrl(url)
       setCurrentOrderTitle(`Comprobante - ${order.order_number || `Orden ${order.id}`}`)
+      setCurrentOrderId(order.id)
       setPdfViewerOpen(true)
       toast.success('Abriendo vista previa del comprobante')
     } catch (_error) {
@@ -124,6 +126,11 @@ const OrdersTableComponent = ({
       setPdfUrl(null)
     }
     setCurrentOrderTitle('')
+    setCurrentOrderId(undefined)
+  }
+
+  const handleShareWhatsApp = async (orderId: number) => {
+    await ordersService.sendReceiptByWhatsApp(orderId)
   }
 
 
@@ -313,6 +320,8 @@ const OrdersTableComponent = ({
         title={currentOrderTitle}
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
+        orderId={currentOrderId}
+        onShareWhatsApp={currentOrderId ? handleShareWhatsApp : undefined}
       />
 
     </div>

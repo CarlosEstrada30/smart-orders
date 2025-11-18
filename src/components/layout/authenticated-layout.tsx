@@ -21,6 +21,7 @@ import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { WhatsAppStatus } from '@/components/whatsapp-status'
 import { useFilteredSidebarData } from './protected-sidebar'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
@@ -104,6 +105,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
           >
             <Header fixed>
               <div className='ms-auto flex items-center space-x-4'>
+                <WhatsAppStatus />
                 <Search />
                 <ThemeSwitch />
                 <ProfileDropdown />

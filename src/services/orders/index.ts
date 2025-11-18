@@ -366,6 +366,11 @@ export const ordersService = {
     }
   },
 
+  // Enviar comprobante por WhatsApp
+  async sendReceiptByWhatsApp(orderId: number): Promise<void> {
+    await apiClient.post(`/orders/${orderId}/receipt/send-whatsapp`)
+  },
+
   // Verificar si un comprobante existe para una orden
   async checkReceiptExists(orderId: number): Promise<boolean> {
     try {

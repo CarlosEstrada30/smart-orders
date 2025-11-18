@@ -3,7 +3,10 @@ import { Worker, Viewer, SpecialZoomLevel } from '@react-pdf-viewer/core'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { Download, Printer, AlertCircle } from 'lucide-react'
+import { Download, Printer, AlertCircle, MessageCircle } from 'lucide-react'
+import { toast } from 'sonner'
+import { whatsappService } from '@/services/whatsapp'
+import type { WhatsAppDeviceStatus } from '@/services/whatsapp'
 
 // Importar estilos CSS necesarios
 import '@react-pdf-viewer/core/lib/styles/index.css'
@@ -14,16 +17,23 @@ interface ModernPDFViewerProps {
   title?: string
   isOpen: boolean
   onClose: () => void
+  orderId?: number
+  onShareWhatsApp?: (orderId: number) => Promise<void>
 }
 
 export function ModernPDFViewer({ 
   pdfUrl, 
   title = "Documento PDF",
   isOpen, 
-  onClose
+  onClose,
+  orderId,
+  onShareWhatsApp
 }: ModernPDFViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false)
+  const [whatsAppStatus, setWhatsAppStatus] = useState<WhatsAppDeviceStatus | null>(null)
+  const [checkingWhatsApp, setCheckingWhatsApp] = useState(false)
 
   // Reset states cuando se abre con nuevo PDF
   useEffect(() => {
@@ -32,6 +42,35 @@ export function ModernPDFViewer({
       setLoading(true)
     }
   }, [isOpen, pdfUrl])
+
+  // Consultar estado de WhatsApp cuando se abre el modal y hay un orderId
+  useEffect(() => {
+    if (isOpen && orderId && onShareWhatsApp) {
+      const checkWhatsAppStatus = async () => {
+        try {
+          setCheckingWhatsApp(true)
+          const status = await whatsappService.getDeviceStatus()
+          setWhatsAppStatus(status)
+        } catch (error) {
+          // Si hay error, asumir que no está conectado
+          setWhatsAppStatus({
+            status: 'disconnected',
+            instance_name: 'default',
+            qr_code: null,
+            qr_url: null,
+            message: 'Error al verificar estado de WhatsApp',
+          })
+        } finally {
+          setCheckingWhatsApp(false)
+        }
+      }
+
+      checkWhatsAppStatus()
+    } else {
+      // Limpiar estado cuando se cierra el modal
+      setWhatsAppStatus(null)
+    }
+  }, [isOpen, orderId, onShareWhatsApp])
 
   // Funciones para descargar e imprimir
   const handleDownload = useCallback(() => {
@@ -51,6 +90,20 @@ export function ModernPDFViewer({
       printWindow?.print()
     }
   }, [pdfUrl])
+
+  const handleShareWhatsApp = useCallback(async () => {
+    if (!orderId || !onShareWhatsApp) return
+    
+    try {
+      setSendingWhatsApp(true)
+      await onShareWhatsApp(orderId)
+      toast.success('Comprobante enviado por WhatsApp exitosamente')
+    } catch (error) {
+      toast.error('Error al enviar el comprobante por WhatsApp')
+    } finally {
+      setSendingWhatsApp(false)
+    }
+  }, [orderId, onShareWhatsApp])
 
   // Worker URL para PDF.js
   const workerUrl = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
@@ -83,7 +136,7 @@ export function ModernPDFViewer({
             /* PDF Viewer sin header - pantalla completa - UNA SOLA COLUMNA */
             <div className="relative h-full flex flex-col">
               <Worker workerUrl={workerUrl}>
-                {/* Toolbar minimalista - solo descargar e imprimir */}
+                {/* Toolbar minimalista - descargar, imprimir y compartir por WhatsApp */}
                 <div className="flex-shrink-0 border-b bg-gray-50 dark:bg-gray-800 p-3">
                   <div className="flex items-center gap-3 justify-center">
                     <Button 
@@ -105,6 +158,32 @@ export function ModernPDFViewer({
                       <Printer className="h-4 w-4" />
                       Imprimir
                     </Button>
+
+                    {orderId && onShareWhatsApp && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={handleShareWhatsApp}
+                        disabled={sendingWhatsApp || checkingWhatsApp || whatsAppStatus?.status !== 'connected'}
+                        className="flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={
+                          checkingWhatsApp 
+                            ? 'Verificando estado de WhatsApp...' 
+                            : whatsAppStatus?.status !== 'connected'
+                            ? 'WhatsApp no está conectado'
+                            : 'Compartir comprobante por WhatsApp'
+                        }
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        {sendingWhatsApp 
+                          ? 'Enviando...' 
+                          : checkingWhatsApp
+                          ? 'Verificando...'
+                          : whatsAppStatus?.status !== 'connected'
+                          ? 'WhatsApp desconectado'
+                          : 'Compartir por WhatsApp'}
+                      </Button>
+                    )}
                   </div>
                 </div>
                 
