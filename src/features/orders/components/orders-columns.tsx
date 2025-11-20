@@ -11,10 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, Route, MoreHorizontal, Eye, Trash2 } from 'lucide-react'
+import { User, Route, MoreHorizontal, Eye, Trash2, StickyNote } from 'lucide-react'
 import { type Order } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 // Helper para formatear fechas en formato DD/MM/YYYY
 const formatDate = (date: Date) => {
@@ -59,9 +64,24 @@ export const ordersColumns: ColumnDef<Order>[] = [
     ),
     cell: ({ row }) => {
       const orderNumber = row.getValue('order_number') as string || `#${row.original.id}`
+      const notes = row.original.notes
+      const hasNotes = notes && notes.trim().length > 0
+      
       return (
-        <div className="font-mono font-medium">
-          {orderNumber}
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-medium">
+            {orderNumber}
+          </span>
+          {hasNotes && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <StickyNote className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p className="whitespace-pre-wrap">{notes}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       )
     },
