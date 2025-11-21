@@ -127,7 +127,7 @@ export function OrdersPage() {
   useEffect(() => {
     loadOrders()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.skip, filters.limit, filters.search, filters.status_filter, filters.route_id, filters.date_from, filters.date_to])
+  }, [filters.skip, filters.limit, filters.search, filters.status_filter, filters.payment_status_filter, filters.route_id, filters.date_from, filters.date_to])
 
   // Función para actualizar filtros
   const handleFiltersChange = useCallback((newFilters: Partial<OrdersQueryParams>) => {
@@ -238,6 +238,7 @@ export function OrdersPage() {
               filters={filters}
               pagination={paginationInfo}
               loading={loading}
+              onPaymentCreated={loadOrders}
             />
           </CardContent>
         </Card>

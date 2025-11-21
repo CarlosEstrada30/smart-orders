@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MoreHorizontal, Eye, Trash2, Download, Edit } from 'lucide-react'
+import { MoreHorizontal, Eye, Trash2, Download, Edit, DollarSign } from 'lucide-react'
 import { type Order, type OrderStatus } from '../data/schema'
 import { type BulkOrderStatusResponse } from '@/services/orders'
 import { DataTablePagination } from './data-table-pagination'
@@ -34,6 +34,7 @@ import { DataTableToolbar } from './data-table-toolbar'
 import { BulkActionsToolbar } from './bulk-actions-toolbar'
 import { ordersColumns as columns } from './orders-columns'
 import { ordersService, type OrdersQueryParams } from '@/services/orders'
+import { CreatePaymentModal } from './create-payment-modal'
 import { toast } from 'sonner'
 
 export interface TablePaginationInfo {
@@ -64,6 +65,7 @@ type OrdersTableProps = {
   filters: OrdersQueryParams
   pagination: TablePaginationInfo
   loading?: boolean
+  onPaymentCreated?: () => void // Callback para refrescar datos después de crear pago
 }
 
 const OrdersTableComponent = ({ 
@@ -76,7 +78,8 @@ const OrdersTableComponent = ({
   onFiltersChange,
   filters,
   pagination,
-  loading: _loading = false
+  loading: _loading = false,
+  onPaymentCreated,
 }: OrdersTableProps) => {
   // Solo estados locales para UI (no para filtros ni paginación)
   const [rowSelection, setRowSelection] = useState({})
@@ -86,6 +89,8 @@ const OrdersTableComponent = ({
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [currentOrderTitle, setCurrentOrderTitle] = useState<string>('')
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null)
   
 
   // Obtener IDs de órdenes seleccionadas
@@ -93,6 +98,12 @@ const OrdersTableComponent = ({
     .filter(key => rowSelection[key as keyof typeof rowSelection])
     .map(key => data[parseInt(key)]?.id)
     .filter(Boolean) as number[]
+
+  // Obtener órdenes completas seleccionadas
+  const selectedOrders = Object.keys(rowSelection)
+    .filter(key => rowSelection[key as keyof typeof rowSelection])
+    .map(key => data[parseInt(key)])
+    .filter(Boolean) as Order[]
 
   // Limpiar selección
   const handleClearSelection = () => {
@@ -141,6 +152,17 @@ const OrdersTableComponent = ({
   }
 
 
+  const handleOpenPaymentModal = (order: Order) => {
+    setSelectedOrderForPayment(order)
+    setPaymentModalOpen(true)
+  }
+
+  const handlePaymentCreated = () => {
+    setPaymentModalOpen(false)
+    setSelectedOrderForPayment(null)
+    onPaymentCreated?.()
+  }
+
   // Create columns with handlers
   const columnsWithHandlers = columns.map((column) => {
     if (column.id === 'actions') {
@@ -148,51 +170,63 @@ const OrdersTableComponent = ({
         ...column,
         cell: ({ row }: { row: { original: Order } }) => {
           const order = row.original
+          const canCreatePayment = 
+            order.status !== 'cancelled' && 
+            (order.payment_status !== 'paid' || !order.payment_status) &&
+            (order.balance_due === undefined || order.balance_due > 0)
           
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
-                  <span className="sr-only">Abrir menú</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onViewOrder?.(order)}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Ver detalles
-                </DropdownMenuItem>
-                {order.status === 'pending' && (
-                  <DropdownMenuItem onClick={() => onEditOrder?.(order)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Editar orden
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
+                    <span className="sr-only">Abrir menú</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onViewOrder?.(order)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Ver detalles
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={async () => await handlePreviewReceipt(order)} disabled={isLoading}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Ver comprobante
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadReceipt(order)} disabled={isLoading}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Descargar comprobante
-                </DropdownMenuItem>
-                {order.status !== 'cancelled' && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="text-red-600"
-                      onClick={() => onDeleteOrder?.(order)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Cancelar
+                  {order.status === 'pending' && (
+                    <DropdownMenuItem onClick={() => onEditOrder?.(order)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Editar orden
                     </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  )}
+                  {canCreatePayment && (
+                    <DropdownMenuItem onClick={() => handleOpenPaymentModal(order)}>
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      Registrar Pago
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={async () => await handlePreviewReceipt(order)} disabled={isLoading}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Ver comprobante
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDownloadReceipt(order)} disabled={isLoading}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Descargar comprobante
+                  </DropdownMenuItem>
+                  {order.status !== 'cancelled' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-red-600"
+                        onClick={() => onDeleteOrder?.(order)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Cancelar
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )
         },
       }
@@ -231,9 +265,11 @@ const OrdersTableComponent = ({
       {selectedOrderIds.length > 0 && onBulkStatusChange && (
         <BulkActionsToolbar
           selectedOrders={selectedOrderIds}
+          orders={selectedOrders}
           onBulkStatusChange={onBulkStatusChange}
           onClearSelection={handleClearSelection}
           onStockError={onStockError}
+          onPaymentsCreated={onPaymentCreated}
           loading={isLoading}
         />
       )}
@@ -315,6 +351,17 @@ const OrdersTableComponent = ({
         onClose={handleClosePdfViewer}
       />
 
+      {selectedOrderForPayment && (
+        <CreatePaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
+          orderId={selectedOrderForPayment.id!}
+          orderNumber={selectedOrderForPayment.order_number}
+          totalAmount={selectedOrderForPayment.total_amount || 0}
+          balanceDue={selectedOrderForPayment.balance_due ?? (selectedOrderForPayment.total_amount || 0)}
+          onPaymentCreated={handlePaymentCreated}
+        />
+      )}
     </div>
   )
 }

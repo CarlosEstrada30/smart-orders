@@ -16,6 +16,7 @@ export { felService } from './fel'
 export { companiesService } from './companies'
 export { SettingsService } from './settings'
 export { productionService } from './production'
+export { paymentsService } from './payments'
 
 // Exportar tipos
 export type { Client, CreateClientRequest, UpdateClientRequest, ClientsListParams } from './clients'
@@ -55,3 +56,13 @@ export type {
   ProductionQueryParams, 
   ProductionResponse 
 } from './production'
+export type {
+  Payment,
+  PaymentMethod,
+  PaymentStatus,
+  OrderPaymentStatus,
+  CreatePaymentRequest,
+  PaymentsListParams,
+  PaymentsListResponse,
+  PaymentSummary,
+} from './payments'

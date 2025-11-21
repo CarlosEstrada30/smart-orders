@@ -41,6 +41,9 @@ export const orderSchema = z.object({
   discount_amount: z.number().min(0).optional(),
   notes: z.string().optional(),
   total_amount: z.number().optional(),
+  paid_amount: z.number().optional(), // Monto total pagado
+  balance_due: z.number().optional(), // Saldo pendiente
+  payment_status: z.enum(['unpaid', 'partial', 'paid']).optional(), // Estado de pago
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   items: z.array(orderItemSchema),

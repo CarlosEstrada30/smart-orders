@@ -615,7 +615,7 @@
           "clients"
         ],
         "summary": "Export Clients",
-        "description": "Export clients to Excel file (requires authentication)\n\nParameters:\n- active_only: Export only active clients (default: false)\n- skip: Number of records to skip (default: 0)  \n- limit: Maximum number of records to export (default: 10000)\n\nReturns an Excel file with the same format as the import template.",
+        "description": "Export clients to Excel file (requires authentication)\n\nParameters:\n- active_only: Export only active clients (default: false)\n- skip: Number of records to skip (default: 0)\n- limit: Maximum number of records to export (default: 10000)\n\nReturns an Excel file with the same format as the import template.",
         "operationId": "export_clients_api_v1_clients_export_get",
         "security": [
           {
@@ -1172,7 +1172,7 @@
           "products"
         ],
         "summary": "Export Products",
-        "description": "Export products to Excel file (requires authentication)\n\nParameters:\n- active_only: Export only active products (default: false)\n- skip: Number of records to skip (default: 0)  \n- limit: Maximum number of records to export (default: 10000)\n\nReturns an Excel file with the same format as the import template.",
+        "description": "Export products to Excel file (requires authentication)\n\nParameters:\n- active_only: Export only active products (default: false)\n- skip: Number of records to skip (default: 0)\n- limit: Maximum number of records to export (default: 10000)\n\nReturns an Excel file with the same format as the import template.",
         "operationId": "export_products_api_v1_products_export_get",
         "security": [
           {
@@ -1537,7 +1537,7 @@
           "products"
         ],
         "summary": "Bulk Upload Products",
-        "description": "Bulk upload products from Excel file (requires authentication)\n\nThe Excel file should preferably have a 'Productos' sheet, but any sheet will work.\nAccepts column names in Spanish or English:\n\nREQUIRED COLUMNS (any of these names):\n- nombre / name / Name / Nombre / NOMBRE: Product name\n- precio / price / Price / Precio / PRECIO: Product price (must be \u003E 0)\n- sku / SKU / codigo / código / Codigo / Código: Product SKU (must be unique)\n\nOPTIONAL COLUMNS (any of these names):\n- descripcion / description / Description / Descripción: Product description\n- stock / Stock / inventario / Inventario: Stock quantity (default: 0)\n- activo / is_active / active / Active: true/false for active status (default: true)\n\nDownload the template using GET /api/v1/products/template/download for the correct format.",
+        "description": "Bulk upload products from Excel file (requires authentication)\n\nThe Excel file should preferably have a 'Productos' sheet, but any sheet will work.\nAccepts column names in Spanish or English:\n\nREQUIRED COLUMNS (any of these names):\n- nombre / name / Name / Nombre / NOMBRE: Product name\n- precio / price / Price / Precio / PRECIO: Product price (must be \u003E 0)\n\nOPTIONAL COLUMNS (any of these names):\n- descripcion / description / Description / Descripción: Product description\n- stock / Stock / inventario / Inventario: Stock quantity (default: 0)\n- sku / SKU / codigo / código / Codigo / Código: Product SKU\n  (auto-generated if not provided)\n- activo / is_active / active / Active: true/false for active status (default: true)\n\nDownload the template using GET /api/v1/products/template/download for the correct format.",
         "operationId": "bulk_upload_products_api_v1_products_bulk_upload_post",
         "requestBody": {
           "content": {
@@ -2289,6 +2289,53 @@
         }
       }
     },
+    "/api/v1/orders/bulk-status": {
+      "put": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Batch Update Order Status",
+        "description": "Update status for multiple orders (requires authentication)",
+        "operationId": "batch_update_order_status_api_v1_orders_bulk_status_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchOrderUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOrderUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/orders/{order_id}/items": {
       "post": {
         "tags": [
@@ -2516,6 +2563,118 @@
                     "$ref": "#/components/schemas/OrderResponse"
                   },
                   "title": "Response Get Orders By Client Api V1 Orders Client  Client Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/payments": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Order Payments",
+        "description": "Obtener todos los pagos de una orden (requiere permiso de ver pagos)",
+        "operationId": "get_order_payments_api_v1_orders__order_id__payments_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "only_confirmed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Solo mostrar pagos confirmados",
+              "default": true,
+              "title": "Only Confirmed"
+            },
+            "description": "Solo mostrar pagos confirmados"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentResponse"
+                  },
+                  "title": "Response Get Order Payments Api V1 Orders  Order Id  Payments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/payment-summary": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Order Payment Summary",
+        "description": "Obtener resumen completo de pagos de una orden (requiere permiso de ver pagos)",
+        "operationId": "get_order_payment_summary_api_v1_orders__order_id__payment_summary_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPaymentSummary"
                 }
               }
             }
@@ -2899,7 +3058,7 @@
           "orders"
         ],
         "summary": "Get Status Distribution",
-        "description": "Get order status distribution for donut chart\n\nReturns the count and percentage of orders by status for a specific month.\nPerfect for creating donut charts showing order status distribution.\n\nParameters:\n- year: Year for analysis (optional, defaults to current year)\n- month: Month for analysis (1-12, optional, defaults to current month)\n\nResponse includes:\n- status_data: List with each status, its name, count, and percentage\n- total_orders: Total orders in the period\n- month/year: Period analyzed \n- period_name: Human-readable period name\n\nExample response for donut chart:\n{\n  \"status_data\": [\n    {\"status\": \"delivered\", \"status_name\": \"Entregado\", \"count\": 15, \"percentage\": 50.0},\n    {\"status\": \"pending\", \"status_name\": \"Pendiente\", \"count\": 10, \"percentage\": 33.3},\n    {\"status\": \"cancelled\", \"status_name\": \"Cancelado\", \"count\": 5, \"percentage\": 16.7}\n  ],\n  \"total_orders\": 30,\n  \"month\": 9,\n  \"year\": 2025,\n  \"period_name\": \"Septiembre 2025\"\n}",
+        "description": "Get order status distribution for donut chart\n\nReturns the count and percentage of orders by status for a specific month.\nPerfect for creating donut charts showing order status distribution.\n\nParameters:\n- year: Year for analysis (optional, defaults to current year)\n- month: Month for analysis (1-12, optional, defaults to current month)\n\nResponse includes:\n- status_data: List with each status, its name, count, and percentage\n- total_orders: Total orders in the period\n- month/year: Period analyzed\n- period_name: Human-readable period name\n\nExample response for donut chart:\n{\n  \"status_data\": [\n    {\"status\": \"delivered\", \"status_name\": \"Entregado\", \"count\": 15, \"percentage\": 50.0},\n    {\"status\": \"pending\", \"status_name\": \"Pendiente\", \"count\": 10, \"percentage\": 33.3},\n    {\"status\": \"cancelled\", \"status_name\": \"Cancelado\", \"count\": 5, \"percentage\": 16.7}\n  ],\n  \"total_orders\": 30,\n  \"month\": 9,\n  \"year\": 2025,\n  \"period_name\": \"Septiembre 2025\"\n}",
         "operationId": "get_status_distribution_api_v1_orders_analytics_status_distribution_get",
         "security": [
           {
@@ -2951,6 +3110,314 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StatusDistributionSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Create Payment",
+        "description": "Crear un nuevo pago (requiere rol de Vendedor o superior)",
+        "operationId": "create_payment_api_v1_payments__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/app__schemas__payment__PaymentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payments",
+        "description": "Obtener lista de pagos con filtros opcionales (requiere permiso de ver pagos)",
+        "operationId": "get_payments_api_v1_payments__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por ID de orden",
+              "title": "Order Id"
+            },
+            "description": "Filtrar por ID de orden"
+          },
+          {
+            "name": "payment_method",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por método de pago",
+              "title": "Payment Method"
+            },
+            "description": "Filtrar por método de pago"
+          },
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por estado",
+              "title": "Status Filter"
+            },
+            "description": "Filtrar por estado"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar desde esta fecha (YYYY-MM-DD)",
+              "title": "Date From"
+            },
+            "description": "Filtrar desde esta fecha (YYYY-MM-DD)"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar hasta esta fecha (YYYY-MM-DD)",
+              "title": "Date To"
+            },
+            "description": "Filtrar hasta esta fecha (YYYY-MM-DD)"
+          },
+          {
+            "name": "only_confirmed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Solo mostrar pagos confirmados",
+              "default": true,
+              "title": "Only Confirmed"
+            },
+            "description": "Solo mostrar pagos confirmados"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentResponse"
+                  },
+                  "title": "Response Get Payments Api V1 Payments  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{payment_id}": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payment",
+        "description": "Obtener un pago específico por ID (requiere autenticación)",
+        "operationId": "get_payment_api_v1_payments__payment_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Payment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{payment_id}/cancel": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Cancel Payment",
+        "description": "Cancelar un pago (requiere rol de Vendedor o superior)",
+        "operationId": "cancel_payment_api_v1_payments__payment_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Payment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
                 }
               }
             }
@@ -3541,7 +4008,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PaymentCreate"
+                "$ref": "#/components/schemas/app__schemas__invoice__PaymentCreate"
               }
             }
           },
@@ -5591,6 +6058,9 @@
     },
     "/api/v1/product-route-prices/": {
       "post": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Create Product Route Price",
         "description": "Crear un precio específico para un producto en una ruta",
         "operationId": "create_product_route_price_api_v1_product_route_prices__post",
@@ -5610,7 +6080,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -5633,6 +6103,9 @@
         }
       },
       "get": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Get All Product Route Prices",
         "description": "Obtener todos los precios por ruta con paginación",
         "operationId": "get_all_product_route_prices_api_v1_product_route_prices__get",
@@ -5693,6 +6166,9 @@
     },
     "/api/v1/product-route-prices/product/{product_id}": {
       "get": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Get Product Route Prices",
         "description": "Obtener todos los precios por ruta de un producto",
         "operationId": "get_product_route_prices_api_v1_product_route_prices_product__product_id__get",
@@ -5742,6 +6218,9 @@
     },
     "/api/v1/product-route-prices/{route_price_id}": {
       "get": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Get Product Route Price",
         "description": "Obtener un precio específico por ruta por ID",
         "operationId": "get_product_route_price_api_v1_product_route_prices__route_price_id__get",
@@ -5785,6 +6264,9 @@
         }
       },
       "put": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Update Product Route Price",
         "description": "Actualizar el precio de un producto para una ruta específica",
         "operationId": "update_product_route_price_api_v1_product_route_prices__route_price_id__put",
@@ -5838,6 +6320,9 @@
         }
       },
       "delete": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Delete Product Route Price",
         "description": "Eliminar un precio específico de un producto para una ruta por ID",
         "operationId": "delete_product_route_price_api_v1_product_route_prices__route_price_id__delete",
@@ -5883,6 +6368,9 @@
     },
     "/api/v1/product-route-prices/product/{product_id}/route/{route_id}": {
       "delete": {
+        "tags": [
+          "product-route-prices"
+        ],
         "summary": "Delete Product Route Price By Product Route",
         "description": "Eliminar el precio específico de un producto para una ruta",
         "operationId": "delete_product_route_price_by_product_route_api_v1_product_route_prices_product__product_id__route__route_id__delete",
@@ -5918,6 +6406,65 @@
               "application/json": {
                 "schema": {
 
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/production/dashboard": {
+      "get": {
+        "summary": "Get Production Dashboard",
+        "description": "Dashboard de Producción\n\nObtiene información detallada sobre la producción necesaria para una ruta y fecha específica.\n\n**Parámetros:**\n- `route_id`: ID de la ruta a analizar\n- `date`: Fecha objetivo para el análisis\n\n**Respuesta:**\n- Información de la ruta y fecha\n- Resumen de producción\n- Lista detallada de productos con stock, demanda y déficit",
+        "operationId": "get_production_dashboard_api_v1_production_dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "ID de la ruta",
+              "title": "Route Id"
+            },
+            "description": "ID de la ruta"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Fecha objetivo (YYYY-MM-DD)",
+              "title": "Date"
+            },
+            "description": "Fecha objetivo (YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionDashboardResponse"
                 }
               }
             }
@@ -5995,6 +6542,106 @@
   },
   "components": {
     "schemas": {
+      "BatchOrderUpdateRequest": {
+        "properties": {
+          "order_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Order Ids",
+            "description": "List of order IDs to update"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ],
+            "description": "New status to set for all orders"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Optional notes for the status change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_ids",
+          "status"
+        ],
+        "title": "BatchOrderUpdateRequest",
+        "description": "Schema for batch order status updates"
+      },
+      "BatchOrderUpdateResponse": {
+        "properties": {
+          "updated_count": {
+            "type": "integer",
+            "title": "Updated Count"
+          },
+          "failed_count": {
+            "type": "integer",
+            "title": "Failed Count"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "failed_orders": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Failed Orders",
+            "description": "Order IDs that failed to update"
+          },
+          "success_orders": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Success Orders",
+            "description": "Order IDs that were updated successfully"
+          },
+          "success_details": {
+            "items": {
+              "$ref": "#/components/schemas/OrderUpdateSuccess"
+            },
+            "type": "array",
+            "title": "Success Details",
+            "description": "Detailed success information"
+          },
+          "failed_details": {
+            "items": {
+              "$ref": "#/components/schemas/OrderUpdateError"
+            },
+            "type": "array",
+            "title": "Failed Details",
+            "description": "Detailed error information for failed orders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_count",
+          "failed_count",
+          "total_orders",
+          "status"
+        ],
+        "title": "BatchOrderUpdateResponse",
+        "description": "Schema for batch order update response"
+      },
       "BatchUpdateRequest": {
         "properties": {
           "entry_ids": {
@@ -6646,7 +7293,7 @@
             "title": "Product Id"
           },
           "quantity": {
-            "type": "integer",
+            "type": "number",
             "exclusiveMinimum": 0,
             "title": "Quantity",
             "description": "Quantity must be greater than 0"
@@ -6708,7 +7355,7 @@
             "title": "Product Id"
           },
           "quantity": {
-            "type": "integer",
+            "type": "number",
             "exclusiveMinimum": 0,
             "title": "Quantity",
             "description": "Quantity must be greater than 0"
@@ -7167,7 +7814,7 @@
             "title": "Total Entries"
           },
           "total_quantity_added": {
-            "type": "integer",
+            "type": "number",
             "title": "Total Quantity Added"
           },
           "last_entry_date": {
@@ -7461,7 +8108,8 @@
                 "type": "null"
               }
             ],
-            "title": "Fel Authorization Date"
+            "title": "Fel Authorization Date",
+            "description": "Fecha de autorización FEL (en zona horaria del cliente)"
           },
           "fel_xml_path": {
             "anyOf": [
@@ -7484,7 +8132,8 @@
                 "type": "null"
               }
             ],
-            "title": "Fel Certification Date"
+            "title": "Fel Certification Date",
+            "description": "Fecha de certificación FEL (en zona horaria del cliente)"
           },
           "fel_certifier": {
             "anyOf": [
@@ -7538,7 +8187,8 @@
           "issue_date": {
             "type": "string",
             "format": "date-time",
-            "title": "Issue Date"
+            "title": "Issue Date",
+            "description": "Fecha de emisión (en zona horaria del cliente)"
           },
           "paid_date": {
             "anyOf": [
@@ -7550,7 +8200,8 @@
                 "type": "null"
               }
             ],
-            "title": "Paid Date"
+            "title": "Paid Date",
+            "description": "Fecha de pago (en zona horaria del cliente)"
           },
           "pdf_generated": {
             "type": "boolean",
@@ -7570,7 +8221,8 @@
           "created_at": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Created At",
+            "description": "Fecha y hora de creación (en zona horaria del cliente)"
           },
           "updated_at": {
             "anyOf": [
@@ -7582,7 +8234,8 @@
                 "type": "null"
               }
             ],
-            "title": "Updated At"
+            "title": "Updated At",
+            "description": "Fecha y hora de última actualización (en zona horaria del cliente)"
           }
         },
         "type": "object",
@@ -7889,7 +8542,7 @@
             ],
             "default": "pending"
           },
-          "discount_percentage": {
+          "discount_amount": {
             "anyOf": [
               {
                 "type": "number"
@@ -7898,7 +8551,7 @@
                 "type": "null"
               }
             ],
-            "title": "Discount Percentage",
+            "title": "Discount Amount",
             "default": 0
           },
           "notes": {
@@ -7934,8 +8587,10 @@
             "title": "Product Id"
           },
           "quantity": {
-            "type": "integer",
-            "title": "Quantity"
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "title": "Quantity",
+            "description": "Quantity must be greater than 0"
           },
           "unit_price": {
             "type": "number",
@@ -7957,8 +8612,10 @@
             "title": "Product Id"
           },
           "quantity": {
-            "type": "integer",
-            "title": "Quantity"
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "title": "Quantity",
+            "description": "Quantity must be greater than 0"
           },
           "unit_price": {
             "type": "number",
@@ -8021,6 +8678,66 @@
         ],
         "title": "OrderItemResponse"
       },
+      "OrderPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "unpaid",
+          "partial",
+          "paid"
+        ],
+        "title": "OrderPaymentStatus"
+      },
+      "OrderPaymentSummary": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id"
+          },
+          "order_number": {
+            "type": "string",
+            "title": "Order Number"
+          },
+          "total_amount": {
+            "type": "number",
+            "title": "Total Amount"
+          },
+          "paid_amount": {
+            "type": "number",
+            "title": "Paid Amount"
+          },
+          "balance_due": {
+            "type": "number",
+            "title": "Balance Due"
+          },
+          "payment_status": {
+            "$ref": "#/components/schemas/OrderPaymentStatus"
+          },
+          "payment_count": {
+            "type": "integer",
+            "title": "Payment Count"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentResponse"
+            },
+            "type": "array",
+            "title": "Payments",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "order_number",
+          "total_amount",
+          "paid_amount",
+          "balance_due",
+          "payment_status",
+          "payment_count"
+        ],
+        "title": "OrderPaymentSummary",
+        "description": "Resumen completo de pagos de una orden"
+      },
       "OrderResponse": {
         "properties": {
           "client_id": {
@@ -8046,7 +8763,7 @@
             ],
             "default": "pending"
           },
-          "discount_percentage": {
+          "discount_amount": {
             "anyOf": [
               {
                 "type": "number"
@@ -8055,7 +8772,7 @@
                 "type": "null"
               }
             ],
-            "title": "Discount Percentage",
+            "title": "Discount Amount",
             "default": 0
           },
           "notes": {
@@ -8081,10 +8798,45 @@
             "type": "number",
             "title": "Total Amount"
           },
+          "paid_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Amount",
+            "default": 0
+          },
+          "balance_due": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Balance Due"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Created At",
+            "description": "Fecha y hora de creación (en zona horaria del cliente)"
           },
           "updated_at": {
             "anyOf": [
@@ -8096,7 +8848,8 @@
                 "type": "null"
               }
             ],
-            "title": "Updated At"
+            "title": "Updated At",
+            "description": "Fecha y hora de última actualización (en zona horaria del cliente)"
           },
           "items": {
             "items": {
@@ -8183,7 +8936,7 @@
               }
             ]
           },
-          "discount_percentage": {
+          "discount_amount": {
             "anyOf": [
               {
                 "type": "number"
@@ -8192,7 +8945,7 @@
                 "type": "null"
               }
             ],
-            "title": "Discount Percentage"
+            "title": "Discount Amount"
           },
           "notes": {
             "anyOf": [
@@ -8223,6 +8976,76 @@
         "type": "object",
         "title": "OrderUpdate",
         "description": "Schema for order editing (complete for PENDING orders, basic for others)"
+      },
+      "OrderUpdateError": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id"
+          },
+          "order_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Number"
+          },
+          "error_type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "error_message": {
+            "type": "string",
+            "title": "Error Message"
+          },
+          "products_with_errors": {
+            "items": {
+              "$ref": "#/components/schemas/ProductError"
+            },
+            "type": "array",
+            "title": "Products With Errors",
+            "description": "Products that caused errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "error_type",
+          "error_message"
+        ],
+        "title": "OrderUpdateError",
+        "description": "Schema for order update error details"
+      },
+      "OrderUpdateSuccess": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id"
+          },
+          "order_number": {
+            "type": "string",
+            "title": "Order Number"
+          },
+          "products_updated": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Products Updated",
+            "description": "Products that were processed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "order_number"
+        ],
+        "title": "OrderUpdateSuccess",
+        "description": "Schema for successful order update details"
       },
       "PaginatedResponse_OrderResponse_": {
         "properties": {
@@ -8296,32 +9119,32 @@
         "title": "PaginationInfo",
         "description": "Pagination metadata"
       },
-      "PaymentCreate": {
+      "PaymentMethod": {
+        "type": "string",
+        "enum": [
+          "cash",
+          "credit_card",
+          "debit_card",
+          "bank_transfer",
+          "check",
+          "other"
+        ],
+        "title": "PaymentMethod"
+      },
+      "PaymentResponse": {
         "properties": {
-          "invoice_id": {
+          "order_id": {
             "type": "integer",
-            "title": "Invoice Id"
+            "title": "Order Id"
           },
           "amount": {
             "type": "number",
             "exclusiveMinimum": 0,
             "title": "Amount",
-            "description": "Payment amount must be positive"
+            "description": "Amount must be greater than 0"
           },
           "payment_method": {
             "$ref": "#/components/schemas/PaymentMethod"
-          },
-          "payment_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Payment Date"
           },
           "notes": {
             "anyOf": [
@@ -8333,27 +9156,75 @@
               }
             ],
             "title": "Notes"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "payment_number": {
+            "type": "string",
+            "title": "Payment Number"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Payment Date",
+            "description": "Fecha del pago (en zona horaria del cliente)"
+          },
+          "created_by_user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By User Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Fecha y hora de creación (en zona horaria del cliente)"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At",
+            "description": "Fecha y hora de última actualización (en zona horaria del cliente)"
           }
         },
         "type": "object",
         "required": [
-          "invoice_id",
+          "order_id",
           "amount",
-          "payment_method"
+          "payment_method",
+          "id",
+          "payment_number",
+          "status",
+          "payment_date",
+          "created_at"
         ],
-        "title": "PaymentCreate",
-        "description": "For recording payments against invoices"
+        "title": "PaymentResponse"
       },
-      "PaymentMethod": {
+      "PaymentStatus": {
         "type": "string",
         "enum": [
-          "cash",
-          "credit_card",
-          "bank_transfer",
-          "check",
-          "other"
+          "confirmed",
+          "cancelled"
         ],
-        "title": "PaymentMethod"
+        "title": "PaymentStatus"
       },
       "ProductBulkUploadResult": {
         "properties": {
@@ -8421,7 +9292,14 @@
             "default": 0
           },
           "sku": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Sku"
           },
           "is_active": {
@@ -8433,10 +9311,103 @@
         "type": "object",
         "required": [
           "name",
-          "price",
-          "sku"
+          "price"
         ],
         "title": "ProductCreate"
+      },
+      "ProductError": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "product_sku": {
+            "type": "string",
+            "title": "Product Sku"
+          },
+          "error_type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "error_message": {
+            "type": "string",
+            "title": "Error Message"
+          },
+          "required_quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Quantity"
+          },
+          "available_quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product_name",
+          "product_sku",
+          "error_type",
+          "error_message"
+        ],
+        "title": "ProductError",
+        "description": "Schema for product error details"
+      },
+      "ProductProductionInfo": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "stock": {
+            "type": "integer",
+            "title": "Stock"
+          },
+          "total_comprometidos": {
+            "type": "integer",
+            "title": "Total Comprometidos"
+          },
+          "total_a_producir": {
+            "type": "integer",
+            "title": "Total A Producir"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "sku",
+          "stock",
+          "total_comprometidos",
+          "total_a_producir"
+        ],
+        "title": "ProductProductionInfo"
       },
       "ProductResponse": {
         "properties": {
@@ -8465,7 +9436,14 @@
             "default": 0
           },
           "sku": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Sku"
           },
           "is_active": {
@@ -8498,7 +9476,7 @@
             "anyOf": [
               {
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ProductRoutePriceSimpleResponse"
                 },
                 "type": "array"
               },
@@ -8513,7 +9491,6 @@
         "required": [
           "name",
           "price",
-          "sku",
           "id",
           "created_at"
         ],
@@ -8591,6 +9568,41 @@
           "id"
         ],
         "title": "ProductRoutePriceResponse"
+      },
+      "ProductRoutePriceSimpleResponse": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "route_id": {
+            "type": "integer",
+            "title": "Route Id"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          },
+          "route_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "route_id",
+          "price"
+        ],
+        "title": "ProductRoutePriceSimpleResponse",
+        "description": "Simplified response with only essential fields"
       },
       "ProductRoutePriceUpdate": {
         "properties": {
@@ -8681,6 +9693,48 @@
         "type": "object",
         "title": "ProductUpdate"
       },
+      "ProductionDashboardResponse": {
+        "properties": {
+          "route_info": {
+            "$ref": "#/components/schemas/RouteInfo"
+          },
+          "production_summary": {
+            "$ref": "#/components/schemas/ProductionSummary"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductProductionInfo"
+            },
+            "type": "array",
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "route_info",
+          "production_summary",
+          "products"
+        ],
+        "title": "ProductionDashboardResponse"
+      },
+      "ProductionSummary": {
+        "properties": {
+          "total_products": {
+            "type": "integer",
+            "title": "Total Products"
+          },
+          "products_needing_production": {
+            "type": "integer",
+            "title": "Products Needing Production"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_products",
+          "products_needing_production"
+        ],
+        "title": "ProductionSummary"
+      },
       "RouteCreate": {
         "properties": {
           "name": {
@@ -8693,6 +9747,30 @@
           "name"
         ],
         "title": "RouteCreate"
+      },
+      "RouteInfo": {
+        "properties": {
+          "route_id": {
+            "type": "integer",
+            "title": "Route Id"
+          },
+          "route_name": {
+            "type": "string",
+            "title": "Route Name"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "route_id",
+          "route_name",
+          "date"
+        ],
+        "title": "RouteInfo"
       },
       "RouteResponse": {
         "properties": {
@@ -9211,6 +10289,10 @@
             "type": "integer",
             "title": "Id"
           },
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -9235,6 +10317,7 @@
           "username",
           "full_name",
           "id",
+          "token",
           "created_at"
         ],
         "title": "UserResponse"
@@ -9366,6 +10449,89 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "app__schemas__invoice__PaymentCreate": {
+        "properties": {
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "title": "Amount",
+            "description": "Payment amount must be positive"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "payment_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Date"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "amount",
+          "payment_method"
+        ],
+        "title": "PaymentCreate",
+        "description": "For recording payments against invoices"
+      },
+      "app__schemas__payment__PaymentCreate": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id"
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "title": "Amount",
+            "description": "Amount must be greater than 0"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "amount",
+          "payment_method"
+        ],
+        "title": "PaymentCreate"
       }
     },
     "securitySchemes": {

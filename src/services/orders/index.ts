@@ -19,6 +19,7 @@ export interface OrdersQueryParams {
   skip?: number
   limit?: number
   status_filter?: string
+  payment_status_filter?: 'unpaid' | 'partial' | 'paid'
   route_id?: number
   date_from?: string
   date_to?: string
@@ -63,6 +64,9 @@ export interface Order {
   discount_amount?: number
   notes?: string
   total_amount?: number
+  paid_amount?: number // Monto total pagado
+  balance_due?: number // Saldo pendiente
+  payment_status?: 'unpaid' | 'partial' | 'paid' // Estado de pago
   created_at?: string
   updated_at?: string
   items: OrderItem[]
@@ -160,6 +164,7 @@ export const ordersService = {
       ...(params.skip !== undefined && { skip: params.skip.toString() }),
       ...(params.limit !== undefined && { limit: params.limit.toString() }),
       ...(params.status_filter && { status_filter: params.status_filter }),
+      ...(params.payment_status_filter && { payment_status_filter: params.payment_status_filter }),
       ...(params.route_id !== undefined && { route_id: params.route_id.toString() }),
       ...(params.date_from && { date_from: params.date_from }),
       ...(params.date_to && { date_to: params.date_to }),
