@@ -56,10 +56,9 @@ export function OrderReceiptActions({ orderId, orderNumber }: OrderReceiptAction
     }
   }
 
-  const handleDownloadFromViewer = async () => {
-    return handleDownloadReceipt()
+  const handleShareWhatsApp = async (orderId: number) => {
+    await ordersService.sendReceiptByWhatsApp(orderId)
   }
-
 
   return (
     <>
@@ -92,7 +91,8 @@ export function OrderReceiptActions({ orderId, orderNumber }: OrderReceiptAction
         title={`Comprobante - ${orderNumber || `Orden ${orderId}`}`}
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
-        onDownload={handleDownloadFromViewer}
+        orderId={orderId}
+        onShareWhatsApp={handleShareWhatsApp}
       />
     </>
   )
@@ -151,8 +151,8 @@ export function OrderReceiptButtons({
     }
   }
 
-  const handleDownloadFromViewer = async () => {
-    return handleDownloadReceipt()
+  const handleShareWhatsApp = async (orderId: number) => {
+    await ordersService.sendReceiptByWhatsApp(orderId)
   }
 
   return (
@@ -185,7 +185,8 @@ export function OrderReceiptButtons({
         title={`Comprobante - Orden ${orderId}`}
         isOpen={pdfViewerOpen}
         onClose={handleClosePdfViewer}
-        onDownload={handleDownloadFromViewer}
+        orderId={orderId}
+        onShareWhatsApp={handleShareWhatsApp}
       />
     </>
   )
