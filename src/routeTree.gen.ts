@@ -32,6 +32,7 @@ import { Route as AuthenticatedProductionRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedOrdersRouteRouteImport } from './routes/_authenticated/orders/route'
 import { Route as AuthenticatedNewOrderRouteRouteImport } from './routes/_authenticated/new-order/route'
 import { Route as AuthenticatedInventoryRouteRouteImport } from './routes/_authenticated/inventory/route'
+import { Route as AuthenticatedForecastRouteRouteImport } from './routes/_authenticated/forecast/route'
 import { Route as AuthenticatedFelRouteRouteImport } from './routes/_authenticated/fel/route'
 import { Route as AuthenticatedCompaniesRouteRouteImport } from './routes/_authenticated/companies/route'
 import { Route as AuthenticatedClientsRouteRouteImport } from './routes/_authenticated/clients/route'
@@ -176,6 +177,12 @@ const AuthenticatedInventoryRouteRoute =
     path: '/inventory',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedForecastRouteRoute =
+  AuthenticatedForecastRouteRouteImport.update({
+    id: '/forecast',
+    path: '/forecast',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFelRouteRoute = AuthenticatedFelRouteRouteImport.update({
   id: '/fel',
   path: '/fel',
@@ -318,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/clients': typeof AuthenticatedClientsRouteRouteWithChildren
   '/companies': typeof AuthenticatedCompaniesRouteRouteWithChildren
   '/fel': typeof AuthenticatedFelRouteRouteWithChildren
+  '/forecast': typeof AuthenticatedForecastRouteRoute
   '/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
@@ -362,6 +370,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRouteRouteWithChildren
+  '/forecast': typeof AuthenticatedForecastRouteRoute
   '/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/orders': typeof AuthenticatedOrdersRouteRoute
   '/production': typeof AuthenticatedProductionRouteRoute
@@ -408,6 +417,7 @@ export interface FileRoutesById {
   '/_authenticated/clients': typeof AuthenticatedClientsRouteRouteWithChildren
   '/_authenticated/companies': typeof AuthenticatedCompaniesRouteRouteWithChildren
   '/_authenticated/fel': typeof AuthenticatedFelRouteRouteWithChildren
+  '/_authenticated/forecast': typeof AuthenticatedForecastRouteRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRouteRouteWithChildren
   '/_authenticated/new-order': typeof AuthenticatedNewOrderRouteRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteRoute
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/companies'
     | '/fel'
+    | '/forecast'
     | '/inventory'
     | '/new-order'
     | '/orders'
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clients'
+    | '/forecast'
     | '/new-order'
     | '/orders'
     | '/production'
@@ -547,6 +559,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients'
     | '/_authenticated/companies'
     | '/_authenticated/fel'
+    | '/_authenticated/forecast'
     | '/_authenticated/inventory'
     | '/_authenticated/new-order'
     | '/_authenticated/orders'
@@ -767,6 +780,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof AuthenticatedInventoryRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/forecast': {
+      id: '/_authenticated/forecast'
+      path: '/forecast'
+      fullPath: '/forecast'
+      preLoaderRoute: typeof AuthenticatedForecastRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fel': {
@@ -1038,6 +1058,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientsRouteRoute: typeof AuthenticatedClientsRouteRouteWithChildren
   AuthenticatedCompaniesRouteRoute: typeof AuthenticatedCompaniesRouteRouteWithChildren
   AuthenticatedFelRouteRoute: typeof AuthenticatedFelRouteRouteWithChildren
+  AuthenticatedForecastRouteRoute: typeof AuthenticatedForecastRouteRoute
   AuthenticatedInventoryRouteRoute: typeof AuthenticatedInventoryRouteRouteWithChildren
   AuthenticatedNewOrderRouteRoute: typeof AuthenticatedNewOrderRouteRoute
   AuthenticatedOrdersRouteRoute: typeof AuthenticatedOrdersRouteRoute
@@ -1062,6 +1083,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompaniesRouteRoute:
     AuthenticatedCompaniesRouteRouteWithChildren,
   AuthenticatedFelRouteRoute: AuthenticatedFelRouteRouteWithChildren,
+  AuthenticatedForecastRouteRoute: AuthenticatedForecastRouteRoute,
   AuthenticatedInventoryRouteRoute:
     AuthenticatedInventoryRouteRouteWithChildren,
   AuthenticatedNewOrderRouteRoute: AuthenticatedNewOrderRouteRoute,

@@ -294,13 +294,13 @@ class DashboardService {
   /**
    * Obtiene datos para el gráfico de ventas desde el nuevo endpoint
    */
-  async getSalesChartData(filters?: Omit<AnalyticsFilters, 'status_filter'>): Promise<SalesChartData[]> {
+  async getSalesChartData(filters?: Omit<AnalyticsFilters, 'status_filter'> & { route_id?: number }): Promise<SalesChartData[]> {
     try {
       // Construir parámetros de la query
       const queryParams = new URLSearchParams({
         status_filter: 'delivered' // Siempre filtrar por órdenes entregadas
       })
-      
+
       // Agregar filtros opcionales
       if (filters?.year) {
         queryParams.append('year', filters.year.toString())
@@ -310,6 +310,9 @@ class DashboardService {
       }
       if (filters?.end_date) {
         queryParams.append('end_date', filters.end_date)
+      }
+      if (filters?.route_id != null) {
+        queryParams.append('route_id', filters.route_id.toString())
       }
       
       // Llamar al nuevo endpoint
