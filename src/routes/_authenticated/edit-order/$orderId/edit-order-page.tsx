@@ -142,7 +142,7 @@ export function EditOrderPage() {
   const loadClients = async () => {
     try {
       setLoadingClients(true)
-      const clientsData = await clientsService.getClients({ active_only: true })
+      const clientsData = await clientsService.getClients({ active_only: true, limit: 1000 })
       setClients(clientsData)
     } catch (err) {
       setError('Error al cargar los clientes')

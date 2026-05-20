@@ -160,7 +160,7 @@ export function ClientsPage() {
       setLoading(true)
       setError(null)
       
-      const data = await clientsService.getClients({ skip: 0, limit: 100, active_only: true })
+      const data = await clientsService.getClients({ skip: 0, limit: 1000, active_only: true })
       
       // Solo actualizar estado si el componente aún está montado
       if (isMounted()) {
