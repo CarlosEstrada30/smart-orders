@@ -14,6 +14,20 @@ export interface OrderItem {
   product_description?: string
 }
 
+export interface ProductSummaryItem {
+  product_id: number
+  product_name: string
+  total_quantity: number
+  total_value: number
+}
+
+export interface OrdersProductsSummary {
+  products: ProductSummaryItem[]
+  grand_total_value: number
+  total_order_count: number
+  route_name: string | null
+}
+
 // Parámetros para filtrado y paginación de órdenes
 export interface OrdersQueryParams {
   skip?: number
@@ -439,6 +453,20 @@ async getOrdersReportPreviewBlob(params?: OrdersQueryParams): Promise<string> {
     } catch (error) {
       throw new Error('Error al descargar el reporte de órdenes')
     }
+  },
+
+  async getOrdersProductsSummary(
+    params?: Omit<OrdersQueryParams, 'skip' | 'limit' | 'payment_status_filter'>
+  ): Promise<OrdersProductsSummary> {
+    const queryParams: Record<string, string> = {}
+    if (params?.status_filter) queryParams.status_filter = params.status_filter
+    if (params?.route_id !== undefined && params.route_id !== null)
+      queryParams.route_id = params.route_id.toString()
+    if (params?.date_from) queryParams.date_from = params.date_from
+    if (params?.date_to) queryParams.date_to = params.date_to
+    if (params?.search) queryParams.search = params.search
+
+    return apiClient.get<OrdersProductsSummary>('/orders/analytics/products-summary', queryParams)
   }
 }
 

@@ -14,15 +14,22 @@ import { toast } from 'sonner'
 import { ModernPDFViewer } from '@/components/pdf-viewer'
 
 type DataTableToolbarProps<TData> = {
-  table: Table<TData>
+  table?: Table<TData>
   onFiltersChange: (filters: Partial<OrdersQueryParams>) => void
   filters: OrdersQueryParams
+  hidePaymentFilter?: boolean
+  hideSearch?: boolean
+  productSearch?: string
+  onProductSearchChange?: (value: string) => void
 }
 
 const DataTableToolbarComponent = <TData,>({
-  table,
   onFiltersChange,
   filters,
+  hidePaymentFilter = false,
+  hideSearch = false,
+  productSearch = '',
+  onProductSearchChange,
 }: DataTableToolbarProps<TData>) => {
   // Instancia del servicio de rutas
   const routesService = new RoutesService()
@@ -32,12 +39,13 @@ const DataTableToolbarComponent = <TData,>({
   
   // Verificar si hay filtros activos basándose en el estado del backend
   const isFiltered = Boolean(
-    filters.search || 
-    filters.status_filter || 
+    filters.search ||
+    filters.status_filter ||
     filters.payment_status_filter ||
-    filters.route_id || 
-    filters.date_from || 
-    filters.date_to
+    filters.route_id ||
+    filters.date_from ||
+    filters.date_to ||
+    productSearch
   )
   
   // Función helper para parsear fechas desde el backend (formato YYYY-MM-DD)
@@ -136,7 +144,8 @@ const DataTableToolbarComponent = <TData,>({
     filters.payment_status_filter,
     filters.route_id,
     filters.date_from,
-    filters.date_to
+    filters.date_to,
+    productSearch,
   ].filter(Boolean).length
 
   // Handlers para cambios de filtros
@@ -177,7 +186,8 @@ const DataTableToolbarComponent = <TData,>({
 
   const handleClearFilters = useCallback(() => {
     setDateRange(null)
-    setLocalSearch('') // Limpiar estado local también
+    setLocalSearch('')
+    onProductSearchChange?.('')
     onFiltersChange({
       search: undefined,
       status_filter: undefined,
@@ -186,7 +196,7 @@ const DataTableToolbarComponent = <TData,>({
       date_from: undefined,
       date_to: undefined
     })
-  }, [onFiltersChange])
+  }, [onFiltersChange, onProductSearchChange])
 
   const handlePreviewReport = useCallback(async () => {
     try {
@@ -228,12 +238,21 @@ const DataTableToolbarComponent = <TData,>({
       <div className='flex flex-1 flex-col gap-4'>
         {/* Search input */}
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
-          <Input
-            placeholder='Buscar órdenes...'
-            value={localSearch}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            className='h-8 w-full sm:w-[200px] lg:w-[300px]'
-          />
+          {hideSearch ? (
+            <Input
+              placeholder='Buscar producto...'
+              value={productSearch}
+              onChange={(e) => onProductSearchChange?.(e.target.value)}
+              className='h-8 w-full sm:w-[200px] lg:w-[300px]'
+            />
+          ) : (
+            <Input
+              placeholder='Buscar órdenes...'
+              value={localSearch}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              className='h-8 w-full sm:w-[200px] lg:w-[300px]'
+            />
+          )}
           {isFiltered && (
             <Button
               variant='ghost'
@@ -284,32 +303,34 @@ const DataTableToolbarComponent = <TData,>({
             onDateRangeChange={handleDateRangeChange}
           />
           
-          {/* Payment Status Filter - Solo para visualización */}
-          <div className='flex items-center gap-1'>
-            <select
-              value={filters.payment_status_filter || ''}
-              onChange={(e) => handlePaymentStatusChange(e.target.value)}
-              className="h-8 min-w-[160px] rounded-md border border-input bg-background text-foreground px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <option value="">Todos los pagos</option>
-              <option value="unpaid">Sin Pagar</option>
-              <option value="partial">Pago Parcial</option>
-              <option value="paid">Pagado</option>
-            </select>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className='inline-flex items-center cursor-help'>
-                  <Info className='h-4 w-4 text-muted-foreground' />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className='max-w-xs'>
-                  Este filtro solo afecta la visualización de la tabla.<br />
-                  No se incluye en la generación del reporte PDF.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          {/* Payment Status Filter - Solo para visualización, oculto en modo consolidado */}
+          {!hidePaymentFilter && (
+            <div className='flex items-center gap-1'>
+              <select
+                value={filters.payment_status_filter || ''}
+                onChange={(e) => handlePaymentStatusChange(e.target.value)}
+                className="h-8 min-w-[160px] rounded-md border border-input bg-background text-foreground px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Todos los pagos</option>
+                <option value="unpaid">Sin Pagar</option>
+                <option value="partial">Pago Parcial</option>
+                <option value="paid">Pagado</option>
+              </select>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className='inline-flex items-center cursor-help'>
+                    <Info className='h-4 w-4 text-muted-foreground' />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className='max-w-xs'>
+                    Este filtro solo afecta la visualización de la tabla.<br />
+                    No se incluye en la generación del reporte PDF.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
         </div>
       </div>
       
