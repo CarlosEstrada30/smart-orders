@@ -11,4 +11,5 @@ export { BulkPaymentsModal } from './bulk-payments-modal'
 export { BulkPaymentsResultsModal } from './bulk-payments-results-modal'
 export { PaymentsList } from './payments-list'
 export { PaymentSummaryCard } from './payment-summary-card'
+export { ProductsSummaryView } from './products-summary-view'
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,12 +10,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Main } from '@/components/layout/main'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { redirectWithSubdomain } from '@/utils/subdomain'
 import { ordersService, type Order, type OrdersQueryParams, type OrdersResponse, type OrderStatus, type BulkOrderStatusResponse } from '@/services/orders'
-import { OrdersTable } from '@/features/orders/components/orders-table'
+import { OrdersTable, ProductsSummaryView, DataTableToolbar } from '@/features/orders/components'
 import { StockErrorModal } from '@/features/orders/components/stock-error-modal'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { toast } from 'sonner'
@@ -42,6 +44,34 @@ export function OrdersPage() {
   const [filters, setFilters] = useState<OrdersQueryParams>({
     skip: 0,
     limit: 10,
+  })
+
+  const [activeTab, setActiveTab] = useState<'ordenes' | 'consolidado'>('ordenes')
+  const [productSearch, setProductSearch] = useState('')
+
+  const {
+    data: productsSummary,
+    isLoading: isSummaryLoading,
+    isError: isSummaryError,
+  } = useQuery({
+    queryKey: [
+      'orders-products-summary',
+      filters.status_filter,
+      filters.route_id,
+      filters.date_from,
+      filters.date_to,
+      filters.search,
+    ],
+    queryFn: () =>
+      ordersService.getOrdersProductsSummary({
+        status_filter: filters.status_filter,
+        route_id: filters.route_id,
+        date_from: filters.date_from,
+        date_to: filters.date_to,
+        search: filters.search,
+      }),
+    enabled: activeTab === 'consolidado',
+    staleTime: 30_000,
   })
   
   // Estado para el modal de errores de stock
@@ -201,14 +231,25 @@ export function OrdersPage() {
               Gestiona las órdenes de la aplicación
             </p>
           </div>
-          <PermissionGuard orderPermission="can_create">
-            <Link to="/new-order">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nueva Orden
-              </Button>
-            </Link>
-          </PermissionGuard>
+          <div className="flex items-center gap-3">
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as 'ordenes' | 'consolidado')}
+            >
+              <TabsList>
+                <TabsTrigger value="ordenes">Órdenes</TabsTrigger>
+                <TabsTrigger value="consolidado">Consolidado</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <PermissionGuard orderPermission="can_create">
+              <Link to="/new-order">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nueva Orden
+                </Button>
+              </Link>
+            </PermissionGuard>
+          </div>
         </div>
 
         {error && (
@@ -219,29 +260,60 @@ export function OrdersPage() {
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Lista de Órdenes</CardTitle>
-            <CardDescription>
-              {ordersCount}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <OrdersTable
-              data={ordersData.items || []}
-              onViewOrder={handleViewOrder}
-              onEditOrder={handleEditOrder}
-              onDeleteOrder={handleDeleteOrderAction}
-              onBulkStatusChange={handleBulkStatusChange}
-              onStockError={handleStockError}
-              onFiltersChange={handleFiltersChange}
-              filters={filters}
-              pagination={paginationInfo}
-              loading={loading}
-              onPaymentCreated={loadOrders}
-            />
-          </CardContent>
-        </Card>
+        {activeTab === 'ordenes' ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Lista de Órdenes</CardTitle>
+              <CardDescription>
+                {ordersCount}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OrdersTable
+                data={ordersData.items || []}
+                onViewOrder={handleViewOrder}
+                onEditOrder={handleEditOrder}
+                onDeleteOrder={handleDeleteOrderAction}
+                onBulkStatusChange={handleBulkStatusChange}
+                onStockError={handleStockError}
+                onFiltersChange={handleFiltersChange}
+                filters={filters}
+                pagination={paginationInfo}
+                loading={loading}
+                onPaymentCreated={loadOrders}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Consolidado · {productsSummary?.route_name ?? 'Todas las rutas'}
+              </CardTitle>
+              <CardDescription>
+                Productos totalizados según los filtros activos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTableToolbar
+                onFiltersChange={handleFiltersChange}
+                filters={filters}
+                hidePaymentFilter
+                hideSearch
+                productSearch={productSearch}
+                onProductSearchChange={setProductSearch}
+              />
+              <div className="mt-4">
+                <ProductsSummaryView
+                  data={productsSummary}
+                  isLoading={isSummaryLoading}
+                  isError={isSummaryError}
+                  productSearch={productSearch}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Dialog de confirmación de eliminación */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
