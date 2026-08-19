@@ -25,6 +25,7 @@ import { toast } from 'sonner'
 import { Loader2, X, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface PaymentsListProps {
   orderId: number
@@ -44,6 +45,7 @@ export function PaymentsList({
   orderId,
   onPaymentCancelled,
 }: PaymentsListProps) {
+  const { formatCurrency } = useCompanySettings()
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [cancellingId, setCancellingId] = useState<number | null>(null)
@@ -145,7 +147,7 @@ export function PaymentsList({
                     locale: es,
                   })}
                 </TableCell>
-                <TableCell>Q{payment.amount.toFixed(2)}</TableCell>
+                <TableCell>{formatCurrency(payment.amount)}</TableCell>
                 <TableCell>
                   {PAYMENT_METHOD_LABELS[payment.payment_method]}
                 </TableCell>
@@ -191,7 +193,7 @@ export function PaymentsList({
             <AlertDialogDescription>
               Estás a punto de cancelar el pago{' '}
               <strong>{paymentToCancel?.payment_number}</strong> por un monto
-              de <strong>Q{paymentToCancel?.amount.toFixed(2)}</strong>. Esta
+              de <strong>{paymentToCancel ? formatCurrency(paymentToCancel.amount) : ''}</strong>. Esta
               acción actualizará automáticamente el saldo de la orden.
             </AlertDialogDescription>
           </AlertDialogHeader>

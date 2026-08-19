@@ -20,8 +20,10 @@ import { OrdersTable, ProductsSummaryView, DataTableToolbar } from '@/features/o
 import { StockErrorModal } from '@/features/orders/components/stock-error-modal'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { toast } from 'sonner'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 export function OrdersPage() {
+  const { formatCurrency } = useCompanySettings()
   const navigate = useNavigate()
   const [ordersData, setOrdersData] = useState<OrdersResponse>({
     items: [],
@@ -328,7 +330,7 @@ export function OrdersPage() {
                       <strong>Orden:</strong> {orderToDelete.order_number || `#${orderToDelete.id}`}<br />
                       <strong>Cliente:</strong> {orderToDelete.client?.name || `Cliente #${orderToDelete.client_id}`}<br />
                       <strong>Email:</strong> {orderToDelete.client?.email || 'No disponible'}<br />
-                      <strong>Total:</strong> Q{orderToDelete.total_amount?.toFixed(2) || '0.00'}
+                      <strong>Total:</strong> {formatCurrency(orderToDelete.total_amount || 0)}
                     </p>
                   </div>
                 )}

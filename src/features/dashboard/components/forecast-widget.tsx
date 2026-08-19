@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { apiClient } from '@/services/api/client'
 import { Skeleton } from '@/components/ui/skeleton'
+import { resolveLocale } from '@/utils/currency'
 import type { ForecastResponse } from '@/features/forecast/types'
 
 async function fetchForecastSummary(routeId: number | null): Promise<ForecastResponse> {
@@ -28,7 +29,7 @@ export function ForecastWidget({ routeId }: Props) {
   function formatDate(iso: string) {
     if (!iso) return 'Mañana'
     const [y, m, d] = iso.split('-').map(Number)
-    return new Date(y, m - 1, d).toLocaleDateString('es-GT', {
+    return new Date(y, m - 1, d).toLocaleDateString(resolveLocale(), {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
@@ -83,7 +84,7 @@ export function ForecastWidget({ routeId }: Props) {
                   />
                 </div>
                 <span className="text-sm font-medium tabular-nums w-10 text-right shrink-0">
-                  {predicted.toLocaleString('es-GT', { maximumFractionDigits: 0 })}
+                  {predicted.toLocaleString(resolveLocale(), { maximumFractionDigits: 0 })}
                 </span>
               </div>
             )

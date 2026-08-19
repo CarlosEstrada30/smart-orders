@@ -45,8 +45,10 @@ import { ordersService, type Order, type OrderStatus } from '@/services/orders'
 import { OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
 import { PaymentSummaryCard, PaymentsList } from '@/features/orders/components'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 export function OrderDetailPage() {
+  const { formatCurrency } = useCompanySettings()
   const { orderId } = useParams({ from: '/_authenticated/order-detail/$orderId' })
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -367,9 +369,9 @@ export function OrderDetailPage() {
                                 {item.product_name || `Producto #${item.product_id}`}
                               </TableCell>
                               <TableCell className="text-center">{item.quantity}</TableCell>
-                              <TableCell className="text-right">Q{item.unit_price.toFixed(2)}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
                               <TableCell className="text-right font-medium">
-                                Q{(item.quantity * item.unit_price).toFixed(2)}
+                                {formatCurrency(item.quantity * item.unit_price)}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -386,13 +388,13 @@ export function OrderDetailPage() {
                               {item.product_name || `Producto #${item.product_id}`}
                             </h4>
                             <div className="text-right font-medium">
-                              Q{(item.quantity * item.unit_price).toFixed(2)}
+                              {formatCurrency(item.quantity * item.unit_price)}
                             </div>
                           </div>
                           <div className="flex justify-between text-sm text-muted-foreground">
                             <div className="flex items-center gap-4">
                               <span>Cantidad: <strong>{item.quantity}</strong></span>
-                              <span>Precio: <strong>Q{item.unit_price.toFixed(2)}</strong></span>
+                              <span>Precio: <strong>{formatCurrency(item.unit_price)}</strong></span>
                             </div>
                           </div>
                         </div>
@@ -447,18 +449,18 @@ export function OrderDetailPage() {
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground">Subtotal:</span>
                       <span className="font-medium">
-                        Q{order.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
+                        {formatCurrency(order.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0))}
                       </span>
                     </div>
                     {order.discount_amount && order.discount_amount > 0 && (
                       <div className="flex justify-between items-center text-sm text-green-600">
                         <span className="text-muted-foreground">Descuento:</span>
-                        <span className="font-medium">-Q{order.discount_amount.toFixed(2)}</span>
+                        <span className="font-medium">-{formatCurrency(order.discount_amount)}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center pt-2 border-t">
                       <span className="text-base font-semibold">Total:</span>
-                      <span className="text-lg font-bold">Q{order.total_amount?.toFixed(2) || '0.00'}</span>
+                      <span className="text-lg font-bold">{formatCurrency(order.total_amount || 0)}</span>
                     </div>
                   </div>
                 </div>

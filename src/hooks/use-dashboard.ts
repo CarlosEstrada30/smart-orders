@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { dashboardService } from '@/services/dashboard'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import type { DashboardMetrics, DashboardState, DashboardFilters } from '@/services/dashboard/types'
 import { toast } from 'sonner'
 
@@ -22,6 +23,7 @@ const getRefreshIntervalText = (intervalMs: number): string => {
 }
 
 export function useDashboard(filters?: DashboardFilters) {
+  const { getCurrencyCode } = useCompanySettings()
   const [state, setState] = useState<DashboardState>({
     metrics: undefined,
     isLoading: false,
@@ -97,7 +99,7 @@ export function useDashboard(filters?: DashboardFilters) {
     loadDashboard: loadDashboardMetrics,
     
     // Funciones de utilidad
-    formatCurrency: dashboardService.formatCurrency.bind(dashboardService),
+    formatCurrency: (amount: number) => dashboardService.formatCurrency(amount, getCurrencyCode()),
     formatPercentage: dashboardService.formatPercentage.bind(dashboardService),
     formatNumber: dashboardService.formatNumber.bind(dashboardService),
     getRefreshIntervalText: () => getRefreshIntervalText(AUTO_REFRESH_INTERVAL)

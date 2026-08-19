@@ -15,6 +15,7 @@ import { apiClient } from '@/services/api/client'
 import { TomorrowCards } from './components/tomorrow-cards'
 import { ProductionTable } from './components/production-table'
 import { RouteBreakdownChart } from './components/route-breakdown'
+import { resolveLocale } from '@/utils/currency'
 import type { ForecastResponse, ProductForecast } from './types'
 
 interface Route {
@@ -40,7 +41,7 @@ function parseLocalDate(iso: string) {
 
 function formatTomorrowLabel(iso: string) {
   if (!iso) return 'mañana'
-  return parseLocalDate(iso).toLocaleDateString('es-GT', {
+  return parseLocalDate(iso).toLocaleDateString(resolveLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -128,7 +129,7 @@ export function ForecastPage() {
               {selectedRouteName ? ` · ${selectedRouteName}` : ''}
             </p>
             <p className="text-2xl font-bold mt-0.5">
-              ~{totalTomorrow.toLocaleString('es-GT')} unidades
+              ~{totalTomorrow.toLocaleString(resolveLocale())} unidades
               <span className="text-sm font-normal text-muted-foreground ml-2">
                 en {activeProductCount} producto{activeProductCount !== 1 ? 's' : ''}
               </span>

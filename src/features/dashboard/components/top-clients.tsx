@@ -18,6 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { resolveLocale } from '@/utils/currency'
+import { CURRENCIES, DEFAULT_CURRENCY_CODE, isCurrencyCode } from '@/lib/currencies'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
@@ -44,12 +47,12 @@ async function fetchTopClients(year: number, routeId: number | null): Promise<To
   return res.clients ?? []
 }
 
-function formatCurrency(value: number) {
-  if (value >= 1000) return `Q${(value / 1000).toFixed(1)}K`
-  return `Q${value.toFixed(0)}`
+function formatShortCurrency(value: number, symbol: string) {
+  if (value >= 1000) return `${symbol}${(value / 1000).toFixed(1)}K`
+  return `${symbol}${value.toFixed(0)}`
 }
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload, symbol, locale }: any) {
   if (!active || !payload?.length) return null
   const d: TopClientData = payload[0].payload
   return (
@@ -58,7 +61,7 @@ function CustomTooltip({ active, payload }: any) {
       <p className="text-muted-foreground">
         Total:{' '}
         <span className="font-medium text-foreground">
-          Q{d.total_amount.toLocaleString('es-GT', { maximumFractionDigits: 2 })}
+          {symbol}{d.total_amount.toLocaleString(locale, { maximumFractionDigits: 2 })}
         </span>
       </p>
       <p className="text-muted-foreground">
@@ -67,7 +70,7 @@ function CustomTooltip({ active, payload }: any) {
       <p className="text-muted-foreground">
         Promedio:{' '}
         <span className="font-medium text-foreground">
-          Q{d.avg_order_value.toLocaleString('es-GT', { maximumFractionDigits: 0 })}
+          {symbol}{d.avg_order_value.toLocaleString(locale, { maximumFractionDigits: 0 })}
         </span>
       </p>
     </div>
@@ -85,6 +88,12 @@ interface Props {
 
 export function TopClients({ routeId }: Props) {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
+  const { getCurrencyCode } = useCompanySettings()
+  const currencyCode = getCurrencyCode()
+  const symbol = isCurrencyCode(currencyCode)
+    ? CURRENCIES[currencyCode].symbol
+    : CURRENCIES[DEFAULT_CURRENCY_CODE].symbol
+  const locale = resolveLocale(currencyCode)
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['dashboard-top-clients', selectedYear, routeId],
@@ -149,7 +158,7 @@ export function TopClients({ routeId }: Props) {
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tickFormatter={formatCurrency}
+              tickFormatter={(value: number) => formatShortCurrency(value, symbol)}
             />
             <YAxis
               type="category"
@@ -160,7 +169,7 @@ export function TopClients({ routeId }: Props) {
               axisLine={false}
               width={90}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+            <Tooltip content={<CustomTooltip symbol={symbol} locale={locale} />} cursor={{ fill: 'hsl(var(--muted))' }} />
             <Bar dataKey="total_amount" radius={[0, 4, 4, 0]}>
               {chartData.map((_, index) => (
                 <Cell

@@ -1,5 +1,6 @@
 import { TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { resolveLocale } from '@/utils/currency'
 import type { ProductForecast } from '../types'
 
 interface Props {
@@ -100,7 +101,7 @@ export function TomorrowCards({ products, tomorrowDate, onSelectProduct, selecte
             {/* Main number */}
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-3xl font-bold tabular-nums leading-none">
-                {point.recommended.toLocaleString('es-GT')}
+                {point.recommended.toLocaleString(resolveLocale())}
               </span>
               <span className="text-sm text-muted-foreground">u</span>
               <ConfidenceWarning confidence={product.confidence} />
@@ -109,7 +110,7 @@ export function TomorrowCards({ products, tomorrowDate, onSelectProduct, selecte
             {/* Last week reference */}
             {lastWeek != null && lastWeek > 0 ? (
               <p className="text-xs text-muted-foreground mb-2">
-                Semana pasada: {Math.round(lastWeek).toLocaleString('es-GT')}
+                Semana pasada: {Math.round(lastWeek).toLocaleString(resolveLocale())}
               </p>
             ) : (
               <p className="text-xs text-muted-foreground mb-2 invisible">—</p>

@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 import { type BulkOrderStatusResponse } from '@/services/orders'
 import { StockErrorModal } from './stock-error-modal'
 import { BulkPaymentsModal } from './bulk-payments-modal'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface BulkActionsToolbarProps {
   selectedOrders: number[]
@@ -53,6 +54,7 @@ export function BulkActionsToolbar({
   onPaymentsCreated,
   loading = false 
 }: BulkActionsToolbarProps) {
+  const { formatCurrency } = useCompanySettings()
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null)
@@ -302,7 +304,7 @@ export function BulkActionsToolbar({
                                 <Package className="h-3 w-3" />
                                 <span>{product.product_name}</span>
                                 <span className="text-muted-foreground">({product.product_sku})</span>
-                                <span className="text-muted-foreground">- Q{product.unit_price} x {product.quantity}</span>
+                                <span className="text-muted-foreground">- {formatCurrency(product.unit_price)} x {product.quantity}</span>
                               </div>
                             ))}
                           </div>

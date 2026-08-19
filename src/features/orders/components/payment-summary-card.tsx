@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Loader2, DollarSign, Plus } from 'lucide-react'
 import { CreatePaymentModal } from './create-payment-modal'
 import { cn } from '@/lib/utils'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface PaymentSummaryCardProps {
   orderId: number
@@ -40,6 +41,7 @@ export function PaymentSummaryCard({
   totalAmount,
   onPaymentCreated,
 }: PaymentSummaryCardProps) {
+  const { formatCurrency } = useCompanySettings()
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -124,12 +126,12 @@ export function PaymentSummaryCard({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Total de la Orden</p>
-              <p className="text-2xl font-bold">Q{summary.total_amount.toFixed(2)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(summary.total_amount)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Monto Pagado</p>
               <p className="text-2xl font-bold text-green-600">
-                Q{summary.paid_amount.toFixed(2)}
+                {formatCurrency(summary.paid_amount)}
               </p>
             </div>
             <div>
@@ -141,7 +143,7 @@ export function PaymentSummaryCard({
                     : 'text-green-600'
                 }`}
               >
-                Q{summary.balance_due.toFixed(2)}
+                {formatCurrency(summary.balance_due)}
               </p>
             </div>
             <div>

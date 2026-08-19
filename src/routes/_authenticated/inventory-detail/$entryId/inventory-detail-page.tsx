@@ -51,8 +51,10 @@ import {
   type UserRole
 } from '@/features/inventory/utils/workflow'
 import { getEntryTypeData, getEntryStatusData } from '@/features/inventory/data/data'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 export function InventoryDetailPage() {
+  const { formatCurrency } = useCompanySettings()
   const { entryId } = useParams({ from: '/_authenticated/inventory-detail/$entryId' })
   const [entry, setEntry] = useState<InventoryEntry | null>(null)
   const [loading, setLoading] = useState(true)
@@ -400,9 +402,9 @@ export function InventoryDetailPage() {
                             {item.product_name || `Producto #${item.product_id}`}
                           </TableCell>
                           <TableCell className="text-center">{item.quantity}</TableCell>
-                          <TableCell className="text-right">Q{item.unit_cost.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.unit_cost || 0)}</TableCell>
                           <TableCell className="text-right font-medium">
-                            Q{(item.quantity * item.unit_cost).toFixed(2)}
+                            {formatCurrency(item.quantity * (item.unit_cost || 0))}
                           </TableCell>
                           <TableCell>{item.batch_number || '-'}</TableCell>
                           <TableCell>
@@ -441,7 +443,7 @@ export function InventoryDetailPage() {
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Costo Total:</span>
-                    <span>Q{entry.total_cost?.toFixed(2) || '0.00'}</span>
+                    <span>{formatCurrency(entry.total_cost || 0)}</span>
                   </div>
                 </div>
               </CardContent>

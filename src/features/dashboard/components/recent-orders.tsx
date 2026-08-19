@@ -5,6 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { apiClient } from '@/services/api/client'
 import { ORDER_STATUS_MAP } from '@/services/dashboard/types'
 import type { OrderSummary } from '@/services/dashboard/types'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { resolveLocale } from '@/utils/currency'
 
 async function fetchRecentOrders(): Promise<OrderSummary[]> {
   const response = await apiClient.get<any>('/orders/?limit=5&paginated=false')
@@ -22,21 +24,16 @@ function getInitials(name: string) {
     .slice(0, 2)
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('es-GT', {
-    style: 'currency',
-    currency: 'GTQ',
-  }).format(amount)
-}
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('es-GT', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 export function RecentOrders() {
+  const { formatCurrency, getCurrencyCode } = useCompanySettings()
+
+  function formatDate(dateString: string) {
+    return new Date(dateString).toLocaleDateString(resolveLocale(getCurrencyCode()), {
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['dashboard-recent-orders'],
     queryFn: fetchRecentOrders,

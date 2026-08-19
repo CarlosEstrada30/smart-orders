@@ -20,6 +20,13 @@ import { User, Route, MoreHorizontal, Eye, Trash2, StickyNote, DollarSign } from
 import { type Order } from '../data/schema'
 import { getOrderStatusData } from '../data/data'
 import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
+import { useAuthStore } from '@/stores/auth-store'
+import { formatCurrency } from '@/utils/currency'
+
+// Los cell renderers de TanStack Table se ejecutan fuera de un componente React,
+// por lo que leemos la moneda del tenant directamente del store (sin el hook) en
+// vez de usar useCompanySettings().
+const getCurrencyCode = () => useAuthStore.getState().auth.companySettings?.currency_code
 
 // Helper para formatear fechas en formato DD/MM/YYYY
 const formatDate = (date: Date) => {
@@ -180,7 +187,7 @@ export const ordersColumns: ColumnDef<Order>[] = [
       if (discount > 0) {
         return (
           <Badge variant="secondary" className="text-green-700 bg-green-50 border-green-200">
-            Q{discount.toFixed(2)}
+            {formatCurrency(discount, getCurrencyCode())}
           </Badge>
         )
       }
@@ -195,7 +202,7 @@ export const ordersColumns: ColumnDef<Order>[] = [
     ),
     cell: ({ row }) => {
       const amount = row.getValue('total_amount') as number || 0
-      return <div className="font-medium">Q{amount.toFixed(2)}</div>
+      return <div className="font-medium">{formatCurrency(amount, getCurrencyCode())}</div>
     },
   },
   {
@@ -251,11 +258,11 @@ export const ordersColumns: ColumnDef<Order>[] = [
               <div className="font-semibold">Información de Pagos</div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total:</span>
-                <span className="font-medium">Q{totalAmount.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(totalAmount, getCurrencyCode())}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Pagado:</span>
-                <span className="font-medium text-green-600">Q{paidAmount.toFixed(2)}</span>
+                <span className="font-medium text-green-600">{formatCurrency(paidAmount, getCurrencyCode())}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Saldo Pendiente:</span>
@@ -263,7 +270,7 @@ export const ordersColumns: ColumnDef<Order>[] = [
                   "font-medium",
                   balanceDue > 0 ? "text-orange-600" : "text-green-600"
                 )}>
-                  Q{balanceDue.toFixed(2)}
+                  {formatCurrency(balanceDue, getCurrencyCode())}
                 </span>
               </div>
             </div>

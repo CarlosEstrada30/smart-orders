@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { OrderWithInvoiceInfo, OrderWithoutDocument, DocumentType } from '@/services/fel/types'
 import { felService } from '@/services/fel'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface DocumentSelectorProps {
   /** Orden para la cual crear el documento */
@@ -69,6 +70,8 @@ export function DocumentSelector({
   suggestedType,
   isProcessing = false
 }: DocumentSelectorProps) {
+
+  const { formatCurrency } = useCompanySettings()
 
   const [selectedType, setSelectedType] = useState<DocumentType | null>(
     suggestedType || null
@@ -123,7 +126,7 @@ export function DocumentSelector({
         <DialogHeader>
           <DialogTitle>¿Qué documento necesita el cliente?</DialogTitle>
           <DialogDescription>
-            Orden #{order.order_number} • Cliente: {clientInfo.name} • {felService.formatCurrency(order.total_amount)}
+            Orden #{order.order_number} • Cliente: {clientInfo.name} • {formatCurrency(order.total_amount)}
           </DialogDescription>
         </DialogHeader>
 

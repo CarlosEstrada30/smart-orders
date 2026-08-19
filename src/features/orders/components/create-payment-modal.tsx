@@ -23,6 +23,7 @@ import { paymentsService } from '@/services/payments'
 import type { PaymentMethod, CreatePaymentRequest } from '@/services/payments'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface CreatePaymentModalProps {
   open: boolean
@@ -52,6 +53,7 @@ export function CreatePaymentModal({
   balanceDue,
   onPaymentCreated,
 }: CreatePaymentModalProps) {
+  const { formatCurrency } = useCompanySettings()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<CreatePaymentRequest>({
@@ -93,7 +95,7 @@ export function CreatePaymentModal({
     }
 
     if (formData.amount > balanceDue) {
-      setError(`El monto no puede exceder el saldo pendiente (Q${balanceDue.toFixed(2)})`)
+      setError(`El monto no puede exceder el saldo pendiente (${formatCurrency(balanceDue)})`)
       return
     }
 
@@ -160,8 +162,7 @@ export function CreatePaymentModal({
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground">
-              Saldo pendiente: Q{balanceDue.toFixed(2)} | Total orden: Q
-              {totalAmount.toFixed(2)}
+              Saldo pendiente: {formatCurrency(balanceDue)} | Total orden: {formatCurrency(totalAmount)}
             </p>
           </div>
 

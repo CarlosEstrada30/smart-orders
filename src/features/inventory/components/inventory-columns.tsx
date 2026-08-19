@@ -25,6 +25,13 @@ import {
 import { type InventoryEntryList } from '../data/schema'
 import { getEntryTypeData, getEntryStatusData } from '../data/data'
 import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
+import { useAuthStore } from '@/stores/auth-store'
+import { formatCurrency } from '@/utils/currency'
+
+// Los cell renderers de TanStack Table se ejecutan fuera de un componente React,
+// por lo que leemos la moneda del tenant directamente del store (sin el hook) en
+// vez de usar useCompanySettings().
+const getCurrencyCode = () => useAuthStore.getState().auth.companySettings?.currency_code
 
 export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
   {
@@ -164,7 +171,7 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
     ),
     cell: ({ row }) => {
       const amount = row.getValue('total_cost') as number
-      return <div className="font-medium">Q{amount.toFixed(2)}</div>
+      return <div className="font-medium">{formatCurrency(amount, getCurrencyCode())}</div>
     },
   },
   {
