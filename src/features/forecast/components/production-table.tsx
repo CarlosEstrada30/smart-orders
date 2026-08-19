@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { resolveLocale } from '@/utils/currency'
 import type { ProductForecast } from '../types'
 
 interface Props {
@@ -16,7 +17,7 @@ function parseLocalDate(iso: string) {
 }
 
 function formatDateHeader(iso: string) {
-  return parseLocalDate(iso).toLocaleDateString('es-GT', {
+  return parseLocalDate(iso).toLocaleDateString(resolveLocale(), {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -116,7 +117,7 @@ export function ProductionTable({
                       </span>
                     ) : (
                       <span className="font-semibold tabular-nums text-base">
-                        {point.recommended.toLocaleString('es-GT')}
+                        {point.recommended.toLocaleString(resolveLocale())}
                       </span>
                     )}
                   </td>

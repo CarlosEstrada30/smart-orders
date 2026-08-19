@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils'
 import { felService } from '@/services/fel'
 import { useFELProcessing } from '@/hooks/use-fel-processing'
 import { usePaymentFlow } from '@/hooks/use-payment-flow'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import { FELStatusIndicator, DocumentActions } from '@/components/FEL'
 import type { 
   FELInvoice, 
@@ -82,6 +83,7 @@ export function FELInvoicesList() {
   // Hooks para acciones
   const felProcessing = useFELProcessing()
   const paymentFlow = usePaymentFlow()
+  const { formatCurrency } = useCompanySettings()
 
   // Cargar facturas
   const loadInvoices = React.useCallback(async (filters: InvoiceFilters = {}) => {
@@ -234,7 +236,7 @@ export function FELInvoicesList() {
         
         <Card>
           <CardContent className="p-4">
-            <div className="text-lg font-bold">{felService.formatCurrency(statistics.totalAmount)}</div>
+            <div className="text-lg font-bold">{formatCurrency(statistics.totalAmount)}</div>
             <p className="text-xs text-muted-foreground">Total Facturado</p>
           </CardContent>
         </Card>
@@ -398,11 +400,11 @@ export function FELInvoicesList() {
 
                     {/* Monto */}
                     <div>
-                      <div className="font-medium">{felService.formatCurrency(invoice.total_amount)}</div>
+                      <div className="font-medium">{formatCurrency(invoice.total_amount)}</div>
                       <div className="text-xs text-muted-foreground">
                         {invoice.balance_due > 0 ? (
                           <span className="text-orange-600">
-                            Saldo: {felService.formatCurrency(invoice.balance_due)}
+                            Saldo: {formatCurrency(invoice.balance_due)}
                           </span>
                         ) : (
                           <span className="text-green-600">Pagada</span>

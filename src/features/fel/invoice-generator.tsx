@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils'
 import { felService } from '@/services/fel'
 import { DocumentSelector } from '@/components/FEL'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import type { OrderWithoutDocument } from '@/services/fel/types'
 
 interface InvoiceGeneratorState {
@@ -35,6 +36,7 @@ interface InvoiceGeneratorState {
 }
 
 export function FELInvoiceGenerator() {
+  const { formatCurrency } = useCompanySettings()
   const [state, setState] = useState<InvoiceGeneratorState>({
     orders: [],
     isLoading: true,
@@ -211,7 +213,7 @@ export function FELInvoiceGenerator() {
               <DollarSign className="h-5 w-5 text-green-600" />
               <div className="ml-2">
                 <p className="text-lg font-bold text-green-600">
-                  {felService.formatCurrency(
+                  {formatCurrency(
                     state.orders.reduce((sum, o) => sum + o.total_amount, 0)
                   )}
                 </p>
@@ -291,7 +293,7 @@ export function FELInvoiceGenerator() {
                       {/* Monto */}
                       <div>
                         <div className="font-medium">
-                          {felService.formatCurrency(order.total_amount)}
+                          {formatCurrency(order.total_amount)}
                         </div>
                         <Badge variant="outline" className="text-xs">
                           {order.status.toUpperCase()}

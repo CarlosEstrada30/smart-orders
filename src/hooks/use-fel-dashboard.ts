@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { felService } from '@/services/fel'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import { toast } from 'sonner'
 import type {
   FELStatusSummary,
@@ -24,6 +25,7 @@ interface FELDashboardState {
 }
 
 export function useFELDashboard(autoRefreshInterval = 60000) { // 1 minuto por defecto
+  const { getCurrencyCode } = useCompanySettings()
   const [state, setState] = useState<FELDashboardState>({
     summary: null,
     revenue: null,
@@ -241,8 +243,8 @@ export function useFELDashboard(autoRefreshInterval = 60000) { // 1 minuto por d
     systemHealthIndicator,
     
     // Helpers
-    formatCurrency: felService.formatCurrency,
-    formatDate: felService.formatDate,
+    formatCurrency: (amount: number) => felService.formatCurrency(amount, getCurrencyCode()),
+    formatDate: (dateString: string) => felService.formatDate(dateString, getCurrencyCode()),
     formatFELUUID: felService.formatFELUUID,
     
     // Estado computado

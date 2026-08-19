@@ -33,6 +33,7 @@ import { toast } from 'sonner'
 import { inventoryService, type InventoryEntryCreate, type InventoryEntryItemCreate } from '@/services/inventory'
 import { productsService, type Product } from '@/services/products'
 import { ENTRY_TYPE_LABELS, type EntryType } from '@/services/inventory'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface InventoryEntryFormProps {
   onSuccess?: () => void
@@ -46,6 +47,7 @@ interface FormItem extends InventoryEntryItemCreate {
 }
 
 export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormProps) {
+  const { formatCurrency } = useCompanySettings()
   const [entryType, setEntryType] = useState<EntryType>('production')
   const [expectedDate, setExpectedDate] = useState(() => {
     const today = new Date()
@@ -392,7 +394,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                       />
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      Q{item.subtotal.toFixed(2)}
+                      {formatCurrency(item.subtotal)}
                     </TableCell>
                     <TableCell className="text-center">
                       <Button
@@ -411,7 +413,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                     Total:
                   </TableCell>
                   <TableCell className="text-right font-bold text-lg">
-                    Q{totalCost.toFixed(2)}
+                    {formatCurrency(totalCost)}
                   </TableCell>
                   <TableCell />
                 </TableRow>

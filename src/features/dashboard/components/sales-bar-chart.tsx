@@ -11,6 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { resolveLocale } from '@/utils/currency'
+import { CURRENCIES, DEFAULT_CURRENCY_CODE, isCurrencyCode } from '@/lib/currencies'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
@@ -20,7 +23,7 @@ const EMPTY_MONTHS: SalesChartData[] = [
   'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
 ].map((month) => ({ month, sales: 0, orders: 0, revenue: 0 }))
 
-function CustomTooltip({ active, payload, label, year }: any) {
+function CustomTooltip({ active, payload, label, year, symbol, locale }: any) {
   if (!active || !payload?.length) return null
 
   const data = payload[0].payload
@@ -34,7 +37,7 @@ function CustomTooltip({ active, payload, label, year }: any) {
           <p className="text-muted-foreground">
             Ventas:{' '}
             <span className="font-medium text-foreground">
-              Q{data.sales.toLocaleString('es-GT', { maximumFractionDigits: 2 })}
+              {symbol}{data.sales.toLocaleString(locale, { maximumFractionDigits: 2 })}
             </span>
           </p>
           <p className="text-muted-foreground">
@@ -45,7 +48,7 @@ function CustomTooltip({ active, payload, label, year }: any) {
             <p className="text-muted-foreground">
               Promedio:{' '}
               <span className="font-medium text-foreground">
-                Q{(data.sales / data.orders).toLocaleString('es-GT', { maximumFractionDigits: 0 })}
+                {symbol}{(data.sales / data.orders).toLocaleString(locale, { maximumFractionDigits: 0 })}
               </span>
             </p>
           )}
@@ -63,6 +66,12 @@ interface Props {
 
 export function SalesBarChart({ routeId }: Props) {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
+  const { getCurrencyCode } = useCompanySettings()
+  const currencyCode = getCurrencyCode()
+  const symbol = isCurrencyCode(currencyCode)
+    ? CURRENCIES[currencyCode].symbol
+    : CURRENCIES[DEFAULT_CURRENCY_CODE].symbol
+  const locale = resolveLocale(currencyCode)
 
   const { data: chartData = EMPTY_MONTHS, isLoading } = useQuery({
     queryKey: ['dashboard-sales-chart', selectedYear, routeId],
@@ -127,9 +136,9 @@ export function SalesBarChart({ routeId }: Props) {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `Q${(v / 1000).toFixed(0)}K`}
+              tickFormatter={(v) => `${symbol}${(v / 1000).toFixed(0)}K`}
             />
-            <Tooltip content={<CustomTooltip year={selectedYear} />} />
+            <Tooltip content={<CustomTooltip year={selectedYear} symbol={symbol} locale={locale} />} />
             <Bar
               dataKey="sales"
               fill="currentColor"

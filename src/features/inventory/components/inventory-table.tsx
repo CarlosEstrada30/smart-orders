@@ -53,6 +53,7 @@ import { DataTableToolbar } from './data-table-toolbar'
 import { inventoryColumns as columns } from './inventory-columns'
 import { inventoryService } from '@/services/inventory'
 import { toast } from 'sonner'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import { 
   getAvailableActionsForUser,
   getConfirmationConfig,
@@ -93,6 +94,7 @@ export function InventoryTable({
   onSubmitEntry,
   userRole = 'employee' // Usar 'employee' como fallback más seguro
 }: InventoryTableProps) {
+  const { formatCurrency } = useCompanySettings()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -442,7 +444,7 @@ export function InventoryTable({
                         <div><strong>Tipo:</strong> {entryTypeData.label}</div>
                         <div><strong>Estado actual:</strong> {getEntryStatusData(entry.status).label}</div>
                         <div><strong>Items:</strong> {entry.items_count}</div>
-                        <div><strong>Costo total:</strong> Q{entry.total_cost.toFixed(2)}</div>
+                        <div><strong>Costo total:</strong> {formatCurrency(entry.total_cost)}</div>
                       </div>
                     </div>
 

@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/utils/currency'
 import type { ProductForecast } from '../types'
 
 interface Props {
@@ -11,7 +12,7 @@ function parseLocalDate(iso: string) {
 }
 
 function formatDate(iso: string) {
-  return parseLocalDate(iso).toLocaleDateString('es-GT', {
+  return parseLocalDate(iso).toLocaleDateString(resolveLocale(), {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -43,7 +44,7 @@ export function RouteBreakdownChart({ product, targetDate }: Props) {
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">{route.route_name}</span>
               <span className="tabular-nums font-semibold">
-                {route.recommended.toLocaleString('es-GT')} unidades
+                {route.recommended.toLocaleString(resolveLocale())} unidades
                 <span className="ml-2 text-xs text-muted-foreground font-normal">
                   ({pct.toFixed(0)}%)
                 </span>
@@ -61,7 +62,7 @@ export function RouteBreakdownChart({ product, targetDate }: Props) {
 
       <div className="flex items-center justify-between text-sm font-semibold border-t pt-3 mt-1">
         <span>Total a producir</span>
-        <span>{total.toLocaleString('es-GT')} unidades</span>
+        <span>{total.toLocaleString(resolveLocale())} unidades</span>
       </div>
     </div>
   )

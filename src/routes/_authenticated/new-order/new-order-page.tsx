@@ -21,6 +21,8 @@ import { productsService, type Product } from '@/services/products'
 import { routesService, type Route } from '@/services'
 import { CreateClientModal } from '@/components/clients/create-client-modal'
 import { toast } from 'sonner'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { CURRENCIES, DEFAULT_CURRENCY_CODE, isCurrencyCode } from '@/lib/currencies'
 
 interface OrderItemForm {
   product_id: number
@@ -31,6 +33,10 @@ interface OrderItemForm {
 }
 
 export function NewOrderPage() {
+  const { formatCurrency, getCurrencyCode } = useCompanySettings()
+  const currencySymbol = isCurrencyCode(getCurrencyCode())
+    ? CURRENCIES[getCurrencyCode() as keyof typeof CURRENCIES].symbol
+    : CURRENCIES[DEFAULT_CURRENCY_CODE].symbol
   const [selectedClient, setSelectedClient] = useState('')
   const [selectedRoute, setSelectedRoute] = useState('')
   const [discount, setDiscount] = useState<number>(0)
@@ -263,7 +269,7 @@ export function NewOrderPage() {
     const stockText = product.stock > 0 ? `Stock: ${product.stock}` : 'Sin stock'
     return {
       value: product.id.toString(),
-      label: `${product.name} - Q${displayPrice.toFixed(2)} (${stockText})`,
+      label: `${product.name} - ${formatCurrency(displayPrice)} (${stockText})`,
       disabled: !product.is_active
     }
   })
@@ -367,7 +373,7 @@ export function NewOrderPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="discount">Descuento (Q)</Label>
+                  <Label htmlFor="discount">Descuento ({currencySymbol})</Label>
                   <Input
                     id="discount"
                     type="number"
@@ -476,7 +482,7 @@ export function NewOrderPage() {
                           <div className="flex-1">
                             <div className="font-medium">{item.product_name}</div>
                             <div className="text-sm text-muted-foreground">
-                              Q{item.price.toFixed(2)} x {item.quantity}
+                              {formatCurrency(item.price)} x {item.quantity}
                             </div>
                           </div>
                           <div className="flex items-center space-x-4">
@@ -491,7 +497,7 @@ export function NewOrderPage() {
                                 className="w-20"
                               />
                             </div>
-                            <div className="font-medium min-w-[80px] text-right">Q{item.subtotal.toFixed(2)}</div>
+                            <div className="font-medium min-w-[80px] text-right">{formatCurrency(item.subtotal)}</div>
                             <Button
                               type="button"
                               variant="ghost"
@@ -510,11 +516,11 @@ export function NewOrderPage() {
                             <div className="flex-1 pr-4">
                               <div className="font-medium text-sm leading-5">{item.product_name}</div>
                               <div className="text-xs text-muted-foreground mt-1">
-                                Precio unitario: Q{item.price.toFixed(2)}
+                                Precio unitario: {formatCurrency(item.price)}
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-medium text-sm">Q{item.subtotal.toFixed(2)}</div>
+                              <div className="font-medium text-sm">{formatCurrency(item.subtotal)}</div>
                             </div>
                           </div>
                           <div className="flex items-center justify-between gap-3">
@@ -553,18 +559,18 @@ export function NewOrderPage() {
                   <div className="text-right space-y-1 min-w-[200px]">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal:</span>
-                      <span>Q{subtotal.toFixed(2)}</span>
+                      <span>{formatCurrency(subtotal)}</span>
                     </div>
                     {discount > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
                         <span>Descuento:</span>
-                        <span>-Q{discountAmount.toFixed(2)}</span>
+                        <span>-{formatCurrency(discountAmount)}</span>
                       </div>
                     )}
                     <hr className="my-2" />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total:</span>
-                      <span>Q{total.toFixed(2)}</span>
+                      <span>{formatCurrency(total)}</span>
                     </div>
                   </div>
                 </div>

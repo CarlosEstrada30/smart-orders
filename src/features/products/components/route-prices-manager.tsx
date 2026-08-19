@@ -38,6 +38,7 @@ import { productRoutePricesService, type ProductRoutePrice } from '@/services/pr
 import { routesService, type Route } from '@/services'
 import { type Product } from '@/services/products'
 import { ApiError } from '@/services/api/config'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 interface RoutePricesManagerProps {
   product: Product | null
@@ -50,7 +51,8 @@ type ViewMode = 'list' | 'add' | 'edit'
 export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesManagerProps) {
   // Guard clause MUST be before any hooks to avoid hook order violations
   if (!product) return null
-  
+
+  const { formatCurrency } = useCompanySettings()
   const [routePrices, setRoutePrices] = useState<ProductRoutePrice[]>([])
   const [routes, setRoutes] = useState<Route[]>([])
   const [loading, setLoading] = useState(false)
@@ -278,7 +280,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
               required
             />
             <p className="text-xs text-muted-foreground">
-              Precio por defecto del producto: Q{product.price.toFixed(2)}
+              Precio por defecto del producto: {formatCurrency(product.price)}
             </p>
           </div>
           
@@ -306,7 +308,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
         <CardContent>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-lg px-3 py-1 font-mono">
-              Q{product.price.toFixed(2)}
+              {formatCurrency(product.price)}
             </Badge>
             <span className="text-muted-foreground">para rutas sin precio específico</span>
           </div>
@@ -364,7 +366,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="font-mono">
-                          Q{routePrice.price.toFixed(2)}
+                          {formatCurrency(routePrice.price)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -377,7 +379,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
                                 : "text-red-700 bg-red-50 border-red-200"
                             }
                           >
-                            {priceDifference > 0 ? '+' : ''}Q{priceDifference.toFixed(2)}
+                            {priceDifference > 0 ? '+' : ''}{formatCurrency(priceDifference)}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-muted-foreground">
@@ -415,7 +417,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
               <RouteIcon className="h-16 w-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium mb-2">No hay precios específicos por ruta</p>
               <p className="text-sm">
-                Se usará el precio por defecto de Q{product.price.toFixed(2)} para todas las rutas
+                Se usará el precio por defecto de {formatCurrency(product.price)} para todas las rutas
               </p>
               {availableRouteOptions.length > 0 && (
                 <Button 
@@ -457,7 +459,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
             </DialogTitle>
             <DialogDescription>
               Producto: <span className="font-semibold">{product.name}</span> • 
-              Precio base: <span className="font-semibold">Q{product.price.toFixed(2)}</span>
+              Precio base: <span className="font-semibold">{formatCurrency(product.price)}</span>
             </DialogDescription>
           </DialogHeader>
 
@@ -520,7 +522,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
               <span className="font-semibold">
                 {deletingRoutePrice?.route_name || routes.find(r => r.id === deletingRoutePrice?.route_id)?.name}
               </span>. 
-              El producto usará el precio por defecto de Q{product.price.toFixed(2)} para esta ruta.
+              El producto usará el precio por defecto de {formatCurrency(product.price)} para esta ruta.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

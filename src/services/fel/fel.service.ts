@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '@/services/api/client'
+import { formatCurrency as formatCurrencyUtil, resolveLocale } from '@/utils/currency'
 import type {
   FELInvoice,
   FELStatusSummary,
@@ -525,20 +526,17 @@ class FELService {
   }
   
   /**
-   * Formatea montos en Quetzales
+   * Formatea montos usando la moneda del tenant (fallback a GTQ si no se especifica)
    */
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-GT', {
-      style: 'currency',
-      currency: 'GTQ'
-    }).format(amount)
+  formatCurrency(amount: number, currencyCode?: string): string {
+    return formatCurrencyUtil(amount, currencyCode)
   }
   
   /**
    * Formatea fechas para mostrar
    */
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('es-GT', {
+  formatDate(dateString: string, currencyCode?: string): string {
+    return new Date(dateString).toLocaleDateString(resolveLocale(currencyCode), {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

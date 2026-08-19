@@ -4,7 +4,8 @@
  */
 
 import { apiClient } from '@/services/api/client'
-import type { 
+import { formatCurrency as formatCurrencyUtil } from '@/utils/currency'
+import type {
   DashboardMetrics, 
   InvoiceSummary, 
   InventoryEntrySummary, 
@@ -389,13 +390,11 @@ class DashboardService {
   }
 
   /**
-   * Formatea números para mostrar en el dashboard
+   * Formatea números para mostrar en el dashboard usando la moneda del tenant
+   * (fallback a GTQ si no se especifica)
    */
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-GT', {
-      style: 'currency',
-      currency: 'GTQ'
-    }).format(amount)
+  formatCurrency(amount: number, currencyCode?: string): string {
+    return formatCurrencyUtil(amount, currencyCode)
   }
 
   /**

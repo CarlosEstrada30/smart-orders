@@ -5,6 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { felService } from '@/services/fel'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import { toast } from 'sonner'
 import type {
   FELInvoice,
@@ -23,6 +24,7 @@ interface PaymentFlowState {
 }
 
 export function usePaymentFlow() {
+  const { getCurrencyCode } = useCompanySettings()
   const [state, setState] = useState<PaymentFlowState>({
     isProcessing: false,
     error: null,
@@ -57,9 +59,9 @@ export function usePaymentFlow() {
 
       toast.success(isFullyPaid ? '¡Factura pagada completamente!' : 'Pago registrado', {
         id: 'payment-processing',
-        description: isFullyPaid 
+        description: isFullyPaid
           ? `Factura ${updatedInvoice.invoice_number} marcada como PAGADA`
-          : `Saldo restante: ${felService.formatCurrency(remainingBalance)}`
+          : `Saldo restante: ${felService.formatCurrency(remainingBalance, getCurrencyCode())}`
       })
 
       return updatedInvoice
@@ -67,7 +69,7 @@ export function usePaymentFlow() {
     } catch (error) {
       console.error('Error registrando pago:', error)
       const errorMessage = error instanceof Error ? error.message : 'Error registrando pago'
-      
+
       setState(prev => ({
         ...prev,
         isProcessing: false,
@@ -81,7 +83,7 @@ export function usePaymentFlow() {
 
       return null
     }
-  }, [])
+  }, [getCurrencyCode])
 
   /**
    * Valida datos de pago antes de enviar
@@ -98,9 +100,9 @@ export function usePaymentFlow() {
     }
 
     if (amount > invoice.balance_due) {
-      return { 
-        isValid: false, 
-        error: `El monto no puede ser mayor al saldo pendiente (${felService.formatCurrency(invoice.balance_due)})` 
+      return {
+        isValid: false,
+        error: `El monto no puede ser mayor al saldo pendiente (${felService.formatCurrency(invoice.balance_due, getCurrencyCode())})`
       }
     }
 
@@ -113,7 +115,7 @@ export function usePaymentFlow() {
     }
 
     return { isValid: true }
-  }, [])
+  }, [getCurrencyCode])
 
   /**
    * Calcula el monto máximo permitido para pago
@@ -166,8 +168,8 @@ export function usePaymentFlow() {
     canReceivePayment,
     
     // Utilidades
-    formatCurrency: felService.formatCurrency,
-    formatDate: felService.formatDate,
+    formatCurrency: (amount: number) => felService.formatCurrency(amount, getCurrencyCode()),
+    formatDate: (dateString: string) => felService.formatDate(dateString, getCurrencyCode()),
   }
 }
 

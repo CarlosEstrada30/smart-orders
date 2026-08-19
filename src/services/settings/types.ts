@@ -8,6 +8,7 @@ export interface CompanySettings {
   email?: string | null
   website?: string | null
   logo_url?: string | null
+  currency_code: string
   is_active: boolean
   created_at: string
   updated_at?: string | null
@@ -22,6 +23,8 @@ export interface CompanySettingsCreate {
   email?: string
   website?: string
   logo?: File
+  /** ISO 4217, ej. "GTQ", "MXN", "USD". Default: 'GTQ' */
+  currency_code?: string
 }
 
 export interface CompanySettingsUpdate extends Partial<CompanySettingsCreate> {}

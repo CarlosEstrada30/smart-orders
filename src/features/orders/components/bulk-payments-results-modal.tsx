@@ -20,6 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { BulkPaymentResponse } from '@/services/payments'
 import { CheckCircle, AlertTriangle, DollarSign, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { resolveLocale } from '@/utils/currency'
 
 interface BulkPaymentsResultsModalProps {
   open: boolean
@@ -34,6 +36,8 @@ export function BulkPaymentsResultsModal({
   result,
   onClose,
 }: BulkPaymentsResultsModalProps) {
+  const { formatCurrency, getCurrencyCode } = useCompanySettings()
+
   if (!result) return null
 
   const handleClose = () => {
@@ -93,7 +97,7 @@ export function BulkPaymentsResultsModal({
               </CardHeader>
               <CardContent>
                 <div className="text-xl sm:text-2xl font-bold text-green-600">
-                  Q{result.total_amount.toFixed(2)}
+                  {formatCurrency(result.total_amount)}
                 </div>
               </CardContent>
             </Card>
@@ -129,7 +133,7 @@ export function BulkPaymentsResultsModal({
                           </TableCell>
                           <TableCell className="text-sm">#{payment.order_id}</TableCell>
                           <TableCell className="font-medium text-sm">
-                            Q{payment.amount.toFixed(2)}
+                            {formatCurrency(payment.amount)}
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Badge variant="outline" className="text-xs">
@@ -142,7 +146,7 @@ export function BulkPaymentsResultsModal({
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm text-muted-foreground hidden md:table-cell">
-                            {new Date(payment.payment_date).toLocaleDateString('es-GT', {
+                            {new Date(payment.payment_date).toLocaleDateString(resolveLocale(getCurrencyCode()), {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',
@@ -207,7 +211,7 @@ export function BulkPaymentsResultsModal({
                               <span className="text-muted-foreground">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm">Q{error.amount.toFixed(2)}</TableCell>
+                          <TableCell className="text-sm">{formatCurrency(error.amount)}</TableCell>
                           <TableCell className="hidden md:table-cell">
                             <Badge variant="outline" className="text-xs">
                               {error.payment_method === 'cash' && 'Efectivo'}

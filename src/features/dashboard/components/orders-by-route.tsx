@@ -17,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { resolveLocale } from '@/utils/currency'
+import { CURRENCIES, DEFAULT_CURRENCY_CODE, isCurrencyCode } from '@/lib/currencies'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
@@ -53,11 +56,11 @@ async function fetchOrdersByRoute(year: number): Promise<RouteOrdersResponse> {
   )
 }
 
-function formatCurrency(value: number) {
-  return `Q${value.toLocaleString('es-GT', { maximumFractionDigits: 0 })}`
+function formatShortCurrency(value: number, symbol: string, locale: string) {
+  return `${symbol}${value.toLocaleString(locale, { maximumFractionDigits: 0 })}`
 }
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload, symbol, locale }: any) {
   if (!active || !payload?.length) return null
   const d: RouteOrderData = payload[0].payload
   return (
@@ -68,7 +71,7 @@ function CustomTooltip({ active, payload }: any) {
       </p>
       <p className="text-muted-foreground">
         Ingresos:{' '}
-        <span className="font-medium text-foreground">{formatCurrency(d.total_amount)}</span>
+        <span className="font-medium text-foreground">{formatShortCurrency(d.total_amount, symbol, locale)}</span>
       </p>
       <p className="text-muted-foreground">
         Participación:{' '}
@@ -80,6 +83,12 @@ function CustomTooltip({ active, payload }: any) {
 
 export function OrdersByRoute() {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
+  const { getCurrencyCode } = useCompanySettings()
+  const currencyCode = getCurrencyCode()
+  const symbol = isCurrencyCode(currencyCode)
+    ? CURRENCIES[currencyCode].symbol
+    : CURRENCIES[DEFAULT_CURRENCY_CODE].symbol
+  const locale = resolveLocale(currencyCode)
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-orders-by-route', selectedYear],
@@ -150,7 +159,7 @@ export function OrdersByRoute() {
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip symbol={symbol} locale={locale} />} />
             <Legend
               iconType="circle"
               iconSize={8}

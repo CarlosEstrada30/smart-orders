@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth-store'
 import { SettingsService } from '@/services'
+import { formatCurrency as formatCurrencyUtil } from '@/utils/currency'
 
 /**
  * Hook para cargar automáticamente los settings de la empresa cuando el usuario esté autenticado
@@ -45,10 +46,14 @@ export function useCompanySettings() {
     refetch,
     // Helper function para obtener el nombre de la empresa (sin fallback hardcodeado)
     getCompanyName: () => companySettings?.company_name || companySettings?.business_name,
-    // Helper function para obtener el logo (sin fallback hardcodeado)  
+    // Helper function para obtener el logo (sin fallback hardcodeado)
     getCompanyLogo: () => companySettings?.logo_url,
     // Helper para saber si los settings están disponibles
     hasSettings: !!companySettings,
+    // Helper para obtener el código de moneda del tenant (fallback a GTQ)
+    getCurrencyCode: () => companySettings?.currency_code || 'GTQ',
+    // Helper para formatear montos con la moneda configurada del tenant
+    formatCurrency: (amount: number) => formatCurrencyUtil(amount, companySettings?.currency_code),
   }
 }
 

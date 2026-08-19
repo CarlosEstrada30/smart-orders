@@ -5,6 +5,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { felService } from '@/services/fel'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 import { toast } from 'sonner'
 import type {
   FELInvoice,
@@ -26,6 +27,7 @@ interface FELProcessingState {
 }
 
 export function useFELProcessing() {
+  const { getCurrencyCode } = useCompanySettings()
   const [state, setState] = useState<FELProcessingState>({
     isProcessing: false,
     currentStatus: null,
@@ -446,7 +448,7 @@ export function useFELProcessing() {
     reset,
     
     // Helpers
-    formatCurrency: felService.formatCurrency,
+    formatCurrency: (amount: number) => felService.formatCurrency(amount, getCurrencyCode()),
     formatFELUUID: felService.formatFELUUID,
     
     // Estado computado

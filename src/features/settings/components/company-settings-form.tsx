@@ -12,9 +12,17 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { SettingsService } from '@/services'
 import type { CompanySettings, SettingsFormData } from '@/services'
 import { useAuthStore } from '@/stores/auth-store'
+import { CURRENCY_OPTIONS } from '@/lib/currencies'
 
 const formSchema = z.object({
   company_name: z.string().min(1, 'El nombre de la empresa es requerido'),
@@ -25,6 +33,7 @@ const formSchema = z.object({
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   website: z.string().url('URL inválida').optional().or(z.literal('')),
   logo: z.instanceof(File).optional(),
+  currency_code: z.string().min(1, 'La moneda es requerida'),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -46,6 +55,7 @@ export function CompanySettingsForm() {
       phone: '',
       email: '',
       website: '',
+      currency_code: 'GTQ',
     },
   })
 
@@ -65,6 +75,7 @@ export function CompanySettingsForm() {
         phone: settings.phone || '',
         email: settings.email || '',
         website: settings.website || '',
+        currency_code: settings.currency_code || 'GTQ',
       })
       // Set logo preview if exists
       if (settings.logo_url) {
@@ -297,6 +308,34 @@ export function CompanySettingsForm() {
                     </FormControl>
                     <FormDescription>
                       Número de Identificación Tributaria
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="currency_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Moneda *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecciona una moneda" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CURRENCY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Moneda usada para mostrar montos en órdenes, facturas y reportes
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

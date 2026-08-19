@@ -49,8 +49,14 @@ import { PermissionGuard } from '@/components/auth/permission-guard'
 import { BulkImport } from '@/components/bulk-import'
 import { RoutePricesManager } from '@/features/products/components/route-prices-manager'
 import { ClientPagination } from '@/components/ui/client-pagination'
+import { useCompanySettings } from '@/hooks/use-company-settings'
+import { CURRENCIES, DEFAULT_CURRENCY_CODE, isCurrencyCode } from '@/lib/currencies'
 
 export function ProductsPage() {
+  const { formatCurrency, getCurrencyCode } = useCompanySettings()
+  const currencySymbol = isCurrencyCode(getCurrencyCode())
+    ? CURRENCIES[getCurrencyCode() as keyof typeof CURRENCIES].symbol
+    : CURRENCIES[DEFAULT_CURRENCY_CODE].symbol
   const [searchTerm, setSearchTerm] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -557,8 +563,7 @@ export function ProductsPage() {
                       <PermissionGuard productPermission="can_view_prices">
                         <TableCell className="hidden md:table-cell">
                           <div className="flex items-center">
-                            <span className="text-sm font-medium mr-1">Q</span>
-                            <span className="truncate">{product.price.toFixed(2)}</span>
+                            <span className="truncate">{formatCurrency(product.price)}</span>
                           </div>
                         </TableCell>
                       </PermissionGuard>
@@ -693,6 +698,7 @@ export function ProductsPage() {
                 <PriceInput
                   id="modal-price"
                   placeholder="0.00"
+                  currency={currencySymbol}
                   value={newProductForm.price}
                   onValueChange={(value) => setNewProductForm(prev => ({ ...prev, price: value }))}
                   required
@@ -798,6 +804,7 @@ export function ProductsPage() {
                 <PriceInput
                   id="edit-price"
                   placeholder="0.00"
+                  currency={currencySymbol}
                   value={editProductForm.price}
                   onValueChange={(value) => setEditProductForm(prev => ({ ...prev, price: value }))}
                   required

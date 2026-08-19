@@ -36,6 +36,7 @@ import { toast } from 'sonner'
 import { Loader2, DollarSign, AlertCircle, CheckCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BulkPaymentsResultsModal } from './bulk-payments-results-modal'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'cash', label: 'Efectivo' },
@@ -63,6 +64,7 @@ export function BulkPaymentsModal({
   orders,
   onPaymentsCreated,
 }: BulkPaymentsModalProps) {
+  const { formatCurrency } = useCompanySettings()
   const [loading, setLoading] = useState(false)
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('full')
   const [paymentMethodMode, setPaymentMethodMode] = useState<PaymentMethodMode>('common')
@@ -160,7 +162,7 @@ export function BulkPaymentsModal({
         amount <= 0
           ? 'El monto debe ser mayor a 0'
           : amount > balanceDue
-            ? `El monto no puede exceder el saldo pendiente (Q${balanceDue.toFixed(2)})`
+            ? `El monto no puede exceder el saldo pendiente (${formatCurrency(balanceDue)})`
             : undefined,
     }
 
@@ -347,7 +349,7 @@ export function BulkPaymentsModal({
                 <div>
                   <p className="text-sm text-muted-foreground">Total a pagar</p>
                   <p className="text-xl sm:text-2xl font-bold text-green-600">
-                    Q{totalAmount.toFixed(2)}
+                    {formatCurrency(totalAmount)}
                   </p>
                 </div>
                 <div>
@@ -479,14 +481,14 @@ export function BulkPaymentsModal({
                             {order.client?.name || `Cliente #${order.client_id}`}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            Q{(order.total_amount || 0).toFixed(2)}
+                            {formatCurrency(order.total_amount || 0)}
                           </TableCell>
                           <TableCell>
-                            <span className="font-medium">Q{balanceDue.toFixed(2)}</span>
+                            <span className="font-medium">{formatCurrency(balanceDue)}</span>
                           </TableCell>
                           <TableCell>
                             {paymentMode === 'full' ? (
-                              <span className="font-medium text-sm">Q{balanceDue.toFixed(2)}</span>
+                              <span className="font-medium text-sm">{formatCurrency(balanceDue)}</span>
                             ) : (
                               <div className="flex flex-col gap-1">
                                 <NumericInput
