@@ -7,6 +7,7 @@ import { Download, Printer, AlertCircle, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { whatsappService } from '@/services/whatsapp'
 import type { WhatsAppDeviceStatus } from '@/services/whatsapp'
+import { ApiError } from '@/services/api/config'
 
 // Importar estilos CSS necesarios
 import '@react-pdf-viewer/core/lib/styles/index.css'
@@ -99,7 +100,12 @@ export function ModernPDFViewer({
       await onShareWhatsApp(orderId)
       toast.success('Comprobante enviado por WhatsApp exitosamente')
     } catch (error) {
-      toast.error('Error al enviar el comprobante por WhatsApp')
+      // Un 500 trae texto técnico; los demás códigos traen un mensaje para el usuario
+      toast.error(
+        error instanceof ApiError && error.status !== 500
+          ? error.detail
+          : 'Error al enviar el comprobante por WhatsApp'
+      )
     } finally {
       setSendingWhatsApp(false)
     }
