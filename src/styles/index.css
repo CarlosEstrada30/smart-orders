@@ -11,7 +11,14 @@
     scrollbar-color: var(--border) transparent;
   }
   html {
-    @apply overflow-x-hidden;
+    @apply overflow-x-hidden font-sans antialiased;
+    font-feature-settings: 'ss01';
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
   }
   body {
     @apply bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar min-h-svh w-full;
@@ -57,6 +64,21 @@
   @apply after:pointer-events-none after:absolute after:start-0 after:bottom-0 after:hidden after:h-32 after:w-full after:rounded-b-2xl after:bg-[linear-gradient(180deg,_transparent_10%,_var(--background)_70%)] md:after:block;
 }
 
+/* Cifras alineadas para montos y cantidades */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* styles.css */
 .CollapsibleContent {
   overflow: hidden;
@@ -88,17 +110,16 @@
 
 /* Fix para dropdowns de filtros - options visibles en ambos temas */
 select option {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: var(--background);
+  color: var(--foreground);
   padding: 8px 12px;
 }
 
 select option:hover {
-  background-color: hsl(var(--muted));
+  background-color: var(--muted);
 }
 
 select option:checked {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: var(--primary);
+  color: var(--primary-foreground);
 }
-

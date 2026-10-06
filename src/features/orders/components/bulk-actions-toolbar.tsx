@@ -120,7 +120,7 @@ export function BulkActionsToolbar({
     <>
       <div className="flex items-center justify-between bg-muted/50 p-3 rounded-lg border">
         <div className="flex items-center space-x-2">
-          <CheckCircle className="h-4 w-4 text-blue-600" />
+          <CheckCircle className="h-4 w-4 text-info" />
           <span className="text-sm font-medium">
             {selectedOrders.length} orden{selectedOrders.length !== 1 ? 'es' : ''} seleccionada{selectedOrders.length !== 1 ? 's' : ''}
           </span>
@@ -161,7 +161,7 @@ export function BulkActionsToolbar({
       <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cambiar Estado de Órdenes</DialogTitle>
+            <DialogTitle>Cambiar estado de los pedidos</DialogTitle>
             <DialogDescription>
               Selecciona el nuevo estado para {selectedOrders.length} orden{selectedOrders.length !== 1 ? 'es' : ''} seleccionada{selectedOrders.length !== 1 ? 's' : ''}.
             </DialogDescription>
@@ -169,7 +169,7 @@ export function BulkActionsToolbar({
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Nuevo Estado</label>
+              <label className="text-sm font-medium">Nuevo estado</label>
               <Select value={selectedStatus || ''} onValueChange={(value) => setSelectedStatus(value as OrderStatus)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecciona un estado" />
@@ -193,7 +193,7 @@ export function BulkActionsToolbar({
 
             {selectedStatus && (
               <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertCircle className="h-4 w-4 text-warning-foreground dark:text-warning" />
                 <span className="text-sm text-muted-foreground">
                   Las órdenes cambiarán al estado: 
                   <Badge 
@@ -238,7 +238,7 @@ export function BulkActionsToolbar({
       <Dialog open={showResults} onOpenChange={setShowResults}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Resultados del Cambio de Estado</DialogTitle>
+            <DialogTitle>Resultado del cambio de estado</DialogTitle>
             <DialogDescription>
               Detalles de la actualización masiva de {bulkResult?.total_orders} orden{bulkResult?.total_orders !== 1 ? 'es' : ''}
             </DialogDescription>
@@ -250,18 +250,18 @@ export function BulkActionsToolbar({
               <div className="grid grid-cols-3 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-green-600">Exitosas</CardTitle>
+                    <CardTitle className="text-sm font-medium text-success">Exitosas</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{bulkResult.updated_count}</div>
+                    <div className="text-2xl font-bold text-success">{bulkResult.updated_count}</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-red-600">Fallidas</CardTitle>
+                    <CardTitle className="text-sm font-medium text-destructive">Fallidas</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-red-600">{bulkResult.failed_count}</div>
+                    <div className="text-2xl font-bold text-destructive">{bulkResult.failed_count}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -279,18 +279,18 @@ export function BulkActionsToolbar({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span>Órdenes Actualizadas Exitosamente</span>
+                      <CheckCircle className="h-5 w-5 text-success" />
+                      <span>Pedidos actualizados</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {bulkResult.success_details.map((order) => (
-                      <div key={order.order_id} className="border rounded-lg p-3 bg-green-50">
+                      <div key={order.order_id} className="border rounded-lg p-3 bg-success/10">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium">
                             Orden {order.order_number || `#${order.order_id}`}
                           </span>
-                          <Badge variant="outline" className="text-green-700 border-green-300">
+                          <Badge variant="outline" className="text-success border-success/30">
                             {bulkResult.status}
                           </Badge>
                         </div>
@@ -318,31 +318,31 @@ export function BulkActionsToolbar({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <AlertTriangle className="h-5 w-5 text-red-600" />
-                      <span>Órdenes con Errores</span>
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      <span>Pedidos que no cambiaron</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {bulkResult.failed_details.map((order) => (
-                      <div key={order.order_id} className="border rounded-lg p-3 bg-red-50">
+                      <div key={order.order_id} className="border rounded-lg p-3 bg-destructive/10">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium">
                             Orden {order.order_number || `#${order.order_id}`}
                           </span>
-                          <Badge variant="outline" className="text-red-700 border-red-300">
+                          <Badge variant="outline" className="text-destructive border-destructive/30">
                             {order.error_type}
                           </Badge>
                         </div>
-                        <p className="text-sm text-red-600 mb-2">{order.error_message}</p>
+                        <p className="text-sm text-destructive mb-2">{order.error_message}</p>
                         {order.products_with_errors.length > 0 && (
                           <div className="space-y-1">
                             <p className="text-sm text-muted-foreground">Productos con errores:</p>
                             {order.products_with_errors.map((product) => (
                               <div key={product.product_id} className="flex items-center space-x-2 text-sm">
-                                <AlertCircle className="h-3 w-3 text-red-500" />
+                                <AlertCircle className="h-3 w-3 text-destructive" />
                                 <span>{product.product_name}</span>
                                 <span className="text-muted-foreground">({product.product_sku})</span>
-                                <span className="text-red-600">- {product.error_message}</span>
+                                <span className="text-destructive">- {product.error_message}</span>
                                 {product.required_quantity && product.available_quantity && (
                                   <span className="text-muted-foreground">
                                     (Requerido: {product.required_quantity}, Disponible: {product.available_quantity})

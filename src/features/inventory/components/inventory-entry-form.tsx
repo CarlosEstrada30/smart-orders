@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatCurrency } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NumericInput, PriceInput, QuantityInput } from '@/components/ui/numeric-input'
@@ -227,7 +228,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
       {/* Entry Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Información de la Entrada</CardTitle>
+          <CardTitle>Datos de la entrada</CardTitle>
           <CardDescription>
             Datos básicos de la entrada de inventario
           </CardDescription>
@@ -235,7 +236,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="entry_type">Tipo de Entrada</Label>
+              <Label htmlFor="entry_type">Tipo de entrada</Label>
               <Select value={entryType} onValueChange={(value) => setEntryType(value as EntryType)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona el tipo" />
@@ -252,7 +253,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
 
 
             <div className="space-y-2">
-              <Label htmlFor="expected_date">Fecha Esperada</Label>
+              <Label htmlFor="expected_date">Fecha esperada</Label>
               <DatePicker
                 selected={expectedDate ? parseDateString(expectedDate) : new Date()}
                 onSelect={handleDateChange}
@@ -278,7 +279,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
       {/* Add Item Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Agregar Productos</CardTitle>
+          <CardTitle>Productos</CardTitle>
           <CardDescription>
             Selecciona los productos para esta entrada
           </CardDescription>
@@ -291,8 +292,8 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                 options={productOptions}
                 value={newItem.product_id}
                 onValueChange={(value) => setNewItem(prev => ({ ...prev, product_id: value }))}
-                placeholder={loadingProducts ? "Cargando..." : "Selecciona producto"}
-                searchPlaceholder="Buscar producto por nombre..."
+                placeholder={loadingProducts ? "Cargando…" : "Selecciona producto"}
+                searchPlaceholder="Buscar producto por nombre…"
                 emptyMessage="No se encontraron productos."
                 disabled={loadingProducts}
               />
@@ -308,7 +309,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
             </div>
 
             <div className="space-y-2">
-              <Label>Costo Unitario</Label>
+              <Label>Costo unitario</Label>
               <PriceInput
                 value={newItem.unit_cost}
                 onValueChange={(value) => setNewItem(prev => ({ ...prev, unit_cost: value }))}
@@ -325,7 +326,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
             </div>
 
             <div className="space-y-2">
-              <Label>Fecha de Vencimiento</Label>
+              <Label>Vence</Label>
               <Input
                 type="date"
                 value={newItem.expiry_date}
@@ -357,7 +358,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                 <TableRow>
                   <TableHead>Producto</TableHead>
                   <TableHead className="text-center">Cantidad</TableHead>
-                  <TableHead className="text-right">Costo Unitario</TableHead>
+                  <TableHead className="text-right">Costo unitario</TableHead>
                   <TableHead className="text-right">Subtotal</TableHead>
                   <TableHead className="text-center">Acciones</TableHead>
                 </TableRow>
@@ -392,7 +393,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                       />
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      Q{item.subtotal.toFixed(2)}
+                      {formatCurrency(item.subtotal)}
                     </TableCell>
                     <TableCell className="text-center">
                       <Button
@@ -411,7 +412,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
                     Total:
                   </TableCell>
                   <TableCell className="text-right font-bold text-lg">
-                    Q{totalCost.toFixed(2)}
+                    {formatCurrency(totalCost)}
                   </TableCell>
                   <TableCell />
                 </TableRow>
@@ -427,7 +428,7 @@ export function InventoryEntryForm({ onSuccess, onCancel }: InventoryEntryFormPr
           Cancelar
         </Button>
         <Button type="submit" disabled={loading || items.length === 0}>
-          {loading ? 'Creando...' : 'Crear Entrada'}
+          {loading ? 'Creando…' : 'Crear entrada'}
         </Button>
       </div>
     </form>

@@ -39,7 +39,7 @@ export function ForecastWidget({ routeId }: Props) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Producción Estimada</h2>
+          <h2 className="font-display text-lg font-semibold">Producción estimada</h2>
           <p className="text-sm text-muted-foreground">{formatDate(tomorrow)}</p>
         </div>
         <Link

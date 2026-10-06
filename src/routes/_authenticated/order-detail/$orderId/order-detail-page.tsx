@@ -1,25 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
+import { ordersService, type Order, type OrderStatus } from '@/services/orders'
+import { ArrowLeft, Edit, Package, PackageX, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatCurrency } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { redirectWithSubdomain } from '@/utils/subdomain'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Combobox } from '@/components/ui/combobox'
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   Dialog,
   DialogContent,
@@ -29,25 +23,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
-import { Main } from '@/components/layout/main'
-import { 
-  ArrowLeft, 
-  Trash2, 
-  ShoppingCart, 
-  Package, 
-  Truck, 
-  CheckCircle,
-  X,
-  Edit
-} from 'lucide-react'
-import { ordersService, type Order, type OrderStatus } from '@/services/orders'
-import { OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
-import { PaymentSummaryCard, PaymentsList } from '@/features/orders/components'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { EmptyState } from '@/components/empty-state'
+import { Main } from '@/components/layout/main'
+import { LoadingState } from '@/components/loading-state'
+import { OrderStatusRoute } from '@/components/order-status-route'
+import { PageHeader } from '@/components/page-header'
+import { PaymentSummaryCard, PaymentsList } from '@/features/orders/components'
+import { OrderReceiptButtons } from '@/features/orders/components/order-receipt-actions'
+import { getOrderStatusData, orderStatuses } from '@/features/orders/data/data'
 
 export function OrderDetailPage() {
-  const { orderId } = useParams({ from: '/_authenticated/order-detail/$orderId' })
+  const { orderId } = useParams({
+    from: '/_authenticated/order-detail/$orderId',
+  })
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +61,7 @@ export function OrderDetailPage() {
       const orderData = await ordersService.getOrder(parseInt(orderId))
       setOrder(orderData)
     } catch (_err) {
-      setError('Error al cargar la orden')
+      setError('No se pudo cargar el pedido')
     } finally {
       setLoading(false)
     }
@@ -80,7 +79,8 @@ export function OrderDetailPage() {
       // Redirigir a la lista de órdenes preservando el subdominio
       redirectWithSubdomain('/orders')
     } catch (_err) {
-      setError('Error al cancelar la orden')
+      setIsDeleteDialogOpen(false)
+      toast.error('No se pudo cancelar el pedido. Intenta de nuevo.')
     }
   }
 
@@ -88,82 +88,30 @@ export function OrderDetailPage() {
     if (!order) return
 
     try {
-      const updatedOrder = await ordersService.updateOrderStatus(order.id!, newStatus)
+      const updatedOrder = await ordersService.updateOrderStatus(
+        order.id!,
+        newStatus
+      )
       setOrder(updatedOrder)
       setIsStatusDialogOpen(false)
-    } catch (_err) {
-      setError('Error al actualizar el estado')
+      toast.success(
+        `Estado cambiado a ${getOrderStatusData(newStatus).label.toLowerCase()}`
+      )
+    } catch (err) {
+      const detail = (err as { detail?: string })?.detail
+      toast.error(detail || 'No se pudo cambiar el estado. Intenta de nuevo.')
     }
   }
 
-  const getStatusBadgeVariant = (status: OrderStatus) => {
-    switch (status) {
-      case 'pending':
-        return 'secondary'
-      case 'confirmed':
-        return 'default'
-      case 'in_progress':
-        return 'outline'
-      case 'shipped':
-        return 'default'
-      case 'delivered':
-        return 'default'
-      case 'cancelled':
-        return 'destructive'
-      default:
-        return 'outline'
-    }
-  }
-
-  const getStatusIcon = (status: OrderStatus) => {
-    switch (status) {
-      case 'pending':
-        return <Package className="h-4 w-4" />
-      case 'confirmed':
-        return <ShoppingCart className="h-4 w-4" />
-      case 'in_progress':
-        return <ShoppingCart className="h-4 w-4" />
-      case 'shipped':
-        return <Truck className="h-4 w-4" />
-      case 'delivered':
-        return <CheckCircle className="h-4 w-4" />
-      case 'cancelled':
-        return <X className="h-4 w-4" />
-      default:
-        return <Package className="h-4 w-4" />
-    }
-  }
-
-  const getStatusLabel = (status: OrderStatus) => {
-    switch (status) {
-      case 'pending':
-        return 'Pendiente'
-      case 'confirmed':
-        return 'Confirmado'
-      case 'in_progress':
-        return 'En Proceso'
-      case 'shipped':
-        return 'Enviado'
-      case 'delivered':
-        return 'Entregado'
-      case 'cancelled':
-        return 'Cancelado'
-      default:
-        return status
-    }
+  const openStatusDialog = () => {
+    if (order) setNewStatus(order.status)
+    setIsStatusDialogOpen(true)
   }
 
   if (loading) {
     return (
       <Main>
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2">Cargando orden...</p>
-            </div>
-          </div>
-        </div>
+        <LoadingState variant='detail' label='Cargando pedido…' />
       </Main>
     )
   }
@@ -171,372 +119,391 @@ export function OrderDetailPage() {
   if (error || !order) {
     return (
       <Main>
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <p className="text-red-600">{error || 'Orden no encontrada'}</p>
-              <Link to="/orders">
-                <Button className="mt-4">Volver a órdenes</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <EmptyState
+          icon={PackageX}
+          title={error || 'No encontramos este pedido'}
+          description='Puede que se haya eliminado o que el enlace sea incorrecto.'
+          action={
+            <Button asChild variant='outline'>
+              <Link to='/orders'>Volver a pedidos</Link>
+            </Button>
+          }
+        />
       </Main>
     )
   }
 
+  const subtotal = order.items.reduce(
+    (sum, item) => sum + item.quantity * item.unit_price,
+    0
+  )
+  const totalUnits = order.items.reduce((sum, item) => sum + item.quantity, 0)
+  const createdAt = order.created_at
+    ? new Date(order.created_at).toLocaleDateString('es-GT', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : null
+
   return (
     <Main>
-      <div className="container mx-auto py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          {/* Top row - Back button and title */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <Link to="/orders">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver
-              </Button>
-            </Link>
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  Orden #{order.order_number}
-                </h1>
-                <p className="text-muted-foreground">
-                  Detalles de la orden
-                </p>
-              </div>
-              <Badge variant={getStatusBadgeVariant(order.status)} className="shrink-0">
-                <div className="flex items-center space-x-1">
-                  {getStatusIcon(order.status)}
-                  <span className="hidden sm:inline">{getStatusLabel(order.status)}</span>
-                </div>
-              </Badge>
-            </div>
-          </div>
-          
-          {/* Bottom row - Action buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <PermissionGuard orderPermission="can_update_delivery">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsStatusDialogOpen(true)}
-              >
-                <span className="hidden sm:inline">Cambiar Estado</span>
-                <span className="sm:hidden">Estado</span>
-              </Button>
+      <Button
+        asChild
+        variant='ghost'
+        size='sm'
+        className='text-muted-foreground -ms-2 mb-2'
+      >
+        <Link to='/orders'>
+          <ArrowLeft aria-hidden='true' />
+          Pedidos
+        </Link>
+      </Button>
+
+      <PageHeader
+        title={`Pedido ${order.order_number || `#${order.id}`}`}
+        description={[order.client?.name, createdAt && `creado el ${createdAt}`]
+          .filter(Boolean)
+          .join(', ')}
+        actions={
+          <>
+            <PermissionGuard orderPermission='can_update_delivery'>
+              <Button onClick={openStatusDialog}>Cambiar estado</Button>
             </PermissionGuard>
 
             {order.status === 'pending' && (
-              <PermissionGuard orderPermission="can_manage">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => redirectWithSubdomain(`/edit-order/${orderId}`)}
+              <PermissionGuard orderPermission='can_manage'>
+                <Button
+                  variant='outline'
+                  className='bg-card'
+                  onClick={() =>
+                    redirectWithSubdomain(`/edit-order/${orderId}`)
+                  }
                 >
-                  <Edit className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Editar</span>
+                  <Edit aria-hidden='true' />
+                  Editar
                 </Button>
               </PermissionGuard>
             )}
 
             {order.status !== 'cancelled' && (
-              <PermissionGuard orderPermission="can_manage">
-                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <PermissionGuard orderPermission='can_manage'>
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
                   <DialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Cancelar</span>
+                    <Button
+                      variant='ghost'
+                      className='text-destructive hover:text-destructive hover:bg-destructive/10'
+                    >
+                      <Trash2 aria-hidden='true' />
+                      Cancelar pedido
                     </Button>
                   </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>¿Cancelar orden?</DialogTitle>
-                    <DialogDescription>
-                      Esta acción no se puede deshacer. La orden será cancelada permanentemente.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete}>
-                      Cancelar
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>¿Cancelar este pedido?</DialogTitle>
+                      <DialogDescription>
+                        El pedido pasará a cancelado y no se podrá reactivar.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant='outline'
+                        onClick={() => setIsDeleteDialogOpen(false)}
+                      >
+                        Volver
+                      </Button>
+                      <Button variant='destructive' onClick={handleDelete}>
+                        Cancelar pedido
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </PermissionGuard>
             )}
-          </div>
+          </>
+        }
+      />
+
+      <Card className='mb-4 py-5 lg:mb-6'>
+        <CardContent>
+          <OrderStatusRoute status={order.status} />
+        </CardContent>
+      </Card>
+
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6'>
+        <div className='space-y-4 lg:col-span-2 lg:space-y-6'>
+          {/* Productos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='font-display text-lg'>Productos</CardTitle>
+              <CardDescription className='tabular'>
+                {order.items.length} productos,{' '}
+                {totalUnits.toLocaleString('es-GT')} unidades
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {order.items.length > 0 ? (
+                <>
+                  <div className='hidden overflow-hidden rounded-lg border md:block'>
+                    <Table>
+                      <TableHeader>
+                        <TableRow className='bg-muted/50 hover:bg-muted/50'>
+                          <TableHead className='text-muted-foreground'>
+                            Producto
+                          </TableHead>
+                          <TableHead className='text-muted-foreground text-right'>
+                            Cantidad
+                          </TableHead>
+                          <TableHead className='text-muted-foreground text-right'>
+                            Precio
+                          </TableHead>
+                          <TableHead className='text-muted-foreground text-right'>
+                            Total
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody className='tabular'>
+                        {order.items.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className='font-medium'>
+                              {item.product_name ||
+                                `Producto #${item.product_id}`}
+                            </TableCell>
+                            <TableCell className='text-right'>
+                              {item.quantity}
+                            </TableCell>
+                            <TableCell className='text-right'>
+                              {formatCurrency(item.unit_price)}
+                            </TableCell>
+                            <TableCell className='text-right font-medium'>
+                              {formatCurrency(item.quantity * item.unit_price)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <ul className='tabular divide-y md:hidden'>
+                    {order.items.map((item) => (
+                      <li
+                        key={item.id}
+                        className='flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0'
+                      >
+                        <div className='min-w-0'>
+                          <p className='font-medium'>
+                            {item.product_name ||
+                              `Producto #${item.product_id}`}
+                          </p>
+                          <p className='text-muted-foreground text-sm'>
+                            {item.quantity} × {formatCurrency(item.unit_price)}
+                          </p>
+                        </div>
+                        <span className='shrink-0 font-medium'>
+                          {formatCurrency(item.quantity * item.unit_price)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <EmptyState
+                  icon={Package}
+                  title='Este pedido no tiene productos'
+                  className='py-6'
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pagos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='font-display text-lg'>
+                Pagos registrados
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentsList
+                key={paymentRefreshKey}
+                orderId={order.id!}
+                onPaymentCancelled={() => {
+                  setPaymentRefreshKey((prev) => prev + 1)
+                  loadOrder()
+                }}
+              />
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Información de la Orden */}
-          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
-            {/* Información del Cliente */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Información del Cliente</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {order.client ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Nombre del Cliente</Label>
-                      <Input value={order.client.name} disabled className="text-sm" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Teléfono</Label>
-                      <Input value={order.client.phone || 'No disponible'} disabled className="text-sm" />
-                    </div>
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label className="text-sm font-medium">Dirección</Label>
-                      <Textarea 
-                        value={order.client.address || 'Sin dirección'} 
-                        disabled 
-                        rows={2}
-                        className="text-sm resize-none"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground">
-                      Información del cliente no disponible (Cliente #{order.client_id})
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Detalles de la Orden */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Detalles de la Orden</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Número de Orden</Label>
-                    <Input value={order.order_number || `#${order.id}`} disabled className="text-sm" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Fecha de Creación</Label>
-                    <Input value={order.created_at ? new Date(order.created_at).toLocaleDateString() : ''} disabled className="text-sm" />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label className="text-sm font-medium">Última Actualización</Label>
-                    <Input value={order.updated_at ? new Date(order.updated_at).toLocaleDateString() : ''} disabled className="text-sm" />
-                  </div>
-                </div>
-                {order.notes && (
-                  <div className="space-y-2 mt-4">
-                    <Label className="text-sm font-medium">Notas</Label>
-                    <Textarea value={order.notes} disabled className="text-sm resize-none" />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Items de la Orden */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Items de la Orden</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {order.items.length > 0 ? (
-                  <>
-                    {/* Desktop Table */}
-                    <div className="hidden md:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Producto</TableHead>
-                            <TableHead className="text-center">Cantidad</TableHead>
-                            <TableHead className="text-right">Precio Unitario</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {order.items.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="font-medium">
-                                {item.product_name || `Producto #${item.product_id}`}
-                              </TableCell>
-                              <TableCell className="text-center">{item.quantity}</TableCell>
-                              <TableCell className="text-right">Q{item.unit_price.toFixed(2)}</TableCell>
-                              <TableCell className="text-right font-medium">
-                                Q{(item.quantity * item.unit_price).toFixed(2)}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                    
-                    {/* Mobile Cards */}
-                    <div className="md:hidden space-y-4">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="border rounded-lg p-4 space-y-3">
-                          <div className="flex items-start justify-between">
-                            <h4 className="font-medium leading-5">
-                              {item.product_name || `Producto #${item.product_id}`}
-                            </h4>
-                            <div className="text-right font-medium">
-                              Q{(item.quantity * item.unit_price).toFixed(2)}
-                            </div>
-                          </div>
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center gap-4">
-                              <span>Cantidad: <strong>{item.quantity}</strong></span>
-                              <span>Precio: <strong>Q{item.unit_price.toFixed(2)}</strong></span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No hay items en esta orden</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pagos de la Orden */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Pagos de la Orden</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PaymentsList
-                  key={paymentRefreshKey}
-                  orderId={order.id!}
-                  onPaymentCancelled={() => {
-                    setPaymentRefreshKey((prev) => prev + 1)
-                    loadOrder()
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
+        <div className='space-y-4 lg:space-y-6'>
           {/* Resumen */}
-          <div className="space-y-4 lg:space-y-6">
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Resumen de la Orden</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Total Items:</span>
-                  <span className="font-medium">{order.items.length}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Total Cantidad:</span>
-                  <span className="font-medium">
-                    {order.items.reduce((sum, item) => sum + item.quantity, 0)}
+          <Card>
+            <CardHeader>
+              <CardTitle className='font-display text-lg'>Resumen</CardTitle>
+            </CardHeader>
+            <CardContent className='tabular space-y-2 text-sm'>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              {order.discount_amount && order.discount_amount > 0 ? (
+                <div className='flex justify-between'>
+                  <span className='text-muted-foreground'>Descuento</span>
+                  <span className='text-success'>
+                    −{formatCurrency(order.discount_amount)}
                   </span>
                 </div>
-                <div className="border-t pt-3 mt-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Subtotal:</span>
-                      <span className="font-medium">
-                        Q{order.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2)}
-                      </span>
-                    </div>
-                    {order.discount_amount && order.discount_amount > 0 && (
-                      <div className="flex justify-between items-center text-sm text-green-600">
-                        <span className="text-muted-foreground">Descuento:</span>
-                        <span className="font-medium">-Q{order.discount_amount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <span className="text-base font-semibold">Total:</span>
-                      <span className="text-lg font-bold">Q{order.total_amount?.toFixed(2) || '0.00'}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Sección de Comprobante */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Comprobante</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-sm text-muted-foreground mb-4">
-                  Descargar o visualizar el comprobante de esta orden
-                </div>
-                <OrderReceiptButtons 
-                  orderId={order.id!} 
-                  variant="outline"
-                  size="sm"
-                  showLabels={true}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Resumen de Pagos */}
-            <PaymentSummaryCard
-              key={paymentRefreshKey}
-              orderId={order.id!}
-              orderNumber={order.order_number}
-              totalAmount={order.total_amount || 0}
-              onPaymentCreated={() => {
-                setPaymentRefreshKey((prev) => prev + 1)
-                loadOrder()
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Dialog para cambiar estado */}
-        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Cambiar Estado de la Orden</DialogTitle>
-              <DialogDescription>
-                Selecciona el nuevo estado para la orden #{order.order_number}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nuevo Estado</Label>
-                <Combobox
-                  options={[
-                    { value: 'pending', label: 'Pendiente' },
-                    { value: 'confirmed', label: 'Confirmado' },
-                    { value: 'in_progress', label: 'En Proceso' },
-                    { value: 'shipped', label: 'Enviado' },
-                    { value: 'delivered', label: 'Entregado' },
-                    { value: 'cancelled', label: 'Cancelado' },
-                  ]}
-                  value={newStatus}
-                  onValueChange={(value) => setNewStatus(value as OrderStatus)}
-                  placeholder="Selecciona un estado"
-                  searchPlaceholder="Buscar estado..."
-                  emptyMessage="No se encontraron estados."
-                />
+              ) : null}
+              <div className='flex items-baseline justify-between border-t pt-3'>
+                <span className='font-medium'>Total</span>
+                <span className='font-display text-2xl font-semibold'>
+                  {formatCurrency(order.total_amount)}
+                </span>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleStatusUpdate}>
-                Actualizar Estado
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </CardContent>
+          </Card>
+
+          <PaymentSummaryCard
+            key={paymentRefreshKey}
+            orderId={order.id!}
+            orderNumber={order.order_number}
+            totalAmount={order.total_amount || 0}
+            onPaymentCreated={() => {
+              setPaymentRefreshKey((prev) => prev + 1)
+              loadOrder()
+            }}
+          />
+
+          {/* Cliente */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='font-display text-lg'>Cliente</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {order.client ? (
+                <dl className='space-y-3 text-sm'>
+                  <div>
+                    <dt className='text-muted-foreground'>Nombre</dt>
+                    <dd className='font-medium'>{order.client.name}</dd>
+                  </div>
+                  <div>
+                    <dt className='text-muted-foreground'>Teléfono</dt>
+                    <dd className='tabular'>
+                      {order.client.phone ? (
+                        <a
+                          href={`tel:${order.client.phone}`}
+                          className='text-info hover:underline'
+                        >
+                          {order.client.phone}
+                        </a>
+                      ) : (
+                        'Sin teléfono'
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className='text-muted-foreground'>Dirección</dt>
+                    <dd>{order.client.address || 'Sin dirección'}</dd>
+                  </div>
+                  {order.route && (
+                    <div>
+                      <dt className='text-muted-foreground'>Ruta</dt>
+                      <dd>{order.route.name}</dd>
+                    </div>
+                  )}
+                </dl>
+              ) : (
+                <p className='text-muted-foreground text-sm'>
+                  No hay datos del cliente #{order.client_id}.
+                </p>
+              )}
+              {order.notes && (
+                <div className='bg-warning/15 mt-4 rounded-lg p-3 text-sm'>
+                  <p className='font-medium'>Notas</p>
+                  <p className='mt-1 whitespace-pre-wrap'>{order.notes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Comprobante */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='font-display text-lg'>
+                Comprobante
+              </CardTitle>
+              <CardDescription>
+                Míralo, descárgalo o envíalo al cliente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OrderReceiptButtons
+                orderId={order.id!}
+                variant='outline'
+                size='sm'
+                showLabels={true}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Dialog para cambiar estado */}
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar estado</DialogTitle>
+            <DialogDescription>
+              Pedido {order.order_number}. El estado actual es{' '}
+              {getOrderStatusData(order.status).label.toLowerCase()}.
+            </DialogDescription>
+          </DialogHeader>
+          <RadioGroup
+            value={newStatus}
+            onValueChange={(value) => setNewStatus(value as OrderStatus)}
+            className='gap-1.5'
+          >
+            {orderStatuses.map((status) => (
+              <Label
+                key={status.value}
+                htmlFor={`status-${status.value}`}
+                className='has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-accent flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 font-normal'
+              >
+                <RadioGroupItem
+                  id={`status-${status.value}`}
+                  value={status.value}
+                />
+                <status.icon
+                  className={cn('size-4', status.color)}
+                  aria-hidden='true'
+                />
+                <span className='flex-1'>{status.label}</span>
+                {status.value === order.status && (
+                  <span className='text-muted-foreground text-xs'>Actual</span>
+                )}
+              </Label>
+            ))}
+          </RadioGroup>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setIsStatusDialogOpen(false)}
+            >
+              Volver
+            </Button>
+            <Button
+              onClick={handleStatusUpdate}
+              disabled={newStatus === order.status}
+            >
+              Guardar estado
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Main>
   )
-} 
+}

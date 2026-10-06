@@ -101,7 +101,7 @@ export function TopClients({ routeId }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Top Clientes</h2>
+          <h2 className="font-display text-lg font-semibold">Clientes con más compras</h2>
           <p className="text-sm text-muted-foreground">Por ingresos generados</p>
         </div>
         <Select
@@ -145,7 +145,7 @@ export function TopClients({ routeId }: Props) {
           >
             <XAxis
               type="number"
-              stroke="#888888"
+              stroke="var(--muted-foreground)"
               fontSize={11}
               tickLine={false}
               axisLine={false}
@@ -154,18 +154,18 @@ export function TopClients({ routeId }: Props) {
             <YAxis
               type="category"
               dataKey="name"
-              stroke="#888888"
+              stroke="var(--muted-foreground)"
               fontSize={11}
               tickLine={false}
               axisLine={false}
               width={90}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)' }} />
             <Bar dataKey="total_amount" radius={[0, 4, 4, 0]}>
               {chartData.map((_, index) => (
                 <Cell
                   key={index}
-                  fill={`hsl(var(--primary) / ${1 - index * 0.1})`}
+                  fill={`color-mix(in oklch, var(--chart-1) ${100 - index * 10}%, transparent)`}
                 />
               ))}
             </Bar>

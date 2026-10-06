@@ -187,7 +187,7 @@ export function CompanySettingsForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />
-          Información de la Empresa
+          Datos de la empresa
         </CardTitle>
         <CardDescription>
           Configura los datos principales de tu empresa que aparecerán en facturas y documentos oficiales.
@@ -198,7 +198,7 @@ export function CompanySettingsForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Logo Upload Section */}
             <div className="space-y-4">
-              <FormLabel>Logo de la Empresa</FormLabel>
+              <FormLabel>Logo</FormLabel>
               <div className="flex items-start gap-6">
                 <Avatar className="h-24 w-24">
                   <AvatarImage src={logoPreview || ''} alt="Logo de la empresa" />
@@ -243,7 +243,7 @@ export function CompanySettingsForm() {
                       className="w-full"
                     >
                       <X className="h-4 w-4 mr-2" />
-                      Remover Logo
+                      Quitar logo
                     </Button>
                   )}
                 </div>
@@ -257,7 +257,7 @@ export function CompanySettingsForm() {
                 name="company_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre de la Empresa *</FormLabel>
+                    <FormLabel>Nombre comercial *</FormLabel>
                     <FormControl>
                       <Input placeholder="Ej: Mi Empresa S.A." {...field} />
                     </FormControl>
@@ -274,7 +274,7 @@ export function CompanySettingsForm() {
                 name="business_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Razón Social *</FormLabel>
+                    <FormLabel>Razón social *</FormLabel>
                     <FormControl>
                       <Input placeholder="Ej: Mi Empresa, Sociedad Anónima" {...field} />
                     </FormControl>
@@ -296,7 +296,7 @@ export function CompanySettingsForm() {
                       <Input placeholder="Ej: 123456789-0" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Número de Identificación Tributaria
+                      Número de identificación tributaria
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -368,7 +368,7 @@ export function CompanySettingsForm() {
                 name="website"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sitio Web</FormLabel>
+                    <FormLabel>Sitio web</FormLabel>
                     <FormControl>
                       <Input placeholder="Ej: https://www.miempresa.com" {...field} />
                     </FormControl>
@@ -392,7 +392,7 @@ export function CompanySettingsForm() {
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
-                    Guardar Cambios
+                    Guardar cambios
                   </>
                 )}
               </Button>

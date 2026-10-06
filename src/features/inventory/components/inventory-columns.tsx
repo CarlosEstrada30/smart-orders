@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,7 +25,7 @@ import {
 } from 'lucide-react'
 import { type InventoryEntryList } from '../data/schema'
 import { getEntryTypeData, getEntryStatusData } from '../data/data'
-import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
+import { DataTableColumnHeader } from '@/components/data-table'
 
 export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
   {
@@ -57,12 +58,12 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
   {
     accessorKey: 'entry_number',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Número de Entrada' />
+      <DataTableColumnHeader column={column} title='Número de entrada' />
     ),
     cell: ({ row }) => {
       const entryNumber = row.getValue('entry_number') as string
       return (
-        <div className="font-mono font-medium">
+        <div className="tabular font-medium whitespace-nowrap">
           {entryNumber}
         </div>
       )
@@ -82,7 +83,7 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
       const typeData = getEntryTypeData(entryType as any)
       
       return (
-        <Badge variant="outline" className={cn('capitalize', typeData.color)}>
+        <Badge variant="outline" className={cn(typeData.color)}>
           <div className="flex items-center space-x-1">
             <typeData.icon className="h-3 w-3" />
             <span>{typeData.label}</span>
@@ -105,7 +106,7 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
       const statusData = getEntryStatusData(status as any)
       
       return (
-        <Badge variant={statusData.variant} className={cn('capitalize', statusData.color)}>
+        <Badge variant={statusData.variant} className={cn(statusData.color)}>
           <div className="flex items-center space-x-1">
             <statusData.icon className="h-3 w-3" />
             <span>{statusData.label}</span>
@@ -160,11 +161,11 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
   {
     accessorKey: 'total_cost',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Costo Total' />
+      <DataTableColumnHeader column={column} title='Costo total' />
     ),
     cell: ({ row }) => {
       const amount = row.getValue('total_cost') as number
-      return <div className="font-medium">Q{amount.toFixed(2)}</div>
+      return <div className="font-medium">{formatCurrency(amount)}</div>
     },
   },
   {
@@ -182,7 +183,7 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
           <div className="text-sm">
             <div>{entryDate ? new Date(entryDate).toLocaleDateString() : '-'}</div>
             {completedDate && (
-              <div className="text-xs text-green-600">
+              <div className="text-xs text-success">
                 Completado: {new Date(completedDate).toLocaleDateString()}
               </div>
             )}
@@ -232,14 +233,14 @@ export const inventoryColumns: ColumnDef<InventoryEntryList>[] = [
             {(entry.status === 'draft' || entry.status === 'pending') && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-destructive">
                   <XCircle className="mr-2 h-4 w-4" />
                   Cancelar
                 </DropdownMenuItem>
               </>
             )}
             {entry.status === 'draft' && (
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar
               </DropdownMenuItem>

@@ -114,7 +114,7 @@ export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: Use
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editar Usuario</DialogTitle>
+          <DialogTitle>Editar usuario</DialogTitle>
           <DialogDescription>
             Modifica los datos del usuario. Deja la contraseña vacía si no deseas cambiarla.
           </DialogDescription>
@@ -206,16 +206,16 @@ export function UsersEditDialog({ open, onOpenChange, user, onUserUpdated }: Use
             
             {/* Mensaje informativo sobre permisos */}
             {user?.is_superuser && !isSuperuser && (
-              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-                <p className="text-sm text-yellow-800">
+              <div className="bg-warning/15 border border-warning/50 p-3 rounded-md">
+                <p className="text-sm text-warning-foreground dark:text-warning">
                   ⚠️ Este usuario es administrador del sistema. Solo otros administradores pueden modificar su rol.
                 </p>
               </div>
             )}
             
             {!isSuperuser && availableRoles.length < 6 && (
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
-                <p className="text-sm text-blue-800">
+              <div className="bg-info/10 border border-info/30 p-3 rounded-md">
+                <p className="text-sm text-info">
                   ℹ️ Como no eres administrador, solo puedes asignar roles básicos. Para gestionar administradores, necesitas ser administrador del sistema.
                 </p>
               </div>

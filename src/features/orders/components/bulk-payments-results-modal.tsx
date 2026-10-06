@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -69,20 +70,20 @@ export function BulkPaymentsResultsModal({
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium text-green-600">Exitosos</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium text-success">Exitosos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-green-600">
+                <div className="text-xl sm:text-2xl font-bold text-success">
                   {result.success_count}
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs sm:text-sm font-medium text-red-600">Fallidos</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium text-destructive">Fallidos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-red-600">
+                <div className="text-xl sm:text-2xl font-bold text-destructive">
                   {result.failed_count}
                 </div>
               </CardContent>
@@ -92,8 +93,8 @@ export function BulkPaymentsResultsModal({
                 <CardTitle className="text-xs sm:text-sm font-medium">Monto Total</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-green-600">
-                  Q{result.total_amount.toFixed(2)}
+                <div className="text-xl sm:text-2xl font-bold text-success">
+                  {formatCurrency(result.total_amount)}
                 </div>
               </CardContent>
             </Card>
@@ -104,8 +105,8 @@ export function BulkPaymentsResultsModal({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-base">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span>Pagos Registrados Exitosamente</span>
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <span>Pagos registrados</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -113,8 +114,8 @@ export function BulkPaymentsResultsModal({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[120px]">Número de Pago</TableHead>
-                        <TableHead className="min-w-[80px]">Orden</TableHead>
+                        <TableHead className="min-w-[120px]">Pago</TableHead>
+                        <TableHead className="min-w-[80px]">Pedido</TableHead>
                         <TableHead className="min-w-[100px]">Monto</TableHead>
                         <TableHead className="min-w-[120px] hidden sm:table-cell">Método</TableHead>
                         <TableHead className="min-w-[100px] hidden md:table-cell">Fecha</TableHead>
@@ -129,7 +130,7 @@ export function BulkPaymentsResultsModal({
                           </TableCell>
                           <TableCell className="text-sm">#{payment.order_id}</TableCell>
                           <TableCell className="font-medium text-sm">
-                            Q{payment.amount.toFixed(2)}
+                            {formatCurrency(payment.amount)}
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Badge variant="outline" className="text-xs">
@@ -153,7 +154,7 @@ export function BulkPaymentsResultsModal({
                               variant={payment.status === 'confirmed' ? 'default' : 'secondary'}
                               className={cn(
                                 'text-xs',
-                                payment.status === 'confirmed' && 'bg-green-600 hover:bg-green-700'
+                                payment.status === 'confirmed' && 'bg-success hover:bg-success'
                               )}
                             >
                               {payment.status === 'confirmed' ? 'Confirmado' : 'Cancelado'}
@@ -173,8 +174,8 @@ export function BulkPaymentsResultsModal({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-base">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <span>Pagos con Errores</span>
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <span>Pagos que no se registraron</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -182,7 +183,7 @@ export function BulkPaymentsResultsModal({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[100px]">Orden</TableHead>
+                        <TableHead className="min-w-[100px]">Pedido</TableHead>
                         <TableHead className="min-w-[120px] hidden sm:table-cell">Cliente</TableHead>
                         <TableHead className="min-w-[100px]">Monto</TableHead>
                         <TableHead className="min-w-[120px] hidden md:table-cell">Método</TableHead>
@@ -207,7 +208,7 @@ export function BulkPaymentsResultsModal({
                               <span className="text-muted-foreground">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm">Q{error.amount.toFixed(2)}</TableCell>
+                          <TableCell className="text-sm">{formatCurrency(error.amount)}</TableCell>
                           <TableCell className="hidden md:table-cell">
                             <Badge variant="outline" className="text-xs">
                               {error.payment_method === 'cash' && 'Efectivo'}
@@ -220,8 +221,8 @@ export function BulkPaymentsResultsModal({
                           </TableCell>
                           <TableCell>
                             <div className="flex items-start space-x-2">
-                              <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                              <span className="text-xs sm:text-sm text-red-600 break-words">
+                              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm text-destructive break-words">
                                 {error.reason}
                               </span>
                             </div>

@@ -66,11 +66,28 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Instrument+Sans:wght@400..700&display=swap"
       rel="stylesheet"
     />
 
-    <meta name="theme-color" content="#fff" />
+    <meta name="theme-color" content="#0B4A3F" />
+    <!-- Aplica modo y paleta guardados antes de cargar la app (evita destello) -->
+    <script>
+      (function () {
+        var c = '; ' + document.cookie
+        var get = function (n) {
+          var p = c.split('; ' + n + '=')
+          return p.length === 2 ? p.pop().split(';').shift() : null
+        }
+        var root = document.documentElement
+        var mode = get('vite-ui-theme') || 'system'
+        if (mode === 'system')
+          mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        root.classList.add(mode)
+        var palette = get('so-palette')
+        if (palette && /^(anil|cacao|volcan)$/.test(palette)) root.dataset.palette = palette
+      })()
+    </script>
   </head>
 
   <body>

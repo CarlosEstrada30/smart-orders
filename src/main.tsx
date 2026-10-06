@@ -7,19 +7,18 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+// Configuration verification (development only)
+import { printConfig } from '@/config/environment'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
-import { handleServerError } from '@/utils/handle-server-error'
 import { setupDOMErrorHandler } from '@/utils/dom-cleanup'
+import { handleServerError } from '@/utils/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
-import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
-// Configuration verification (development only)
-import { printConfig } from '@/config/environment'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,16 +97,14 @@ if (!rootElement.innerHTML) {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <FontProvider>
-            <DirectionProvider>
-              <RouterProvider router={router} />
-            </DirectionProvider>
-          </FontProvider>
+          <DirectionProvider>
+            <RouterProvider router={router} />
+          </DirectionProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </StrictMode>
   )
-  
+
   // Print configuration in development mode
   printConfig()
 }

@@ -16,7 +16,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -38,10 +37,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
+import { EmptyState } from '@/components/empty-state'
+import { LoadingState } from '@/components/loading-state'
+import { StatusBadge, type StatusTone } from '@/components/status-badge'
+import { formatCurrency } from '@/lib/format'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Package, Save, Loader2, Hash, Upload, Download, CheckCircle, DollarSign } from 'lucide-react'
+import { AlertCircle, Plus, Search, SearchX, MoreHorizontal, Edit, Trash2, Package, Save, Loader2, Upload, Download, CheckCircle, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 import { productsService, type Product, type CreateProductRequest, type UpdateProductRequest, type ProductBulkUploadResult } from '@/services/products'
 import { ApiError } from '@/services/api/config'
@@ -351,284 +354,226 @@ export function ProductsPage() {
     setCurrentPage(1)
   }, [pageSize])
 
-  const getStatusBadgeVariant = (isActive: boolean, stock: number) => {
-    if (!isActive) return 'destructive'
-    if (stock === 0) return 'destructive'
-    if (stock < 10) return 'secondary'
-    return 'default'
+  const getStockStatus = (isActive: boolean, stock: number): { label: string; tone: StatusTone } => {
+    if (!isActive) return { label: 'Inactivo', tone: 'neutral' }
+    if (stock === 0) return { label: 'Agotado', tone: 'danger' }
+    if (stock < 10) return { label: 'Stock bajo', tone: 'warning' }
+    return { label: 'Disponible', tone: 'success' }
   }
 
-  const getStatusText = (isActive: boolean, stock: number) => {
-    if (!isActive) return 'Inactivo'
-    if (stock === 0) return 'Agotado'
-    if (stock < 10) return 'Stock Bajo'
-    return 'Disponible'
-  }
-
-  if (loading) {
-    return (
-      <Main>
-        <div className="container mx-auto py-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
-              <p className="text-muted-foreground">
-                Gestiona el catálogo de productos
-              </p>
-            </div>
-            <Button onClick={handleNewProduct}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Producto
-            </Button>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Cargando productos...</CardTitle>
-              <CardDescription>
-                Obteniendo datos de la API
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Cargando...</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </Main>
-    )
-  }
-
-  if (error) {
-    return (
-      <Main>
-        <div className="container mx-auto py-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
-              <p className="text-muted-foreground">
-                Gestiona el catálogo de productos
-              </p>
-            </div>
-            <Button onClick={handleNewProduct}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Producto
-            </Button>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Error al cargar productos</CardTitle>
-              <CardDescription>
-                No se pudieron obtener los datos de la API
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <p className="text-red-600 mb-4">{error}</p>
-                  <Button onClick={fetchProducts}>
-                    Reintentar
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </Main>
-    )
-  }
+  const renderProductActions = (product: Product) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="size-8 p-0">
+          <span className="sr-only">Acciones de {product.name}</span>
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <PermissionGuard productPermission="can_manage">
+          <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+            <Edit />
+            Editar
+          </DropdownMenuItem>
+        </PermissionGuard>
+        <PermissionGuard productPermission="can_view_prices">
+          <DropdownMenuItem onClick={() => handleManageRoutePrices(product)}>
+            <DollarSign />
+            Precios por ruta
+          </DropdownMenuItem>
+        </PermissionGuard>
+        <PermissionGuard productPermission="can_manage">
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={() => openDeleteDialog(product)}>
+            <Trash2 />
+            Eliminar
+          </DropdownMenuItem>
+        </PermissionGuard>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 
   return (
     <Main>
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
-            <p className="text-muted-foreground">
-              Gestiona el catálogo de productos
-            </p>
-          </div>
+      <PageHeader
+        title="Productos"
+        description={
+          loading || error
+            ? 'Tu catálogo, con precio base, stock y precios por ruta'
+            : `${filteredProducts.length.toLocaleString('es-GT')} productos${searchTerm ? ' con esa búsqueda' : ''}`
+        }
+        actions={
           <PermissionGuard productPermission="can_manage">
-            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    disabled={isExporting}
-                    className="w-full sm:w-auto"
-                  >
-                    {isExporting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <span className="hidden sm:inline">Exportando...</span>
-                        <span className="sm:hidden">...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download className="mr-2 h-4 w-4" />
-                        <span className="hidden sm:inline">Exportar</span>
-                        <span className="sm:hidden">Exportar</span>
-                      </>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Opciones de Exportación</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleExportAll} disabled={isExporting}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Todos los productos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleExportActive} disabled={isExporting}>
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Solo activos
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button 
-                variant="outline" 
-                onClick={() => setImportDialogOpen(true)}
-                className="w-full sm:w-auto"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Importar</span>
-                <span className="sm:hidden">Importar</span>
-              </Button>
-              <Button onClick={handleNewProduct} className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Nuevo Producto</span>
-                <span className="sm:hidden">Nuevo</span>
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="bg-card" disabled={isExporting}>
+                  {isExporting ? (
+                    <Loader2 className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Download aria-hidden="true" />
+                  )}
+                  {isExporting ? 'Exportando…' : 'Exportar'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportAll} disabled={isExporting}>
+                  <Download />
+                  Todos los productos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportActive} disabled={isExporting}>
+                  <CheckCircle />
+                  Solo activos
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="bg-card" onClick={() => setImportDialogOpen(true)}>
+              <Upload aria-hidden="true" />
+              Importar
+            </Button>
+            <Button onClick={handleNewProduct}>
+              <Plus aria-hidden="true" />
+              Nuevo producto
+            </Button>
           </PermissionGuard>
-        </div>
+        }
+      />
 
+      {loading ? (
+        <LoadingState label="Cargando productos…" />
+      ) : error ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Catálogo de Productos</CardTitle>
-            <CardDescription>
-              {filteredProducts.length} productos encontrados
-            </CardDescription>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-              <div className="relative w-full sm:w-[300px]">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre, SKU o descripción..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-full"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[150px]">Producto</TableHead>
-                    <TableHead className="hidden sm:table-cell min-w-[100px]">SKU</TableHead>
-                    <PermissionGuard productPermission="can_view_prices">
-                      <TableHead className="hidden md:table-cell min-w-[80px]">Precio</TableHead>
-                    </PermissionGuard>
-                    <TableHead className="hidden lg:table-cell min-w-[80px]">Stock</TableHead>
-                    <TableHead className="min-w-[100px]">Estado</TableHead>
-                    <TableHead className="hidden xl:table-cell min-w-[150px]">Descripción</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center space-x-2">
-                          <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="truncate">{product.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <span className="font-mono text-sm truncate block max-w-[100px]">{product.sku}</span>
-                      </TableCell>
-                      <PermissionGuard productPermission="can_view_prices">
-                        <TableCell className="hidden md:table-cell">
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium mr-1">Q</span>
-                            <span className="truncate">{product.price.toFixed(2)}</span>
-                          </div>
-                        </TableCell>
-                      </PermissionGuard>
-                      <TableCell className="hidden lg:table-cell">
-                        <div className="flex items-center">
-                          <Hash className="h-3 w-3 mr-1 flex-shrink-0" />
-                          <span>{product.stock}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(product.is_active, product.stock)}>
-                          {getStatusText(product.is_active, product.stock)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden xl:table-cell">
-                        <span className="truncate max-w-[150px] block">{product.description}</span>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menú</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <PermissionGuard productPermission="can_manage">
-                              <DropdownMenuItem onClick={() => handleEditProduct(product)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                            </PermissionGuard>
-                            <PermissionGuard productPermission="can_view_prices">
-                              <DropdownMenuItem onClick={() => handleManageRoutePrices(product)}>
-                                <DollarSign className="mr-2 h-4 w-4" />
-                                Precios por Ruta
-                              </DropdownMenuItem>
-                            </PermissionGuard>
-                            <PermissionGuard productPermission="can_manage">
-                              <DropdownMenuItem 
-                                className="text-red-600"
-                                onClick={() => openDeleteDialog(product)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </PermissionGuard>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {filteredProducts.length > 0 && (
-              <ClientPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                pageSize={pageSize}
-                totalItems={filteredProducts.length}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={setPageSize}
+          <CardContent>
+            <EmptyState
+              icon={AlertCircle}
+              title="No se pudieron cargar los productos"
+              description={error}
+              action={<Button onClick={fetchProducts}>Reintentar</Button>}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="gap-4 py-4 sm:py-6 max-md:border-0 max-md:bg-transparent max-md:py-0 max-md:shadow-none">
+          <CardContent className="space-y-4 max-md:px-0">
+            <div className="relative w-full sm:w-72">
+              <Search
+                aria-hidden="true"
+                className="text-muted-foreground pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2"
               />
+              <Input
+                placeholder="Nombre, SKU o descripción"
+                aria-label="Buscar productos"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-card h-9 ps-8"
+              />
+            </div>
+
+            {filteredProducts.length === 0 ? (
+              <EmptyState
+                icon={searchTerm ? SearchX : Package}
+                title={searchTerm ? 'Ningún producto coincide con la búsqueda' : 'Todavía no hay productos'}
+                description={
+                  searchTerm
+                    ? 'Prueba con el SKU o una parte del nombre.'
+                    : 'Agrega tu primer producto o importa el catálogo desde Excel.'
+                }
+                action={
+                  !searchTerm && (
+                    <PermissionGuard productPermission="can_manage">
+                      <Button onClick={handleNewProduct}>
+                        <Plus aria-hidden="true" />
+                        Nuevo producto
+                      </Button>
+                    </PermissionGuard>
+                  )
+                }
+              />
+            ) : (
+              <>
+                {/* Escritorio: tabla */}
+                <div className="hidden overflow-x-auto rounded-lg border md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50 [&>th]:text-muted-foreground">
+                        <TableHead>Producto</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <PermissionGuard productPermission="can_view_prices">
+                          <TableHead className="text-right">Precio base</TableHead>
+                        </PermissionGuard>
+                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="hidden xl:table-cell">Descripción</TableHead>
+                        <TableHead className="w-12">
+                          <span className="sr-only">Acciones</span>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="tabular">
+                      {paginatedProducts.map((product) => {
+                        const status = getStockStatus(product.is_active, product.stock)
+                        return (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{product.sku}</TableCell>
+                            <PermissionGuard productPermission="can_view_prices">
+                              <TableCell className="text-right whitespace-nowrap">
+                                {formatCurrency(product.price)}
+                              </TableCell>
+                            </PermissionGuard>
+                            <TableCell className="text-right">
+                              {product.stock.toLocaleString('es-GT')}
+                            </TableCell>
+                            <TableCell>
+                              <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground hidden max-w-[16rem] truncate xl:table-cell">
+                              {product.description || '—'}
+                            </TableCell>
+                            <TableCell>{renderProductActions(product)}</TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Celular: lista */}
+                <ul className="space-y-2 md:hidden">
+                  {paginatedProducts.map((product) => {
+                    const status = getStockStatus(product.is_active, product.stock)
+                    return (
+                      <li key={product.id} className="bg-card tabular flex items-start gap-3 rounded-xl border p-3">
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <p className="font-medium break-words">{product.name}</p>
+                          <p className="text-muted-foreground text-sm">
+                            {product.sku}, {product.stock.toLocaleString('es-GT')} en stock
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+                            <PermissionGuard productPermission="can_view_prices">
+                              <span className="text-sm font-semibold">{formatCurrency(product.price)}</span>
+                            </PermissionGuard>
+                          </div>
+                        </div>
+                        {renderProductActions(product)}
+                      </li>
+                    )
+                  })}
+                </ul>
+
+                <ClientPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalItems={filteredProducts.length}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </>
             )}
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -645,9 +590,9 @@ export function ProductsPage() {
             <AlertDialogAction 
               onClick={handleDeleteProduct}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive"
             >
-              {deleting ? 'Eliminando...' : 'Eliminar'}
+              {deleting ? 'Eliminando…' : 'Eliminar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -657,7 +602,7 @@ export function ProductsPage() {
       <Dialog open={newProductDialogOpen} onOpenChange={setNewProductDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Nuevo Producto</DialogTitle>
+            <DialogTitle>Nuevo producto</DialogTitle>
             <DialogDescription>
               Completa los datos del nuevo producto
             </DialogDescription>
@@ -722,8 +667,8 @@ export function ProductsPage() {
             
             {/* Mensaje de Error */}
             {formError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{formError}</p>
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                <p className="text-destructive text-sm">{formError}</p>
               </div>
             )}
           </div>
@@ -745,12 +690,12 @@ export function ProductsPage() {
               {creatingProduct ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creando...
+                  Creando…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Crear Producto
+                  Crear producto
                 </>
               )}
             </Button>
@@ -762,7 +707,7 @@ export function ProductsPage() {
       <Dialog open={editProductDialogOpen} onOpenChange={setEditProductDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Editar Producto</DialogTitle>
+            <DialogTitle>Editar producto</DialogTitle>
             <DialogDescription>
               Modifica los datos del producto
             </DialogDescription>
@@ -827,8 +772,8 @@ export function ProductsPage() {
             
             {/* Mensaje de Error */}
             {editFormError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{editFormError}</p>
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                <p className="text-destructive text-sm">{editFormError}</p>
               </div>
             )}
           </div>
@@ -850,12 +795,12 @@ export function ProductsPage() {
               {editingProduct ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
+                  Guardando…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Guardar Cambios
+                  Guardar cambios
                 </>
               )}
             </Button>

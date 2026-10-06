@@ -56,7 +56,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                   setCurrentRow(route)
                   setOpen('delete')
                 }}
-                className='text-red-500!'
+                className='text-destructive!'
               >
                 Desactivar
                 <DropdownMenuShortcut>
@@ -69,7 +69,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                   setCurrentRow(route)
                   setOpen('reactivate')
                 }}
-                className='text-green-600!'
+                className='text-success!'
               >
                 Reactivar
                 <DropdownMenuShortcut>

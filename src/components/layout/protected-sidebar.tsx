@@ -76,8 +76,8 @@ export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
     const dynamicSidebarData: SidebarData = {
       user: jwtUser ? {
         name: jwtUser.full_name || jwtUser.username || 'Usuario',
-        email: jwtUser.email || 'usuario@ejemplo.com',
-        avatar: '/avatars/shadcn.jpg', // TODO: agregar avatar del usuario si está disponible
+        email: jwtUser.email || '',
+        avatar: '',
         role: jwtUser.role,
       } : sidebarData.user,
       teams: hasSettings && companySettings ? [
@@ -130,11 +130,6 @@ export function useFilteredSidebarData(): SidebarData & { isLoading: boolean } {
 
             case 'Pedidos':
               return permissions.permissions.orders.can_view
-
-            case 'Inventario':
-              return permissions.permissions.inventory.can_manage ||
-                     permissions.permissions.inventory.can_approve ||
-                     permissions.permissions.inventory.can_complete
 
             case 'Dashboard':
               return permissions.permissions.reports.can_view

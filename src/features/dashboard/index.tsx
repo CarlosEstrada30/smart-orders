@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Main } from '@/components/layout/main'
-import { PermissionGuard } from '@/components/auth/permission-guard'
+import { apiClient } from '@/services/api/client'
 import {
   Card,
   CardContent,
@@ -16,12 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { apiClient } from '@/services/api/client'
-import { SalesBarChart } from './components/sales-bar-chart'
-import { RecentOrders } from './components/recent-orders'
-import { TopClients } from './components/top-clients'
-import { OrdersByRoute } from './components/orders-by-route'
+import { PermissionGuard } from '@/components/auth/permission-guard'
+import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/page-header'
 import { ForecastWidget } from './components/forecast-widget'
+import { KpiRow } from './components/kpi-row'
+import { OrdersByRoute } from './components/orders-by-route'
+import { RecentOrders } from './components/recent-orders'
+import { SalesBarChart } from './components/sales-bar-chart'
+import { TopClients } from './components/top-clients'
 
 interface Route {
   id: number
@@ -46,52 +48,67 @@ export function Dashboard() {
   return (
     <Main>
       <PermissionGuard
-        reportPermission="can_view"
+        reportPermission='can_view'
         fallback={
-          <div className="flex items-center justify-center h-[400px]">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">Acceso Denegado</h2>
-              <p className="text-muted-foreground">
+          <div className='flex h-[400px] items-center justify-center'>
+            <div className='text-center'>
+              <h2 className='mb-2 text-2xl font-semibold'>Acceso Denegado</h2>
+              <p className='text-muted-foreground'>
                 No tienes permisos para ver reportes y dashboards.
               </p>
             </div>
           </div>
         }
       >
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <PageHeader
+          title='Dashboard'
+          description='Ventas, pedidos y producción de tu distribuidora.'
+          actions={
+            <Select
+              value={
+                selectedRouteId === null ? ALL_ROUTES : String(selectedRouteId)
+              }
+              onValueChange={(v) =>
+                setSelectedRouteId(v === ALL_ROUTES ? null : Number(v))
+              }
+            >
+              <SelectTrigger
+                className='bg-card w-[200px] shrink-0'
+                aria-label='Filtrar por ruta'
+              >
+                <SelectValue placeholder='Todas las rutas' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_ROUTES}>Todas las rutas</SelectItem>
+                {routes.map((route) => (
+                  <SelectItem key={route.id} value={String(route.id)}>
+                    {route.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          }
+        />
 
-          <Select
-            value={selectedRouteId === null ? ALL_ROUTES : String(selectedRouteId)}
-            onValueChange={(v) => setSelectedRouteId(v === ALL_ROUTES ? null : Number(v))}
-          >
-            <SelectTrigger className="w-[200px] shrink-0">
-              <SelectValue placeholder="Todas las rutas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_ROUTES}>Todas las rutas</SelectItem>
-              {routes.map((route) => (
-                <SelectItem key={route.id} value={String(route.id)}>
-                  {route.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <div className='space-y-4'>
+          <KpiRow routeId={selectedRouteId} />
 
-        <div className="space-y-4">
           {/* Fila 1: Resumen de ventas + Pedidos recientes */}
-          <div className="grid gap-4 md:grid-cols-7">
-            <Card className="md:col-span-4">
-              <CardContent className="pt-6">
+          <div className='grid gap-4 lg:grid-cols-7'>
+            <Card className='lg:col-span-4'>
+              <CardContent>
                 <SalesBarChart routeId={selectedRouteId} />
               </CardContent>
             </Card>
 
-            <Card className="md:col-span-3">
+            <Card className='lg:col-span-3'>
               <CardHeader>
-                <CardTitle>Pedidos Recientes</CardTitle>
-                <CardDescription>Los últimos pedidos realizados</CardDescription>
+                <CardTitle className='font-display text-lg'>
+                  Pedidos recientes
+                </CardTitle>
+                <CardDescription>
+                  Los últimos cinco, de todas las rutas
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RecentOrders />
@@ -100,15 +117,15 @@ export function Dashboard() {
           </div>
 
           {/* Fila 2: Top clientes + Pedidos por ruta */}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className='grid gap-4 lg:grid-cols-2'>
             <Card>
-              <CardContent className="pt-6">
+              <CardContent>
                 <TopClients routeId={selectedRouteId} />
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="pt-6">
+              <CardContent>
                 <OrdersByRoute />
               </CardContent>
             </Card>
@@ -116,7 +133,7 @@ export function Dashboard() {
 
           {/* Fila 3: Widget plan de producción */}
           <Card>
-            <CardContent className="pt-6">
+            <CardContent>
               <ForecastWidget routeId={selectedRouteId} />
             </CardContent>
           </Card>

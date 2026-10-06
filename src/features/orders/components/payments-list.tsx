@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { format } from 'date-fns'
+import { paymentsService } from '@/services/payments'
+import type { Payment, PaymentMethod } from '@/services/payments'
+import { es } from 'date-fns/locale'
+import { Loader2, X, Trash2, Wallet } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatCurrency } from '@/lib/format'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,12 +16,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { paymentsService } from '@/services/payments'
-import type { Payment, PaymentMethod } from '@/services/payments'
-import { toast } from 'sonner'
-import { Loader2, X, Trash2 } from 'lucide-react'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { EmptyState } from '@/components/empty-state'
+import { StatusBadge } from '@/components/status-badge'
 
 interface PaymentsListProps {
   orderId: number
@@ -85,9 +88,7 @@ export function PaymentsList({
       onPaymentCancelled?.()
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Error al cancelar el pago'
+        error instanceof Error ? error.message : 'Error al cancelar el pago'
       toast.error(errorMessage)
     } finally {
       setCancellingId(null)
@@ -105,39 +106,44 @@ export function PaymentsList({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div role='status' className='space-y-2'>
+        <span className='sr-only'>Cargando pagos…</span>
+        <Skeleton className='h-10 w-full' />
+        <Skeleton className='h-10 w-full' />
       </div>
     )
   }
 
   if (payments.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No hay pagos registrados para esta orden
-      </div>
+      <EmptyState
+        icon={Wallet}
+        title='Aún no hay pagos'
+        description='Los abonos que registres aparecerán aquí.'
+        className='py-6'
+      />
     )
   }
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className='overflow-x-auto rounded-lg border'>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Número de Pago</TableHead>
+            <TableRow className='bg-muted/50 hover:bg-muted/50 [&>th]:text-muted-foreground'>
+              <TableHead>Pago</TableHead>
               <TableHead>Fecha</TableHead>
               <TableHead>Monto</TableHead>
               <TableHead>Método</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Notas</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className='text-right'>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {payments.map((payment) => (
               <TableRow key={payment.id}>
-                <TableCell className="font-medium">
+                <TableCell className='font-medium'>
                   {payment.payment_number}
                 </TableCell>
                 <TableCell>
@@ -145,35 +151,37 @@ export function PaymentsList({
                     locale: es,
                   })}
                 </TableCell>
-                <TableCell>Q{payment.amount.toFixed(2)}</TableCell>
+                <TableCell className='tabular font-medium whitespace-nowrap'>
+                  {formatCurrency(payment.amount)}
+                </TableCell>
                 <TableCell>
                   {PAYMENT_METHOD_LABELS[payment.payment_method]}
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      payment.status === 'confirmed' ? 'default' : 'destructive'
-                    }
+                  <StatusBadge
+                    tone={payment.status === 'confirmed' ? 'success' : 'danger'}
                   >
-                    {payment.status === 'confirmed' ? 'Confirmado' : 'Cancelado'}
-                  </Badge>
+                    {payment.status === 'confirmed'
+                      ? 'Confirmado'
+                      : 'Cancelado'}
+                  </StatusBadge>
                 </TableCell>
-                <TableCell className="max-w-[200px] truncate">
+                <TableCell className='max-w-[200px] truncate'>
                   {payment.notes || '-'}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className='text-right'>
                   {payment.status === 'confirmed' && (
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant='ghost'
+                      size='sm'
                       onClick={() => openCancelDialog(payment)}
                       disabled={cancellingId === payment.id}
-                      title="Cancelar pago"
+                      title='Cancelar pago'
                     >
                       {cancellingId === payment.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className='h-4 w-4 animate-spin' />
                       ) : (
-                        <X className="h-4 w-4 text-destructive" />
+                        <X className='text-destructive h-4 w-4' />
                       )}
                     </Button>
                   )}
@@ -190,8 +198,8 @@ export function PaymentsList({
             <AlertDialogTitle>¿Cancelar este pago?</AlertDialogTitle>
             <AlertDialogDescription>
               Estás a punto de cancelar el pago{' '}
-              <strong>{paymentToCancel?.payment_number}</strong> por un monto
-              de <strong>Q{paymentToCancel?.amount.toFixed(2)}</strong>. Esta
+              <strong>{paymentToCancel?.payment_number}</strong> por un monto de{' '}
+              <strong>{formatCurrency(paymentToCancel?.amount)}</strong>. Esta
               acción actualizará automáticamente el saldo de la orden.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -202,19 +210,19 @@ export function PaymentsList({
             <AlertDialogAction
               onClick={handleCancelPayment}
               disabled={cancellingId !== null}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className='bg-destructive hover:bg-destructive/90 text-white'
             >
               {cancellingId !== null ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Cancelando...
                 </>
               ) : (
-                  <>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Sí, cancelar pago
-                  </>
-                )}
+                <>
+                  <Trash2 className='mr-2 h-4 w-4' />
+                  Sí, cancelar pago
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -222,5 +230,3 @@ export function PaymentsList({
     </>
   )
 }
-
-

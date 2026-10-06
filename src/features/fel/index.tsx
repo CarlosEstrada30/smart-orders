@@ -104,7 +104,7 @@ export function FELDashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard FEL</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Facturación FEL</h1>
           <p className="text-muted-foreground">
             Sistema de Facturación Electrónica Guatemala
             {lastUpdated && (
@@ -179,7 +179,7 @@ export function FELDashboard() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{keyMetrics.successRate}%</div>
+            <div className="text-2xl font-bold text-success">{keyMetrics.successRate}%</div>
             <p className="text-xs text-muted-foreground">
               {keyMetrics.felAuthorized} de {keyMetrics.felInvoices} autorizadas
             </p>
@@ -207,7 +207,7 @@ export function FELDashboard() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-2xl font-bold text-warning-foreground dark:text-warning">
               {keyMetrics.ordersWithoutDoc + keyMetrics.failedToRetry}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -236,7 +236,7 @@ export function FELDashboard() {
           <CardContent>
             {ordersWithoutDocument.length === 0 ? (
               <div className="text-center py-6 text-muted-foreground">
-                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
                 <p>¡Todas las órdenes tienen documento!</p>
               </div>
             ) : (
@@ -286,7 +286,7 @@ export function FELDashboard() {
           <CardContent>
             {failedFELInvoices.length === 0 ? (
               <div className="text-center py-6 text-muted-foreground">
-                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-success" />
                 <p>¡No hay errores FEL!</p>
               </div>
             ) : (

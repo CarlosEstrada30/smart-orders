@@ -1,4 +1,11 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  backendFieldsToRole,
+  getRoleConfig,
+} from '@/services/users/role-mapping'
+import { LogOut } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
+import { useLogout } from '@/hooks/use-logout'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -6,33 +13,29 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAuthStore } from '@/stores/auth-store'
-import { useLogout } from '@/hooks/use-logout'
-import { LogOut } from 'lucide-react'
-import { backendFieldsToRole, getRoleConfig } from '@/services/users/role-mapping'
 
 export function ProfileDropdown() {
   const { user } = useAuthStore((state) => state.auth)
   const { logout, isLoggingOut } = useLogout()
-  
+
   // Obtener el rol mapeado y su configuración
-  const userRole = user ? backendFieldsToRole(
-    user.is_superuser || false, 
-    user.email, 
-    user.role
-  ) : null
+  const userRole = user
+    ? backendFieldsToRole(user.is_superuser || false, user.email, user.role)
+    : null
   const roleConfig = userRole ? getRoleConfig(userRole) : null
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
+        <Button
+          variant='ghost'
+          className='relative h-8 w-8 rounded-full'
+          aria-label='Menú de usuario'
+        >
           <Avatar className='h-8 w-8'>
-            <AvatarImage src='/avatars/01.png' alt='@shadcn' />
-            <AvatarFallback>
+            <AvatarFallback className='bg-primary text-primary-foreground text-xs font-semibold'>
               {user?.email?.charAt(0).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
@@ -51,9 +54,8 @@ export function ProfileDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} disabled={isLoggingOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          <LogOut className='mr-2 h-4 w-4' />
+          {isLoggingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

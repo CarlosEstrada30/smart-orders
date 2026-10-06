@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -5,6 +6,7 @@ import {
   DoubleArrowRightIcon,
 } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
+import type { OrdersQueryParams } from '@/services/orders'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -13,9 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { OrdersQueryParams } from '@/services/orders'
 import type { TablePaginationInfo } from './orders-table'
-import { memo } from 'react'
 
 type DataTablePaginationProps<TData> = {
   table: Table<TData>
@@ -38,47 +38,47 @@ const DataTablePaginationComponent = <TData,>({
     pages: totalPages,
     per_page: pageSize,
     has_next: canNextPage,
-    has_previous: canPreviousPage
+    has_previous: canPreviousPage,
   } = pagination
-  
+
   // Handlers para navegación mejorados
   const handlePageSizeChange = (newSize: number) => {
     onFiltersChange({
       limit: newSize,
-      skip: 0  // Reset to first page when changing page size
+      skip: 0, // Reset to first page when changing page size
     })
   }
-  
+
   const handleFirstPage = () => {
     onFiltersChange({ skip: 0 })
   }
-  
+
   const handlePreviousPage = () => {
     const newSkip = Math.max(0, (currentPage - 2) * pageSize)
     onFiltersChange({ skip: newSkip })
   }
-  
+
   const handleNextPage = () => {
     const newSkip = currentPage * pageSize
     onFiltersChange({ skip: newSkip })
   }
-  
+
   const handleLastPage = () => {
     const lastPageSkip = (totalPages - 1) * pageSize
     onFiltersChange({ skip: lastPageSkip })
   }
   return (
-    <div
-      className='flex items-center justify-between overflow-clip px-2'
-      style={{ overflowClipMargin: 1 }}
-    >
-      <div className='text-muted-foreground hidden flex-1 text-sm sm:block'>
-        {table.getFilteredSelectedRowModel().rows.length} de{' '}
-        {currentPageCount} orden(es) seleccionada(s) en esta página.
+    <div className='tabular flex items-center justify-between gap-3'>
+      <div className='text-muted-foreground hidden flex-1 text-sm md:block'>
+        {table.getFilteredSelectedRowModel().rows.length > 0
+          ? `${table.getFilteredSelectedRowModel().rows.length} de ${currentPageCount} seleccionados en esta página`
+          : `${totalItems.toLocaleString('es-GT')} pedidos en total`}
       </div>
-      <div className='flex items-center sm:space-x-6 lg:space-x-8'>
+      <div className='flex w-full items-center justify-between gap-3 md:w-auto md:justify-end lg:gap-6'>
         <div className='flex items-center space-x-2'>
-          <p className='hidden text-sm font-medium sm:block'>Filas por página</p>
+          <p className='text-muted-foreground hidden text-sm sm:block'>
+            Por página
+          </p>
           <Select
             value={`${pageSize}`}
             onValueChange={(value) => {
@@ -97,15 +97,8 @@ const DataTablePaginationComponent = <TData,>({
             </SelectContent>
           </Select>
         </div>
-        <div className='flex w-[150px] items-center justify-center text-sm font-medium'>
-          <div className='text-center'>
-            <div>Página {currentPage} de {totalPages}</div>
-            {totalItems > 0 && (
-              <div className='text-xs text-muted-foreground'>
-                {currentPageCount} de {totalItems} registros
-              </div>
-            )}
-          </div>
+        <div className='text-sm font-medium whitespace-nowrap'>
+          Página {currentPage} de {totalPages.toLocaleString('es-GT')}
         </div>
         <div className='flex items-center space-x-2'>
           <Button
@@ -151,7 +144,8 @@ const DataTablePaginationComponent = <TData,>({
 }
 
 // Memoized version to prevent unnecessary re-renders
-export const DataTablePagination = memo(DataTablePaginationComponent) as <TData>(
+export const DataTablePagination = memo(DataTablePaginationComponent) as <
+  TData,
+>(
   props: DataTablePaginationProps<TData>
 ) => JSX.Element
-

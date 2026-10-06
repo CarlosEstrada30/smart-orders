@@ -233,7 +233,7 @@ export function BulkImport({
                 {isDownloading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Descargando...
+                    Descargando…
                   </>
                 ) : (
                   <>
@@ -307,7 +307,7 @@ export function BulkImport({
                 {isUploading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Procesando archivo...
+                    Procesando archivo…
                   </>
                 ) : (
                   <>
@@ -334,9 +334,9 @@ export function BulkImport({
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   {uploadResult.failed_uploads === 0 ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <AlertCircle className="h-4 w-4 text-warning-foreground dark:text-warning" />
                   )}
                   Resultado de la Importación
                 </CardTitle>
@@ -348,19 +348,19 @@ export function BulkImport({
                 {/* Estadísticas */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-info">
                       {uploadResult.total_rows}
                     </div>
                     <div className="text-sm text-muted-foreground">Total</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-success">
                       {uploadResult.successful_uploads}
                     </div>
                     <div className="text-sm text-muted-foreground">Exitosos</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className="text-2xl font-bold text-destructive">
                       {uploadResult.failed_uploads}
                     </div>
                     <div className="text-sm text-muted-foreground">Fallidos</div>
@@ -376,7 +376,7 @@ export function BulkImport({
                 {/* Lista de errores */}
                 {uploadResult.errors && uploadResult.errors.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-red-600">
+                    <h4 className="text-sm font-medium text-destructive">
                       Errores encontrados:
                     </h4>
                     <div className="max-h-48 overflow-y-auto">
@@ -397,7 +397,7 @@ export function BulkImport({
                               <TableCell>
                                 <Badge variant="outline">{error.field}</Badge>
                               </TableCell>
-                              <TableCell className="text-red-600">
+                              <TableCell className="text-destructive">
                                 {error.error}
                               </TableCell>
                             </TableRow>

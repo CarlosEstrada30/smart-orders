@@ -16,7 +16,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -38,10 +37,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
+import { EmptyState } from '@/components/empty-state'
+import { LoadingState } from '@/components/loading-state'
+import { StatusBadge } from '@/components/status-badge'
 import { Main } from '@/components/layout/main'
-import { Plus, Search, MoreHorizontal, Edit, Trash2, UserCheck, MapPin, Phone, Save, Loader2, Upload, Download } from 'lucide-react'
+import { AlertCircle, Plus, Search, SearchX, MoreHorizontal, Edit, Trash2, UserCheck, Users, MapPin, Phone, Save, Loader2, Upload, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { clientsService, type Client, type CreateClientRequest, type UpdateClientRequest, type BulkUploadResult as ClientBulkUploadResult } from '@/services/clients'
 import { ApiError } from '@/services/api/config'
@@ -392,277 +394,223 @@ export function ClientsPage() {
     setCurrentPage(1)
   }, [pageSize])
 
-  const getStatusBadgeVariant = (isActive: boolean) => {
-    return isActive ? 'default' : 'destructive'
-  }
-
-  if (loading) {
-    return (
-      <Main>
-        <div className="container mx-auto py-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
-              <p className="text-muted-foreground">
-                Gestiona los clientes de la quesería
-              </p>
-            </div>
-            <PermissionGuard clientPermission="can_manage">
-              <Button onClick={handleNewClient}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nuevo Cliente
-              </Button>
-            </PermissionGuard>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Cargando clientes...</CardTitle>
-              <CardDescription>
-                Obteniendo datos de la API
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Cargando...</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </Main>
-    )
-  }
-
-  if (error) {
-    return (
-      <Main>
-        <div className="container mx-auto py-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
-              <p className="text-muted-foreground">
-                Gestiona los clientes de la quesería
-              </p>
-            </div>
-            <PermissionGuard clientPermission="can_manage">
-              <Button onClick={handleNewClient}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nuevo Cliente
-              </Button>
-            </PermissionGuard>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Error al cargar clientes</CardTitle>
-              <CardDescription>
-                No se pudieron obtener los datos de la API
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <p className="text-red-600 mb-4">{error}</p>
-                  <Button onClick={fetchClients}>
-                    Reintentar
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </Main>
-    )
-  }
+  const renderClientActions = (client: Client) => (
+    <PermissionGuard clientPermission="can_manage">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="size-8 p-0">
+            <span className="sr-only">Acciones de {client.name}</span>
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => handleEditClient(client)}>
+            <Edit />
+            Editar
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={() => openDeleteDialog(client)}>
+            <Trash2 />
+            Eliminar
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </PermissionGuard>
+  )
 
   return (
     <Main>
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
-            <p className="text-muted-foreground">
-              Gestiona los clientes de la quesería
-            </p>
-          </div>
+      <PageHeader
+        title="Clientes"
+        description={
+          loading || error
+            ? 'Las tiendas y negocios a los que entregas'
+            : `${filteredClients.length.toLocaleString('es-GT')} clientes activos${searchTerm ? ' con esa búsqueda' : ''}`
+        }
+        actions={
           <PermissionGuard clientPermission="can_manage">
-            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    disabled={isExporting}
-                    className="w-full sm:w-auto"
-                  >
-                    {isExporting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <span className="hidden sm:inline">Exportando...</span>
-                        <span className="sm:hidden">...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download className="mr-2 h-4 w-4" />
-                        <span className="hidden sm:inline">Exportar</span>
-                        <span className="sm:hidden">Exportar</span>
-                      </>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Opciones de Exportación</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleExportAll} disabled={isExporting}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Todos los clientes
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleExportActive} disabled={isExporting}>
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Solo activos
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button 
-                variant="outline" 
-                onClick={() => setImportDialogOpen(true)}
-                className="w-full sm:w-auto"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Importar</span>
-                <span className="sm:hidden">Importar</span>
-              </Button>
-              <Button onClick={handleNewClient} className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Nuevo Cliente</span>
-                <span className="sm:hidden">Nuevo</span>
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="bg-card" disabled={isExporting}>
+                  {isExporting ? (
+                    <Loader2 className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Download aria-hidden="true" />
+                  )}
+                  {isExporting ? 'Exportando…' : 'Exportar'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportAll} disabled={isExporting}>
+                  <Download />
+                  Todos los clientes
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportActive} disabled={isExporting}>
+                  <UserCheck />
+                  Solo activos
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="bg-card" onClick={() => setImportDialogOpen(true)}>
+              <Upload aria-hidden="true" />
+              Importar
+            </Button>
+            <Button onClick={handleNewClient}>
+              <Plus aria-hidden="true" />
+              Nuevo cliente
+            </Button>
           </PermissionGuard>
-        </div>
+        }
+      />
 
+      {loading ? (
+        <LoadingState label="Cargando clientes…" />
+      ) : error ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Lista de Clientes</CardTitle>
-            <CardDescription>
-              {filteredClients.length} clientes encontrados
-            </CardDescription>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-              <div className="relative w-full sm:w-[300px]">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar clientes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-full"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[150px]">Nombre</TableHead>
-                    <TableHead className="hidden sm:table-cell min-w-[120px]">Email</TableHead>
-                    <TableHead className="hidden md:table-cell min-w-[100px]">NIT</TableHead>
-                    <TableHead className="hidden lg:table-cell min-w-[120px]">Teléfono</TableHead>
-                    <TableHead className="hidden xl:table-cell min-w-[150px]">Dirección</TableHead>
-                    <TableHead className="min-w-[80px]">Estado</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedClients.map((client) => (
-                    <TableRow key={client.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center space-x-2">
-                          <UserCheck className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="truncate">{client.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <span className="truncate block max-w-[120px]">{client.email || '-'}</span>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <span className="truncate block max-w-[100px]">{client.nit || '-'}</span>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <div className="flex items-center">
-                          <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
-                          <span className="truncate">{client.phone || '-'}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden xl:table-cell">
-                        <div className="flex items-center">
-                          <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-                          <span className="truncate max-w-[150px]">{client.address || '-'}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(client.is_active)}>
-                          {client.is_active ? 'Activo' : 'Inactivo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menú</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <PermissionGuard clientPermission="can_manage">
-                              <DropdownMenuItem onClick={() => handleEditClient(client)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                            </PermissionGuard>
-                            <PermissionGuard clientPermission="can_manage">
-                              <DropdownMenuItem 
-                                className="text-red-600"
-                                onClick={() => openDeleteDialog(client)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </PermissionGuard>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {filteredClients.length > 0 && (
-              <ClientPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                pageSize={pageSize}
-                totalItems={filteredClients.length}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={setPageSize}
+          <CardContent>
+            <EmptyState
+              icon={AlertCircle}
+              title="No se pudieron cargar los clientes"
+              description={error}
+              action={<Button onClick={fetchClients}>Reintentar</Button>}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="gap-4 py-4 sm:py-6 max-md:border-0 max-md:bg-transparent max-md:py-0 max-md:shadow-none">
+          <CardContent className="space-y-4 max-md:px-0">
+            <div className="relative w-full sm:w-72">
+              <Search
+                aria-hidden="true"
+                className="text-muted-foreground pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2"
               />
+              <Input
+                placeholder="Nombre, NIT, teléfono o correo"
+                aria-label="Buscar clientes"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-card h-9 ps-8"
+              />
+            </div>
+
+            {filteredClients.length === 0 ? (
+              <EmptyState
+                icon={searchTerm ? SearchX : Users}
+                title={searchTerm ? 'Ningún cliente coincide con la búsqueda' : 'Todavía no hay clientes'}
+                description={
+                  searchTerm
+                    ? 'Revisa cómo está escrito o busca por teléfono o NIT.'
+                    : 'Agrega tu primer cliente o importa tu lista desde Excel.'
+                }
+                action={
+                  !searchTerm && (
+                    <PermissionGuard clientPermission="can_manage">
+                      <Button onClick={handleNewClient}>
+                        <Plus aria-hidden="true" />
+                        Nuevo cliente
+                      </Button>
+                    </PermissionGuard>
+                  )
+                }
+              />
+            ) : (
+              <>
+                {/* Escritorio: tabla */}
+                <div className="hidden overflow-x-auto rounded-lg border md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50 [&>th]:text-muted-foreground">
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Teléfono</TableHead>
+                        <TableHead className="hidden lg:table-cell">NIT</TableHead>
+                        <TableHead className="hidden xl:table-cell">Correo</TableHead>
+                        <TableHead className="hidden lg:table-cell">Dirección</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="w-12">
+                          <span className="sr-only">Acciones</span>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedClients.map((client) => (
+                        <TableRow key={client.id}>
+                          <TableCell className="font-medium">{client.name}</TableCell>
+                          <TableCell className="tabular whitespace-nowrap">
+                            {client.phone || <span className="text-muted-foreground">—</span>}
+                          </TableCell>
+                          <TableCell className="tabular hidden lg:table-cell">
+                            {client.nit || <span className="text-muted-foreground">—</span>}
+                          </TableCell>
+                          <TableCell className="hidden max-w-[14rem] truncate xl:table-cell">
+                            {client.email || <span className="text-muted-foreground">—</span>}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground hidden max-w-[16rem] truncate lg:table-cell">
+                            {client.address || '—'}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge tone={client.is_active ? 'success' : 'neutral'}>
+                              {client.is_active ? 'Activo' : 'Inactivo'}
+                            </StatusBadge>
+                          </TableCell>
+                          <TableCell>{renderClientActions(client)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Celular: lista */}
+                <ul className="space-y-2 md:hidden">
+                  {paginatedClients.map((client) => (
+                    <li key={client.id} className="bg-card flex items-start gap-3 rounded-xl border p-3">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate font-medium">{client.name}</p>
+                          {!client.is_active && <StatusBadge>Inactivo</StatusBadge>}
+                        </div>
+                        {client.phone && (
+                          <a
+                            href={`tel:${client.phone}`}
+                            className="text-info tabular flex w-fit items-center gap-1.5 text-sm"
+                          >
+                            <Phone className="size-3.5" aria-hidden="true" />
+                            {client.phone}
+                          </a>
+                        )}
+                        {client.address && (
+                          <p className="text-muted-foreground flex items-start gap-1.5 text-sm">
+                            <MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                            <span className="line-clamp-2">{client.address}</span>
+                          </p>
+                        )}
+                      </div>
+                      {renderClientActions(client)}
+                    </li>
+                  ))}
+                </ul>
+
+                <ClientPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalItems={filteredClients.length}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </>
             )}
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar este cliente?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el cliente{' '}
-              <span className="font-semibold">{clientToDelete?.name}</span> de la base de datos.
+              Se eliminará a{' '}
+              <span className="font-semibold">{clientToDelete?.name}</span>. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -670,9 +618,9 @@ export function ClientsPage() {
             <AlertDialogAction 
               onClick={handleDeleteClient}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
-              {deleting ? 'Eliminando...' : 'Eliminar'}
+              {deleting ? 'Eliminando…' : 'Eliminar cliente'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -682,7 +630,7 @@ export function ClientsPage() {
       <Dialog open={newClientDialogOpen} onOpenChange={setNewClientDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Nuevo Cliente</DialogTitle>
+            <DialogTitle>Nuevo cliente</DialogTitle>
             <DialogDescription>
               Completa los datos del nuevo cliente
             </DialogDescription>
@@ -747,8 +695,8 @@ export function ClientsPage() {
             
             {/* Mensaje de Error */}
             {formError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{formError}</p>
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                <p className="text-destructive text-sm">{formError}</p>
               </div>
             )}
           </div>
@@ -770,12 +718,12 @@ export function ClientsPage() {
               {creatingClient ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creando...
+                  Creando…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Crear Cliente
+                  Crear cliente
                 </>
               )}
             </Button>
@@ -787,7 +735,7 @@ export function ClientsPage() {
       <Dialog open={editClientDialogOpen} onOpenChange={setEditClientDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Editar Cliente</DialogTitle>
+            <DialogTitle>Editar cliente</DialogTitle>
             <DialogDescription>
               Modifica los datos del cliente
             </DialogDescription>
@@ -852,8 +800,8 @@ export function ClientsPage() {
             
             {/* Mensaje de Error */}
             {editFormError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{editFormError}</p>
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                <p className="text-destructive text-sm">{editFormError}</p>
               </div>
             )}
           </div>
@@ -875,12 +823,12 @@ export function ClientsPage() {
               {editingClient ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
+                  Guardando…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Guardar Cambios
+                  Guardar cambios
                 </>
               )}
             </Button>

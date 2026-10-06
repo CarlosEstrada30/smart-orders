@@ -88,7 +88,7 @@ export function NewClientPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Nuevo Cliente</h1>
+              <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Nuevo cliente</h1>
               <p className="text-muted-foreground">
                 Agrega un nuevo cliente a la base de datos
               </p>
@@ -166,9 +166,9 @@ export function NewClientPage() {
 
           {/* Mensaje de Error */}
           {error && (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive/30 bg-destructive/10">
               <CardContent className="pt-6">
-                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-destructive text-sm">{error}</p>
               </CardContent>
             </Card>
           )}
@@ -184,12 +184,12 @@ export function NewClientPage() {
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creando...
+                  Creando…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Crear Cliente
+                  Crear cliente
                 </>
               )}
             </Button>

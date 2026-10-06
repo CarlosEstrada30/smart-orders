@@ -21,12 +21,12 @@ function TrendIcon({ direction, pct }: { direction: string; pct: number }) {
 
   const label =
     direction === 'up' ? (
-      <span className="flex items-center gap-1 text-green-600 text-xs font-medium">
+      <span className="flex items-center gap-1 text-success text-xs font-medium">
         <TrendingUp className="h-3 w-3" />
         Subiendo +{absPct}%
       </span>
     ) : direction === 'down' ? (
-      <span className="flex items-center gap-1 text-red-500 text-xs font-medium">
+      <span className="flex items-center gap-1 text-destructive text-xs font-medium">
         <TrendingDown className="h-3 w-3" />
         Bajando {pct.toFixed(0)}%
       </span>
@@ -56,7 +56,7 @@ function ConfidenceWarning({ confidence }: { confidence: string }) {
       title={confidence === 'media' ? 'Basado en pocos datos — usar con precaución' : 'Datos insuficientes — estimado poco confiable'}
       className="ml-1 inline-flex items-center"
     >
-      <AlertTriangle className={`h-3 w-3 ${confidence === 'media' ? 'text-yellow-500' : 'text-red-400'}`} />
+      <AlertTriangle className={`h-3 w-3 ${confidence === 'media' ? 'text-warning-foreground dark:text-warning' : 'text-destructive'}`} />
     </span>
   )
 }

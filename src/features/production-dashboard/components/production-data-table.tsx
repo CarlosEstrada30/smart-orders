@@ -80,22 +80,22 @@ export function ProductionDataTable({ products, loading = false }: ProductionDat
 
   const getProductionStatus = (product: ProductionData) => {
     if (product.total_a_producir === 0) {
-      return { status: 'sufficient', label: 'Suficiente', color: 'bg-green-100 text-green-800' }
+      return { status: 'sufficient', label: 'Suficiente', color: 'bg-success/15 text-success' }
     }
     if (product.total_a_producir > product.stock * 0.5) {
-      return { status: 'critical', label: 'Crítico', color: 'bg-red-100 text-red-800' }
+      return { status: 'critical', label: 'Crítico', color: 'bg-destructive/15 text-destructive' }
     }
-    return { status: 'insufficient', label: 'Insuficiente', color: 'bg-orange-100 text-orange-800' }
+    return { status: 'insufficient', label: 'Insuficiente', color: 'bg-warning/20 text-warning-foreground dark:text-warning' }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'sufficient':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'critical':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />
+        return <AlertTriangle className="h-4 w-4 text-destructive" />
       default:
-        return <TrendingUp className="h-4 w-4 text-orange-600" />
+        return <TrendingUp className="h-4 w-4 text-warning-foreground dark:text-warning" />
     }
   }
 
@@ -168,7 +168,7 @@ export function ProductionDataTable({ products, loading = false }: ProductionDat
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar productos..."
+                placeholder="Buscar productos…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -257,7 +257,7 @@ export function ProductionDataTable({ products, loading = false }: ProductionDat
                       {product.total_comprometidos.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right font-mono">
-                      <span className={product.total_a_producir > 0 ? 'text-orange-600 font-bold' : 'text-green-600'}>
+                      <span className={product.total_a_producir > 0 ? 'text-warning-foreground dark:text-warning font-bold' : 'text-success'}>
                         {product.total_a_producir.toLocaleString()}
                       </span>
                     </TableCell>

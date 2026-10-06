@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { DataTableColumnHeader } from './data-table-column-header'
+import { DataTableColumnHeader } from '@/components/data-table'
 import { type Company } from '../data/schema'
 
 export const companiesColumns: ColumnDef<Company>[] = [
@@ -51,7 +51,7 @@ export const companiesColumns: ColumnDef<Company>[] = [
           <div className="flex items-center gap-2">
             <span className="font-medium">{row.getValue('nombre')}</span>
             {row.original.is_trial && (
-              <Badge variant="outline" className="text-xs px-1 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+              <Badge variant="outline" className="text-xs px-1 py-0 bg-warning/15 text-warning-foreground dark:text-warning border-warning/50">
                 PRUEBA
               </Badge>
             )}
@@ -107,7 +107,7 @@ export const companiesColumns: ColumnDef<Company>[] = [
   {
     accessorKey: 'created_at',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de Creación" />
+      <DataTableColumnHeader column={column} title="Fecha de creación" />
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue('created_at'))
@@ -156,14 +156,14 @@ export const companiesColumns: ColumnDef<Company>[] = [
                 Desactivar
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem className="text-green-600">
+              <DropdownMenuItem className="text-success">
                 <RefreshCcw className="mr-2 h-4 w-4" />
                 Restaurar
               </DropdownMenuItem>
             )}
             
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
+            <DropdownMenuItem className="text-destructive">
               <Shield className="mr-2 h-4 w-4" />
               Eliminar permanente
             </DropdownMenuItem>

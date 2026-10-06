@@ -147,7 +147,7 @@ export function FELInvoiceGenerator() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Generar Facturas</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Generar facturas</h1>
           <p className="text-muted-foreground">
             Generar facturas FEL o comprobantes desde órdenes entregadas
           </p>
@@ -180,9 +180,9 @@ export function FELInvoiceGenerator() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <FileText className="h-5 w-5 text-blue-600" />
+              <FileText className="h-5 w-5 text-info" />
               <div className="ml-2">
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-info">
                   {state.orders.filter(o => getSuggestedDocumentType(o) === 'invoice').length}
                 </p>
                 <p className="text-xs text-muted-foreground">Para factura FEL</p>
@@ -194,9 +194,9 @@ export function FELInvoiceGenerator() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Receipt className="h-5 w-5 text-gray-600" />
+              <Receipt className="h-5 w-5 text-muted-foreground" />
               <div className="ml-2">
-                <p className="text-2xl font-bold text-gray-600">
+                <p className="text-2xl font-bold text-muted-foreground">
                   {state.orders.filter(o => getSuggestedDocumentType(o) === 'receipt').length}
                 </p>
                 <p className="text-xs text-muted-foreground">Para comprobante</p>
@@ -208,9 +208,9 @@ export function FELInvoiceGenerator() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <DollarSign className="h-5 w-5 text-success" />
               <div className="ml-2">
-                <p className="text-lg font-bold text-green-600">
+                <p className="text-lg font-bold text-success">
                   {felService.formatCurrency(
                     state.orders.reduce((sum, o) => sum + o.total_amount, 0)
                   )}
@@ -241,7 +241,7 @@ export function FELInvoiceGenerator() {
             </Alert>
           ) : state.orders.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500 opacity-50" />
+              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success opacity-50" />
               <p className="text-lg font-medium">¡Excelente trabajo!</p>
               <p>No hay órdenes pendientes de facturación</p>
             </div>
@@ -257,7 +257,7 @@ export function FELInvoiceGenerator() {
                     className={cn(
                       "flex items-center justify-between p-4 border rounded-lg",
                       "hover:bg-muted/50 transition-colors",
-                      isProcessingThis && "bg-blue-50 border-blue-200"
+                      isProcessingThis && "bg-info/10 border-info/30"
                     )}
                   >
                     {/* Información de la orden */}
@@ -279,11 +279,11 @@ export function FELInvoiceGenerator() {
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {order.client.nit ? (
-                            <span className="text-blue-600 font-medium">
+                            <span className="text-info font-medium">
                               NIT: {order.client.nit}
                             </span>
                           ) : (
-                            <span className="text-gray-500">Sin NIT</span>
+                            <span className="text-muted-foreground">Sin NIT</span>
                           )}
                         </div>
                       </div>
@@ -303,12 +303,12 @@ export function FELInvoiceGenerator() {
                         <div className="text-sm">
                           <span className="text-muted-foreground">Sugerido: </span>
                           {suggestedType === 'invoice' ? (
-                            <span className="text-blue-600 font-medium flex items-center gap-1">
+                            <span className="text-info font-medium flex items-center gap-1">
                               <FileText className="h-3 w-3" />
                               Factura FEL
                             </span>
                           ) : (
-                            <span className="text-gray-600 font-medium flex items-center gap-1">
+                            <span className="text-muted-foreground font-medium flex items-center gap-1">
                               <Receipt className="h-3 w-3" />
                               Comprobante
                             </span>
@@ -323,9 +323,9 @@ export function FELInvoiceGenerator() {
                     {/* Acciones */}
                     <div className="ml-4">
                       {isProcessingThis ? (
-                        <div className="flex items-center gap-2 text-blue-600">
+                        <div className="flex items-center gap-2 text-info">
                           <RefreshCw className="h-4 w-4 animate-spin" />
-                          <span className="text-sm">Procesando...</span>
+                          <span className="text-sm">Procesando…</span>
                         </div>
                       ) : (
                         <Button

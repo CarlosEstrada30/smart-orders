@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { formatCurrency } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NumericInput } from '@/components/ui/numeric-input'
@@ -288,7 +289,7 @@ export function BulkPaymentsModal({
             </ul>
             {invalidOrders.length > 0 && (
               <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium">Órdenes inválidas:</p>
+                <p className="text-sm font-medium">Pedidos que no se pueden pagar:</p>
                 {invalidOrders.map((order) => {
                   const isCancelled = order.status === 'cancelled'
                   const isPaid = order.payment_status === 'paid'
@@ -297,7 +298,7 @@ export function BulkPaymentsModal({
                   return (
                     <div key={order.id} className="text-sm p-2 bg-muted rounded">
                       <span className="font-medium">
-                        {order.order_number || `Orden #${order.id}`}
+                        {order.order_number || `Pedido #${order.id}`}
                       </span>
                       {isCancelled && <Badge variant="destructive" className="ml-2">Cancelada</Badge>}
                       {isPaid && <Badge variant="secondary" className="ml-2">Pagada</Badge>}
@@ -341,13 +342,13 @@ export function BulkPaymentsModal({
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Órdenes válidas</p>
+                  <p className="text-sm text-muted-foreground">Pedidos por pagar</p>
                   <p className="text-xl sm:text-2xl font-bold">{validOrders.length}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total a pagar</p>
-                  <p className="text-xl sm:text-2xl font-bold text-green-600">
-                    Q{totalAmount.toFixed(2)}
+                  <p className="text-xl sm:text-2xl font-bold text-success">
+                    {formatCurrency(totalAmount)}
                   </p>
                 </div>
                 <div>
@@ -366,7 +367,7 @@ export function BulkPaymentsModal({
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Modo de Pago</Label>
+                <Label>Forma de cobro</Label>
                 <Select
                   value={paymentMode}
                   onValueChange={(value) => setPaymentMode(value as PaymentMode)}
@@ -383,7 +384,7 @@ export function BulkPaymentsModal({
               </div>
 
               <div className="space-y-2">
-                <Label>Método de Pago</Label>
+                <Label>Método de pago</Label>
                 <Select
                   value={paymentMethodMode}
                   onValueChange={(value) => setPaymentMethodMode(value as PaymentMethodMode)}
@@ -402,7 +403,7 @@ export function BulkPaymentsModal({
 
             {paymentMethodMode === 'common' && (
               <div className="space-y-2">
-                <Label>Método de Pago Común</Label>
+                <Label>Método de pago para todos</Label>
                 <Select
                   value={commonPaymentMethod}
                   onValueChange={(value) => setCommonPaymentMethod(value as PaymentMethod)}
@@ -437,11 +438,11 @@ export function BulkPaymentsModal({
           {/* Tabla de órdenes */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Órdenes a Pagar</CardTitle>
+              <CardTitle className="text-base">Pedidos a pagar</CardTitle>
               <CardDescription className="text-xs sm:text-sm">
                 {paymentMode === 'full'
-                  ? 'Se pagará el saldo completo de cada orden'
-                  : 'Ajusta el monto para cada orden'}
+                  ? 'Se pagará el saldo completo de cada pedido'
+                  : 'Ajusta el monto de cada pedido'}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -449,7 +450,7 @@ export function BulkPaymentsModal({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[100px]">Orden</TableHead>
+                      <TableHead className="min-w-[100px]">Pedido</TableHead>
                       <TableHead className="min-w-[120px] hidden sm:table-cell">Cliente</TableHead>
                       <TableHead className="min-w-[80px] hidden md:table-cell">Total</TableHead>
                       <TableHead className="min-w-[100px]">Saldo</TableHead>
@@ -479,14 +480,14 @@ export function BulkPaymentsModal({
                             {order.client?.name || `Cliente #${order.client_id}`}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            Q{(order.total_amount || 0).toFixed(2)}
+                            {formatCurrency((order.total_amount || 0))}
                           </TableCell>
                           <TableCell>
-                            <span className="font-medium">Q{balanceDue.toFixed(2)}</span>
+                            <span className="font-medium">{formatCurrency(balanceDue)}</span>
                           </TableCell>
                           <TableCell>
                             {paymentMode === 'full' ? (
-                              <span className="font-medium text-sm">Q{balanceDue.toFixed(2)}</span>
+                              <span className="font-medium text-sm">{formatCurrency(balanceDue)}</span>
                             ) : (
                               <div className="flex flex-col gap-1">
                                 <NumericInput
@@ -501,7 +502,7 @@ export function BulkPaymentsModal({
                                   className="w-full sm:w-24"
                                 />
                                 {config.error && (
-                                  <p className="text-xs text-red-600">{config.error}</p>
+                                  <p className="text-xs text-destructive">{config.error}</p>
                                 )}
                               </div>
                             )}
@@ -534,9 +535,9 @@ export function BulkPaymentsModal({
                           </TableCell>
                           <TableCell className="text-center">
                             {config.isValid ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 mx-auto" />
+                              <CheckCircle className="h-4 w-4 text-success mx-auto" />
                             ) : (
-                              <AlertCircle className="h-4 w-4 text-red-600 mx-auto" />
+                              <AlertCircle className="h-4 w-4 text-destructive mx-auto" />
                             )}
                           </TableCell>
                         </TableRow>

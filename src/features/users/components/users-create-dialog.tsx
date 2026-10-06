@@ -92,7 +92,7 @@ export function UsersCreateDialog({ open, onOpenChange, onUserCreated }: UsersCr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+          <DialogTitle>Crear Nuevo usuario</DialogTitle>
           <DialogDescription>
             Completa los datos para crear un nuevo usuario en el sistema.
           </DialogDescription>
@@ -185,8 +185,8 @@ export function UsersCreateDialog({ open, onOpenChange, onUserCreated }: UsersCr
             
             {/* Mensaje informativo sobre permisos */}
             {!isSuperuser && availableRoles.length < 6 && (
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
-                <p className="text-sm text-blue-800">
+              <div className="bg-info/10 border border-info/30 p-3 rounded-md">
+                <p className="text-sm text-info">
                   ℹ️ Como no eres administrador, solo puedes crear usuarios con roles básicos. Para crear administradores, necesitas ser administrador del sistema.
                 </p>
               </div>
@@ -212,7 +212,7 @@ export function UsersCreateDialog({ open, onOpenChange, onUserCreated }: UsersCr
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Crear Usuario
+              Crear usuario
             </Button>
           </DialogFooter>
         </form>

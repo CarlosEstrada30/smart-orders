@@ -1,28 +1,100 @@
+import { BrandMark } from '@/assets/brand-mark'
+import { extractSubdomain } from '@/utils/subdomain'
+
 type AuthLayoutProps = {
   children: React.ReactNode
 }
 
+// Las paradas de un pedido, de la toma a la entrega
+const ROUTE_STOPS = [
+  { label: 'Pedido tomado', detail: 'Registro rápido de pedidos' },
+  {
+    label: 'Asignado a ruta',
+    detail: 'Cada pedido va a la ruta que le corresponde',
+  },
+  {
+    label: 'Consolidado por ruta',
+    detail: 'Un resumen de qué cargar en cada camión',
+  },
+  { label: 'Comprobante enviado', detail: 'El cliente lo recibe por WhatsApp' },
+  {
+    label: 'Entregado',
+    detail: 'Se entrega el pedido y se gestionan los cobros',
+  },
+]
+
 export function AuthLayout({ children }: AuthLayoutProps) {
+  const subdomain = extractSubdomain()
+
   return (
-    <div className='container grid h-svh max-w-none items-center justify-center'>
-      <div className='mx-auto flex w-full flex-col justify-center space-y-2 py-8 sm:w-[480px] sm:p-8'>
-        <div className='mb-4 flex items-center justify-center'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='me-2 h-6 w-6'
-          >
-            <path d='M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' />
-          </svg>
-          <h1 className='text-xl font-medium'>Shadcn Admin</h1>
+    <div className='bg-background grid min-h-svh lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]'>
+      <aside className='bg-sidebar text-sidebar-foreground relative hidden flex-col justify-between overflow-hidden p-10 lg:flex xl:p-14'>
+        <div className='flex items-center gap-2.5'>
+          <span className='bg-sidebar-primary text-sidebar-primary-foreground flex size-9 items-center justify-center rounded-lg'>
+            <BrandMark className='size-5' />
+          </span>
+          <span className='font-display text-lg font-semibold text-white'>
+            SmartOrders
+          </span>
         </div>
-        {children}
-      </div>
+
+        <div className='max-w-md'>
+          <h2 className='font-display text-[2.5rem] leading-[1.1] font-semibold text-white'>
+            Tus pedidos, organizados por ruta.
+          </h2>
+          <ol className='mt-10 space-y-0'>
+            {ROUTE_STOPS.map((stop, i) => (
+              <li
+                key={stop.label}
+                className='relative flex gap-4 pb-6 last:pb-0'
+              >
+                {i < ROUTE_STOPS.length - 1 && (
+                  <span
+                    aria-hidden='true'
+                    className='bg-sidebar-border absolute top-5 left-[9px] h-full w-0.5'
+                  />
+                )}
+                <span
+                  aria-hidden='true'
+                  className={
+                    i === ROUTE_STOPS.length - 1
+                      ? 'bg-sidebar-primary relative mt-0.5 size-5 shrink-0 rounded-full'
+                      : 'border-sidebar-primary bg-sidebar relative mt-0.5 size-5 shrink-0 rounded-full border-2'
+                  }
+                />
+                <div>
+                  <p className='font-medium text-white'>{stop.label}</p>
+                  <p className='text-sidebar-foreground/75 text-sm'>
+                    {stop.detail}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <p className='text-sidebar-foreground/60 text-sm'>
+          Hecho para distribuidoras en Guatemala
+        </p>
+      </aside>
+
+      <main className='flex flex-col px-4 py-10 sm:px-8'>
+        <div className='flex items-center gap-2 lg:hidden'>
+          <span className='bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg'>
+            <BrandMark className='size-5' />
+          </span>
+          <span className='font-display font-semibold'>SmartOrders</span>
+        </div>
+        <div className='mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10'>
+          {children}
+        </div>
+        {subdomain && (
+          <p className='text-muted-foreground text-center text-sm'>
+            Estás ingresando a{' '}
+            <span className='text-foreground font-medium'>{subdomain}</span>
+          </p>
+        )}
+      </main>
     </div>
   )
 }

@@ -99,7 +99,7 @@ export function CompanyForm({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'create' ? 'Nueva Empresa' : 'Editar Empresa'}
+            {mode === 'create' ? 'Nueva empresa' : 'Editar empresa'}
           </DialogTitle>
           <DialogDescription>
             {mode === 'create' 
@@ -191,7 +191,7 @@ export function CompanyForm({
                 Cancelar
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Guardando...' : (mode === 'create' ? 'Crear Empresa' : 'Actualizar')}
+                {isSubmitting ? 'Guardando…' : (mode === 'create' ? 'Crear empresa' : 'Actualizar')}
               </Button>
             </DialogFooter>
           </form>

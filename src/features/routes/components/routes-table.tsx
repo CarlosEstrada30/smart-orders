@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { type Route } from '../data/schema'
-import { DataTablePagination } from './data-table-pagination'
+import { DataTablePagination } from '@/components/data-table'
 import { DataTableToolbar } from './data-table-toolbar'
 import { routesColumns as columns } from './routes-columns'
 
@@ -101,14 +101,14 @@ export function RoutesTable({ data, search, navigate }: DataTableProps) {
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='group/row'>
+              <TableRow key={headerGroup.id} className='bg-muted/50 hover:bg-muted/50 [&>th]:text-muted-foreground'>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
                       key={header.id}
                       colSpan={header.colSpan}
                       className={cn(
-                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                        '',
                         header.column.columnDef.meta?.className ?? ''
                       )}
                     >
@@ -136,7 +136,7 @@ export function RoutesTable({ data, search, navigate }: DataTableProps) {
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                        '',
                         cell.column.columnDef.meta?.className ?? ''
                       )}
                     >

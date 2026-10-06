@@ -1,4 +1,4 @@
-import { Route } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRoutes } from './routes-provider'
 import { PermissionGuard } from '@/components/auth/permission-guard'
@@ -8,8 +8,9 @@ export function RoutesPrimaryButtons() {
   return (
     <div className='flex gap-2'>
       <PermissionGuard routePermission="can_manage">
-        <Button className='space-x-1' onClick={() => setOpen('create')}>
-          <span>Nueva Ruta</span> <Route size={18} />
+        <Button onClick={() => setOpen('create')}>
+          <Plus aria-hidden='true' />
+          Nueva ruta
         </Button>
       </PermissionGuard>
     </div>

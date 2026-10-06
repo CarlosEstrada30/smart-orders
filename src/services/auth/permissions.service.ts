@@ -168,12 +168,12 @@ export const permissionsService = {
    */
   getRoleColor(role: UserRole): string {
     const roleColors: Record<UserRole, string> = {
-      employee: 'bg-blue-100 text-blue-800',
-      sales: 'bg-green-100 text-green-800',
-      driver: 'bg-yellow-100 text-yellow-800',
-      supervisor: 'bg-purple-100 text-purple-800',
-      manager: 'bg-red-100 text-red-800',
-      admin: 'bg-gray-100 text-gray-800'
+      employee: 'bg-info/15 text-info',
+      sales: 'bg-success/15 text-success',
+      driver: 'bg-warning/20 text-warning-foreground dark:text-warning',
+      supervisor: 'bg-primary/15 text-primary',
+      manager: 'bg-destructive/15 text-destructive',
+      admin: 'bg-muted text-foreground'
     }
     return roleColors[role]
   }

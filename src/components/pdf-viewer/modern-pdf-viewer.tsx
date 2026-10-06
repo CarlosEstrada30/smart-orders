@@ -125,25 +125,25 @@ export function ModernPDFViewer({
             Visualiza el documento PDF usando los controles de navegación y zoom disponibles
           </DialogDescription>
         </VisuallyHidden>
-        <div className="w-full h-full overflow-hidden rounded-lg bg-white dark:bg-gray-900">
+        <div className="w-full h-full overflow-hidden rounded-lg bg-white ">
           {error ? (
             /* Error al cargar PDF */
             <div className="flex flex-col items-center justify-center h-full space-y-4 p-4">
-              <AlertCircle className="h-12 w-12 text-red-500" />
-              <p className="text-red-700 dark:text-red-300">Error al cargar PDF</p>
+              <AlertCircle className="h-12 w-12 text-destructive" />
+              <p className="text-destructive ">Error al cargar PDF</p>
             </div>
           ) : (
             /* PDF Viewer sin header - pantalla completa - UNA SOLA COLUMNA */
             <div className="relative h-full flex flex-col">
               <Worker workerUrl={workerUrl}>
                 {/* Toolbar minimalista - descargar, imprimir y compartir por WhatsApp */}
-                <div className="flex-shrink-0 border-b bg-gray-50 dark:bg-gray-800 p-3">
+                <div className="flex-shrink-0 border-b bg-muted p-3">
                   <div className="flex items-center gap-3 justify-center">
                     <Button 
                       size="sm" 
                       variant="outline" 
                       onClick={handleDownload}
-                      className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900"
+                      className="flex items-center gap-2 hover:bg-info/10 "
                     >
                       <Download className="h-4 w-4" />
                       Descargar
@@ -153,7 +153,7 @@ export function ModernPDFViewer({
                       size="sm" 
                       variant="outline" 
                       onClick={handlePrint}
-                      className="flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900"
+                      className="flex items-center gap-2 hover:bg-success/10 "
                     >
                       <Printer className="h-4 w-4" />
                       Imprimir
@@ -165,10 +165,10 @@ export function ModernPDFViewer({
                         variant="outline" 
                         onClick={handleShareWhatsApp}
                         disabled={sendingWhatsApp || checkingWhatsApp || whatsAppStatus?.status !== 'connected'}
-                        className="flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 hover:bg-success/10 disabled:opacity-50 disabled:cursor-not-allowed"
                         title={
                           checkingWhatsApp 
-                            ? 'Verificando estado de WhatsApp...' 
+                            ? 'Verificando estado de WhatsApp…' 
                             : whatsAppStatus?.status !== 'connected'
                             ? 'WhatsApp no está conectado'
                             : 'Compartir comprobante por WhatsApp'
@@ -176,9 +176,9 @@ export function ModernPDFViewer({
                       >
                         <MessageCircle className="h-4 w-4" />
                         {sendingWhatsApp 
-                          ? 'Enviando...' 
+                          ? 'Enviando…' 
                           : checkingWhatsApp
-                          ? 'Verificando...'
+                          ? 'Verificando…'
                           : whatsAppStatus?.status !== 'connected'
                           ? 'WhatsApp desconectado'
                           : 'Compartir por WhatsApp'}
@@ -188,7 +188,7 @@ export function ModernPDFViewer({
                 </div>
                 
                 {/* PDF Viewer abajo - ocupa todo el espacio restante */}
-                <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-800">
+                <div className="flex-1 overflow-auto bg-muted ">
                   <Viewer
                     fileUrl={pdfUrl}
                     plugins={[]}
@@ -200,11 +200,11 @@ export function ModernPDFViewer({
               
               {/* Loading overlay */}
               {loading && (
-                <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center z-50">
+                <div className="absolute inset-0 bg-white/90 flex items-center justify-center z-50">
                   <div className="flex flex-col items-center space-y-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Cargando PDF...
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-info"></div>
+                    <p className="text-sm text-muted-foreground ">
+                      Cargando PDF…
                     </p>
                   </div>
                 </div>

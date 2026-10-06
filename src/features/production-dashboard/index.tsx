@@ -66,9 +66,9 @@ export function ProductionDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard de Producción</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Producción</h1>
           <p className="text-muted-foreground">
-            Gestiona y monitorea la producción de productos
+            Unidades por producir según ruta y fecha
           </p>
         </div>
         <div className="flex items-center space-x-2">

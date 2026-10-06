@@ -53,7 +53,7 @@ export default function CompaniesPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Cargando empresas...</p>
+          <p>Cargando empresas…</p>
         </div>
       </div>
     )
@@ -64,7 +64,7 @@ export default function CompaniesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Gestión de Empresas</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Empresas</h1>
           <p className="text-muted-foreground">
             Administra las empresas y sus subdominios en el sistema multitenant.
           </p>
@@ -84,7 +84,7 @@ export default function CompaniesPage() {
           
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Nueva Empresa
+            Nueva empresa
           </Button>
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function CompaniesPage() {
               <p className="text-sm font-medium text-muted-foreground">
                 Empresas Activas
               </p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-success">
                 {companiesData?.items.filter(c => c.active).length || 0}
               </p>
             </div>
@@ -121,7 +121,7 @@ export default function CompaniesPage() {
               <p className="text-sm font-medium text-muted-foreground">
                 Empresas Inactivas
               </p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-2xl font-bold text-destructive">
                 {companiesData?.items.filter(c => !c.active).length || 0}
               </p>
             </div>
@@ -134,7 +134,7 @@ export default function CompaniesPage() {
               <p className="text-sm font-medium text-muted-foreground">
                 Empresas de Prueba
               </p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-2xl font-bold text-warning-foreground dark:text-warning">
                 {companiesData?.items.filter(c => c.is_trial).length || 0}
               </p>
             </div>

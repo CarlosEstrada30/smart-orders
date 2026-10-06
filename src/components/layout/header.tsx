@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import { BrandMark } from '@/assets/brand-mark'
 import { cn } from '@/lib/utils'
-import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
@@ -26,23 +26,23 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
   return (
     <header
       className={cn(
-        'z-50 h-16',
+        'z-40 h-14',
         fixed && 'header-fixed peer/header sticky top-0 w-[inherit]',
-        offset > 10 && fixed ? 'shadow' : 'shadow-none',
+        offset > 10 && fixed ? 'border-b' : 'border-b border-transparent',
         className
       )}
       {...props}
     >
       <div
         className={cn(
-          'relative flex h-full items-center gap-3 p-4 sm:gap-4',
+          'relative flex h-full items-center gap-3 px-4 sm:gap-4',
           offset > 10 &&
             fixed &&
-            'after:bg-background/20 after:absolute after:inset-0 after:-z-10 after:backdrop-blur-lg'
+            'after:bg-background/80 after:absolute after:inset-0 after:-z-10 after:backdrop-blur-lg'
         )}
       >
-        <SidebarTrigger variant='outline' className='max-md:scale-125' />
-        <Separator orientation='vertical' className='h-6' />
+        <SidebarTrigger variant='ghost' className='max-md:hidden' />
+        <BrandMark className='text-primary size-6 md:hidden' />
         {children}
       </div>
     </header>

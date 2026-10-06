@@ -122,7 +122,7 @@ export function EditClientPage() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Editar Cliente</h1>
+                <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Editar cliente</h1>
                 <p className="text-muted-foreground">
                   Modifica los datos del cliente
                 </p>
@@ -132,7 +132,7 @@ export function EditClientPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Cargando cliente...</CardTitle>
+              <CardTitle>Cargando cliente…</CardTitle>
               <CardDescription>
                 Obteniendo datos del cliente
               </CardDescription>
@@ -141,7 +141,7 @@ export function EditClientPage() {
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Cargando...</p>
+                  <p className="mt-2 text-muted-foreground">Cargando…</p>
                 </div>
               </div>
             </CardContent>
@@ -164,7 +164,7 @@ export function EditClientPage() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Editar Cliente</h1>
+                <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Editar cliente</h1>
                 <p className="text-muted-foreground">
                   Modifica los datos del cliente
                 </p>
@@ -182,7 +182,7 @@ export function EditClientPage() {
             <CardContent>
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
-                  <p className="text-red-600 mb-4">{error}</p>
+                  <p className="text-destructive mb-4">{error}</p>
                   <Link to="/clients">
                     <Button>
                       Volver a Clientes
@@ -210,7 +210,7 @@ export function EditClientPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Editar Cliente</h1>
+              <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Editar cliente</h1>
               <p className="text-muted-foreground">
                 Modifica los datos del cliente: {client.name}
               </p>
@@ -288,9 +288,9 @@ export function EditClientPage() {
 
           {/* Mensaje de Error */}
           {error && (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive/30 bg-destructive/10">
               <CardContent className="pt-6">
-                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-destructive text-sm">{error}</p>
               </CardContent>
             </Card>
           )}
@@ -306,12 +306,12 @@ export function EditClientPage() {
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Guardando...
+                  Guardando…
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Guardar Cambios
+                  Guardar cambios
                 </>
               )}
             </Button>

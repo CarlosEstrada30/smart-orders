@@ -51,7 +51,7 @@ export function RoutesReactivateDialog({ open, onOpenChange, route, onRouteReact
           </DialogDescription>
         </DialogHeader>
         
-        <div className="bg-green-50 p-4 rounded-md">
+        <div className="bg-success/10 p-4 rounded-md">
           <h4 className="font-medium mb-2">Ruta a reactivar:</h4>
           <div className="text-sm space-y-1">
             <p><strong>Nombre:</strong> {route.name}</p>
@@ -64,7 +64,7 @@ export function RoutesReactivateDialog({ open, onOpenChange, route, onRouteReact
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleReactivate} disabled={loading} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={handleReactivate} disabled={loading} className="bg-success hover:bg-success">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reactivar Ruta
           </Button>

@@ -51,7 +51,7 @@ export function RoutesDeleteDialog({ open, onOpenChange, route, onRouteDeleted }
           </DialogDescription>
         </DialogHeader>
         
-        <div className="bg-gray-50 p-4 rounded-md">
+        <div className="bg-muted p-4 rounded-md">
           <h4 className="font-medium mb-2">Ruta a desactivar:</h4>
           <div className="text-sm space-y-1">
             <p><strong>Nombre:</strong> {route.name}</p>

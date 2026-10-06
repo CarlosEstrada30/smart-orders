@@ -3,6 +3,9 @@ import { getRouteApi } from '@tanstack/react-router'
 import { Main } from '@/components/layout/main'
 import { routesService } from '@/services'
 import { RoutesDialogs } from './components/routes-dialogs'
+import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
+import { LoadingState } from '@/components/loading-state'
 import { RoutesPrimaryButtons } from './components/routes-primary-buttons'
 import { RoutesProvider } from './components/routes-provider'
 import { RoutesTable } from './components/routes-table'
@@ -68,24 +71,20 @@ export function Routes() {
   return (
     <RoutesProvider>
       <Main>
-        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Rutas</h2>
-            <p className='text-muted-foreground'>
-              Administra las rutas de entrega del sistema.
-            </p>
-          </div>
-          <RoutesPrimaryButtons />
-        </div>
-        <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <p className="text-muted-foreground">Cargando rutas...</p>
-            </div>
-          ) : (
-            <RoutesTable data={routes} search={search} navigate={navigate} />
-          )}
-        </div>
+        <PageHeader
+          title='Rutas'
+          description='Las rutas de entrega. Cada pedido y cada precio especial pertenecen a una ruta.'
+          actions={<RoutesPrimaryButtons />}
+        />
+        {loading ? (
+          <LoadingState label='Cargando rutas…' rows={4} />
+        ) : (
+          <Card className='py-4 sm:py-6'>
+            <CardContent className='px-3 sm:px-6'>
+              <RoutesTable data={routes} search={search} navigate={navigate} />
+            </CardContent>
+          </Card>
+        )}
       </Main>
       <RoutesDialogs onDataChange={loadRoutes} />
     </RoutesProvider>

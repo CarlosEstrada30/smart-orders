@@ -4,8 +4,8 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { DataTableFacetedFilter } from './data-table-faceted-filter'
-import { DataTableViewOptions } from './data-table-view-options'
+import { DataTableFacetedFilter } from '@/components/data-table'
+import { DataTableViewOptions } from '@/components/data-table'
 import { entryTypeOptions, entryStatusOptions } from '../data/data'
 
 interface DataTableToolbarProps<TData> {
@@ -21,7 +21,7 @@ export function DataTableToolbar<TData>({
     <div className='flex flex-wrap items-center justify-between gap-2'>
       <div className='flex flex-1 flex-wrap items-center gap-2'>
         <Input
-          placeholder='Buscar por número de entrada...'
+          placeholder='Buscar por número de entrada…'
           value={(table.getColumn('entry_number')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('entry_number')?.setFilterValue(event.target.value)

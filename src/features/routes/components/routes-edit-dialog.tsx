@@ -73,7 +73,7 @@ export function RoutesEditDialog({ open, onOpenChange, route, onRouteUpdated }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editar Ruta</DialogTitle>
+          <DialogTitle>Editar ruta</DialogTitle>
           <DialogDescription>
             Modifica los datos de la ruta "{route.name}".
           </DialogDescription>
@@ -85,7 +85,7 @@ export function RoutesEditDialog({ open, onOpenChange, route, onRouteUpdated }: 
               id="name"
               value={formData.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Ej: Ruta Norte, Ruta Centro..."
+              placeholder="Ej: Ruta Norte, Ruta Centro…"
               required
             />
           </div>

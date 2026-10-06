@@ -176,7 +176,7 @@ export function FELInvoicesList() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Facturas FEL</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Facturas FEL</h1>
           <p className="text-muted-foreground">
             Gestión completa de facturas y comprobantes
           </p>
@@ -206,28 +206,28 @@ export function FELInvoicesList() {
         
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{statistics.fel}</div>
+            <div className="text-2xl font-bold text-info">{statistics.fel}</div>
             <p className="text-xs text-muted-foreground">FEL</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-gray-600">{statistics.receipts}</div>
+            <div className="text-2xl font-bold text-muted-foreground">{statistics.receipts}</div>
             <p className="text-xs text-muted-foreground">Comprobantes</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{statistics.authorized}</div>
+            <div className="text-2xl font-bold text-success">{statistics.authorized}</div>
             <p className="text-xs text-muted-foreground">Autorizadas</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{statistics.failed}</div>
+            <div className="text-2xl font-bold text-destructive">{statistics.failed}</div>
             <p className="text-xs text-muted-foreground">Fallidas</p>
           </CardContent>
         </Card>
@@ -256,7 +256,7 @@ export function FELInvoicesList() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Número, cliente..."
+                  placeholder="Número, cliente…"
                   className="pl-8"
                   value={state.filters.search || ''}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -401,11 +401,11 @@ export function FELInvoicesList() {
                       <div className="font-medium">{felService.formatCurrency(invoice.total_amount)}</div>
                       <div className="text-xs text-muted-foreground">
                         {invoice.balance_due > 0 ? (
-                          <span className="text-orange-600">
+                          <span className="text-warning-foreground dark:text-warning">
                             Saldo: {felService.formatCurrency(invoice.balance_due)}
                           </span>
                         ) : (
-                          <span className="text-green-600">Pagada</span>
+                          <span className="text-success">Pagada</span>
                         )}
                       </div>
                     </div>
