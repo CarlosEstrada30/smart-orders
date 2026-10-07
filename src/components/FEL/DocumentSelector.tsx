@@ -184,8 +184,8 @@ export function DocumentSelector({
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-full">
-                      <Receipt className="h-5 w-5 text-gray-600" />
+                    <div className="p-2 bg-muted rounded-full">
+                      <Receipt className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
                       <span>Comprobante Simple</span>
@@ -208,15 +208,15 @@ export function DocumentSelector({
                   
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <span>Generación inmediata (descarga PDF)</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <span>No requiere datos fiscales del cliente</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      <AlertTriangle className="h-4 w-4 text-warning-foreground dark:text-warning" />
                       <span>No válido para deducción de IVA</span>
                     </div>
                   </div>
@@ -242,8 +242,8 @@ export function DocumentSelector({
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-full">
-                      <FileText className="h-5 w-5 text-blue-600" />
+                    <div className="p-2 bg-info/15 rounded-full">
+                      <FileText className="h-5 w-5 text-info" />
                     </div>
                     <div>
                       <span>Factura FEL</span>
@@ -266,19 +266,19 @@ export function DocumentSelector({
                   
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <span>Autorizada oficialmente por SAT</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <span>Cliente puede deducir IVA</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                       <span>UUID único para verificación</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      <AlertTriangle className="h-4 w-4 text-warning-foreground dark:text-warning" />
                       <span>Requiere procesamiento con SAT (puede fallar)</span>
                     </div>
                   </div>
@@ -319,7 +319,7 @@ export function DocumentSelector({
               {isProcessing ? (
                 <>
                   <Clock className="h-4 w-4 mr-2 animate-spin" />
-                  Procesando...
+                  Procesando…
                 </>
               ) : selectedType === 'invoice' ? (
                 <>

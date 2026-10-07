@@ -90,7 +90,7 @@ export function ForecastPage() {
       {/* Header */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Plan de Producción</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-[1.75rem] sm:leading-9">Plan de producción</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {selectedRouteName
               ? `Producción estimada para ${selectedRouteName}`
@@ -222,7 +222,7 @@ export function ForecastPage() {
           <p className="text-xs text-muted-foreground px-1">
             Basado en {activeProduct.history_days_available} días de historial para esta ruta.
             {activeProduct.confidence !== 'alta' && (
-              <span className={activeProduct.confidence === 'media' ? 'text-yellow-600' : 'text-red-500'}>
+              <span className={activeProduct.confidence === 'media' ? 'text-warning-foreground dark:text-warning' : 'text-destructive'}>
                 {' '}Los datos son {activeProduct.confidence === 'media' ? 'parciales — usar con precaución' : 'insuficientes para un estimado confiable'}.
               </span>
             )}

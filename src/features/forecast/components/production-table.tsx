@@ -34,7 +34,7 @@ function ConfidenceDot({ confidence }: { confidence: string }) {
   return (
     <AlertTriangle
       className={`inline h-3 w-3 ml-1 align-middle ${
-        confidence === 'media' ? 'text-yellow-500' : 'text-red-400'
+        confidence === 'media' ? 'text-warning-foreground dark:text-warning' : 'text-destructive'
       }`}
       title={
         confidence === 'media'
@@ -124,12 +124,12 @@ export function ProductionTable({
 
                 <td className="px-4 py-3 text-center">
                   {product.trend_direction === 'up' && (
-                    <span className="text-green-600 text-sm font-medium">
+                    <span className="text-success text-sm font-medium">
                       ↑ +{product.trend_percentage.toFixed(0)}%
                     </span>
                   )}
                   {product.trend_direction === 'down' && (
-                    <span className="text-red-500 text-sm font-medium">
+                    <span className="text-destructive text-sm font-medium">
                       ↓ {product.trend_percentage.toFixed(0)}%
                     </span>
                   )}

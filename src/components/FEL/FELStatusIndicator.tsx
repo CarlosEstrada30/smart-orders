@@ -76,7 +76,7 @@ export function FELStatusIndicator({
       return {
         status: 'receipt' as const,
         label: 'Comprobante',
-        color: 'bg-gray-100 text-gray-800',
+        color: 'bg-muted text-foreground',
         icon: FileText,
         description: 'Comprobante sin valor fiscal'
       }
@@ -88,7 +88,7 @@ export function FELStatusIndicator({
         return {
           status: 'authorized' as const,
           label: 'FEL Autorizada',
-          color: 'bg-green-100 text-green-800',
+          color: 'bg-success/15 text-success',
           icon: CheckCircle,
           description: 'Factura autorizada por SAT'
         }
@@ -97,7 +97,7 @@ export function FELStatusIndicator({
         return {
           status: 'processing' as const,
           label: 'Procesando FEL',
-          color: 'bg-blue-100 text-blue-800',
+          color: 'bg-info/15 text-info',
           icon: animated ? Loader2 : Clock,
           description: 'Enviando a SAT para autorización'
         }
@@ -106,7 +106,7 @@ export function FELStatusIndicator({
         return {
           status: 'pending' as const,
           label: 'Pendiente FEL',
-          color: 'bg-yellow-100 text-yellow-800',
+          color: 'bg-warning/20 text-warning-foreground dark:text-warning',
           icon: Clock,
           description: 'Preparando para envío a SAT'
         }
@@ -115,7 +115,7 @@ export function FELStatusIndicator({
         return {
           status: 'rejected' as const,
           label: 'FEL Rechazada',
-          color: 'bg-red-100 text-red-800',
+          color: 'bg-destructive/15 text-destructive',
           icon: XCircle,
           description: 'Rechazada por SAT'
         }
@@ -124,7 +124,7 @@ export function FELStatusIndicator({
         return {
           status: 'error' as const,
           label: 'Error FEL',
-          color: 'bg-red-100 text-red-800',
+          color: 'bg-destructive/15 text-destructive',
           icon: AlertTriangle,
           description: 'Error en proceso FEL'
         }
@@ -133,7 +133,7 @@ export function FELStatusIndicator({
         return {
           status: 'timeout' as const,
           label: 'Timeout FEL',
-          color: 'bg-orange-100 text-orange-800',
+          color: 'bg-warning/20 text-warning-foreground dark:text-warning',
           icon: Timer,
           description: 'Proceso FEL demorado'
         }
@@ -142,7 +142,7 @@ export function FELStatusIndicator({
         return {
           status: 'unknown' as const,
           label: 'Estado Desconocido',
-          color: 'bg-gray-100 text-gray-800',
+          color: 'bg-muted text-foreground',
           icon: AlertTriangle,
           description: 'Estado FEL no definido'
         }

@@ -21,25 +21,25 @@ export const getEntryTypeData = (type: EntryType) => {
     production: {
       label: ENTRY_TYPE_LABELS.production,
       icon: Package,
-      color: 'bg-blue-100 text-blue-800 border-blue-200',
+      color: 'bg-info/15 text-info border-info/30',
       description: 'Entrada por producción interna'
     },
     return: {
       label: ENTRY_TYPE_LABELS.return,
       icon: RotateCcw,
-      color: 'bg-orange-100 text-orange-800 border-orange-200',
+      color: 'bg-warning/20 text-warning-foreground dark:text-warning border-warning/50',
       description: 'Devolución de productos'
     },
     adjustment: {
       label: ENTRY_TYPE_LABELS.adjustment,
       icon: Settings,
-      color: 'bg-purple-100 text-purple-800 border-purple-200',
+      color: 'bg-primary/15 text-primary border-primary/30',
       description: 'Ajuste de inventario'
     },
     initial: {
       label: ENTRY_TYPE_LABELS.initial,
       icon: Plus,
-      color: 'bg-gray-100 text-gray-800 border-gray-200',
+      color: 'bg-muted text-foreground border-border',
       description: 'Inventario inicial'
     }
   }
@@ -53,35 +53,35 @@ export const getEntryStatusData = (status: EntryStatus) => {
     draft: {
       label: ENTRY_STATUS_LABELS.draft,
       icon: FileText,
-      color: 'bg-gray-100 text-gray-800 border-gray-200',
+      color: 'bg-muted text-foreground border-border',
       variant: 'secondary' as const,
       description: 'Entrada en borrador'
     },
     pending: {
       label: ENTRY_STATUS_LABELS.pending,
       icon: Clock,
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      color: 'bg-warning/20 text-warning-foreground dark:text-warning border-warning/50',
       variant: 'outline' as const,
       description: 'Pendiente de aprobación'
     },
     approved: {
       label: ENTRY_STATUS_LABELS.approved,
       icon: CheckCircle,
-      color: 'bg-blue-100 text-blue-800 border-blue-200',
+      color: 'bg-info/15 text-info border-info/30',
       variant: 'default' as const,
       description: 'Aprobado, listo para completar'
     },
     completed: {
       label: ENTRY_STATUS_LABELS.completed,
       icon: CheckCircle,
-      color: 'bg-green-100 text-green-800 border-green-200',
+      color: 'bg-success/15 text-success border-success/30',
       variant: 'default' as const,
       description: 'Completado y stock actualizado'
     },
     cancelled: {
       label: ENTRY_STATUS_LABELS.cancelled,
       icon: XCircle,
-      color: 'bg-red-100 text-red-800 border-red-200',
+      color: 'bg-destructive/15 text-destructive border-destructive/30',
       variant: 'destructive' as const,
       description: 'Entrada cancelada'
     }

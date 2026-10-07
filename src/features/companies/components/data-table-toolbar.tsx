@@ -2,8 +2,8 @@ import { type Table } from '@tanstack/react-table'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { DataTableViewOptions } from './data-table-view-options'
-import { DataTableFacetedFilter } from './data-table-faceted-filter'
+import { DataTableViewOptions } from '@/components/data-table'
+import { DataTableFacetedFilter } from '@/components/data-table'
 import { companyStatuses } from '../data/data'
 
 interface DataTableToolbarProps<TData> {
@@ -19,7 +19,7 @@ export function DataTableToolbar<TData>({
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:space-x-2">
         <Input
-          placeholder="Buscar empresas..."
+          placeholder="Buscar empresas…"
           value={(table.getColumn('nombre')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('nombre')?.setFilterValue(event.target.value)

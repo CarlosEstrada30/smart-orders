@@ -85,6 +85,13 @@ export interface Order {
   updated_at?: string
   items: OrderItem[]
   client?: Client
+  route?: {
+    id: number
+    name: string
+    is_active: boolean
+    created_at: string
+    updated_at: string | null
+  }
 }
 
 export interface OrderCreate {

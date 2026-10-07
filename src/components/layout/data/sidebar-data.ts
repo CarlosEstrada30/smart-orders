@@ -6,117 +6,47 @@ import {
   Settings,
   UserCheck,
   Route,
-  Archive,
-  FileText,
-  Receipt,
   Building,
   ChartBar,
 } from 'lucide-react'
-
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'Smart Orders',
-    email: 'admin@smartorders.com',
-    avatar: '/avatars/shadcn.jpg',
+    name: 'Usuario',
+    email: '',
+    avatar: '',
   },
   teams: [
     {
-      name: 'Smart Orders',
-      logo: '/images/bethel.jpeg',
+      name: 'SmartOrders',
+      logo: 'Building2',
       plan: 'Sistema de Gestión',
     },
   ],
   navGroups: [
     {
-      title: 'Sistema',
+      title: 'Operación',
       items: [
-        {
-          title: 'Empresas',
-          url: '/companies',
-          icon: Building,
-        },
-      ],
-    },
-    {
-      title: 'Gestión',
-      items: [
-        {
-          title: 'Usuarios',
-          url: '/users',
-          icon: Users,
-        },
-        {
-          title: 'Clientes',
-          url: '/clients',
-          icon: UserCheck,
-        },
-        {
-          title: 'Rutas',
-          url: '/routes',
-          icon: Route,
-        },
-        {
-          title: 'Productos',
-          url: '/products',
-          icon: Package,
-        },
-        {
-          title: 'Pedidos',
-          url: '/orders',
-          icon: ShoppingCart,
-        },
-        {
-          title: 'Inventario',
-          url: '/inventory',
-          icon: Archive,
-        },
-        {
-          title: 'Dashboard',
-          url: '/',
-          icon: LayoutDashboard,
-        },
+        { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+        { title: 'Pedidos', url: '/orders', icon: ShoppingCart },
+        { title: 'Clientes', url: '/clients', icon: UserCheck },
+        { title: 'Rutas', url: '/routes', icon: Route },
+        { title: 'Productos', url: '/products', icon: Package },
       ],
     },
     {
       title: 'Producción',
       items: [
-        {
-          title: 'Plan de Producción',
-          url: '/forecast',
-          icon: ChartBar,
-        },
+        { title: 'Plan de producción', url: '/forecast', icon: ChartBar },
       ],
     },
-    // {
-    //   title: 'Facturación',
-    //   items: [
-    //     {
-    //       title: 'Dashboard FEL',
-    //       url: '/fel',
-    //       icon: FileText,
-    //     },
-    //               {
-    //         title: 'Facturas',
-    //         url: '/fel/invoices',
-    //         icon: Receipt,
-    //       },
-    //       {
-    //         title: 'Generar Factura',
-    //         url: '/fel/generate',
-    //         icon: FileText,
-    //       },
-    //   ],
-    // },
     {
-      title: 'Configuración',
+      title: 'Administración',
       items: [
-        {
-          title: 'Configuración de Empresa',
-          url: '/settings',
-          icon: Settings,
-        },
+        { title: 'Usuarios', url: '/users', icon: Users },
+        { title: 'Mi empresa', url: '/settings', icon: Settings },
+        { title: 'Empresas', url: '/companies', icon: Building },
       ],
     },
   ],

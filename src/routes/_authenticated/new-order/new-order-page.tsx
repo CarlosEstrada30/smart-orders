@@ -1,34 +1,22 @@
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { QuantityInput } from '@/components/ui/numeric-input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Combobox } from '@/components/ui/combobox'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Main } from '@/components/layout/main'
-import { ArrowLeft, Plus, Trash2, Save, UserPlus } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
-import { ordersService, type OrderItem } from '@/services/orders'
-import { clientsService, type Client } from '@/services/clients'
-import { productsService, type Product } from '@/services/products'
 import { routesService, type Route } from '@/services'
-import { CreateClientModal } from '@/components/clients/create-client-modal'
+import { clientsService, type Client } from '@/services/clients'
+import { ordersService, type OrderItem } from '@/services/orders'
+import { productsService, type Product } from '@/services/products'
+import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatCurrency } from '@/lib/format'
+import { Button } from '@/components/ui/button'
+import { CreateClientModal } from '@/components/clients/create-client-modal'
+import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/page-header'
+import {
+  OrderFormView,
+  type OrderFormItem,
+} from '@/features/orders/components/order-form-view'
 
-interface OrderItemForm {
-  product_id: number
-  product_name: string
-  price: number
-  quantity: number
-  subtotal: number
-}
+type OrderItemForm = OrderFormItem
 
 export function NewOrderPage() {
   const [selectedClient, setSelectedClient] = useState('')
@@ -62,15 +50,15 @@ export function NewOrderPage() {
   // Función para recalcular precios cuando cambie la ruta
   const updatePricesForRoute = (routeId: number) => {
     if (orderItems.length > 0) {
-      const updatedItems = orderItems.map(item => {
-        const product = products.find(p => p.id === item.product_id)
+      const updatedItems = orderItems.map((item) => {
+        const product = products.find((p) => p.id === item.product_id)
         if (!product) return item
-        
+
         const correctPrice = getProductPrice(product, routeId)
         return {
           ...item,
           price: correctPrice,
-          subtotal: correctPrice * item.quantity
+          subtotal: correctPrice * item.quantity,
         }
       })
       setOrderItems(updatedItems)
@@ -80,10 +68,13 @@ export function NewOrderPage() {
   const loadClients = async () => {
     try {
       setLoadingClients(true)
-      const clientsData = await clientsService.getClients({ active_only: true, limit: 1000 })
+      const clientsData = await clientsService.getClients({
+        active_only: true,
+        limit: 1000,
+      })
       setClients(clientsData)
     } catch (_err) {
-      setError('Error al cargar los clientes')
+      setError('No se pudieron cargar los clientes')
     } finally {
       setLoadingClients(false)
     }
@@ -92,10 +83,12 @@ export function NewOrderPage() {
   const loadProducts = async () => {
     try {
       setLoadingProducts(true)
-      const productsData = await productsService.getProducts({ active_only: true })
+      const productsData = await productsService.getProducts({
+        active_only: true,
+      })
       setProducts(productsData)
     } catch (_err) {
-      setError('Error al cargar los productos')
+      setError('No se pudieron cargar los productos')
     } finally {
       setLoadingProducts(false)
     }
@@ -107,7 +100,7 @@ export function NewOrderPage() {
       const routesData = await routesService.getRoutes({ active_only: true })
       setRoutes(routesData)
     } catch (_err) {
-      setError('Error al cargar las rutas')
+      setError('No se pudieron cargar las rutas')
     } finally {
       setLoadingRoutes(false)
     }
@@ -116,8 +109,8 @@ export function NewOrderPage() {
   // Función para manejar cuando se crea un nuevo cliente
   const handleClientCreated = (newClient: Client) => {
     // Agregar el nuevo cliente a la lista
-    setClients(prev => [...prev, newClient])
-    
+    setClients((prev) => [...prev, newClient])
+
     // Seleccionar automáticamente el nuevo cliente
     setSelectedClient(newClient.id.toString())
   }
@@ -128,21 +121,23 @@ export function NewOrderPage() {
     if (!routeId) {
       return product.price
     }
-    
+
     // Si no hay precios por ruta, usar precio por defecto
     if (!product.route_prices || product.route_prices.length === 0) {
       return product.price
     }
-    
+
     // Buscar precio específico para la ruta
-    const routePrice = product.route_prices.find(rp => rp.route_id === routeId)
+    const routePrice = product.route_prices.find(
+      (rp) => rp.route_id === routeId
+    )
     return routePrice ? routePrice.price : product.price
   }
 
   const addItem = () => {
     if (!selectedProduct || quantity <= 0) return
 
-    const product = products.find(p => p.id === parseInt(selectedProduct))
+    const product = products.find((p) => p.id === parseInt(selectedProduct))
     if (!product) return
 
     // Obtener el precio correcto según la ruta seleccionada (si existe)
@@ -150,15 +145,22 @@ export function NewOrderPage() {
     const correctPrice = getProductPrice(product, routeId)
 
     // Verificar si el producto ya existe en la orden
-    const existingItem = orderItems.find(item => item.product_id === product.id)
+    const existingItem = orderItems.find(
+      (item) => item.product_id === product.id
+    )
     const existingQuantity = existingItem ? existingItem.quantity : 0
     const totalQuantity = existingQuantity + quantity
 
     // Si existe el producto, actualizar la cantidad; si no, agregar nuevo item
     if (existingItem) {
-      const updatedItems = orderItems.map(item => 
-        item.product_id === product.id 
-          ? { ...item, quantity: totalQuantity, price: correctPrice, subtotal: correctPrice * totalQuantity }
+      const updatedItems = orderItems.map((item) =>
+        item.product_id === product.id
+          ? {
+              ...item,
+              quantity: totalQuantity,
+              price: correctPrice,
+              subtotal: correctPrice * totalQuantity,
+            }
           : item
       )
       setOrderItems(updatedItems)
@@ -168,7 +170,7 @@ export function NewOrderPage() {
         product_name: product.name,
         price: correctPrice,
         quantity: quantity,
-        subtotal: correctPrice * quantity
+        subtotal: correctPrice * quantity,
       }
       setOrderItems([...orderItems, newItem])
     }
@@ -184,13 +186,15 @@ export function NewOrderPage() {
     if (newQuantity <= 0) return
 
     const item = orderItems[index]
-    const product = products.find(p => p.id === item.product_id)
-    
+    const product = products.find((p) => p.id === item.product_id)
+
     if (!product) return
 
     // Obtener el precio correcto según la ruta actual
     const routeId = selectedRoute ? parseInt(selectedRoute) : null
-    const correctPrice = routeId ? getProductPrice(product, routeId) : item.price
+    const correctPrice = routeId
+      ? getProductPrice(product, routeId)
+      : item.price
 
     const updatedItems = [...orderItems]
     updatedItems[index].quantity = newQuantity
@@ -200,14 +204,13 @@ export function NewOrderPage() {
   }
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
-  const discountAmount = discount // Ahora es un monto fijo, no porcentaje
-  const total = subtotal - discountAmount
+  const total = subtotal - discount // El descuento es un monto fijo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!selectedClient || !selectedRoute || orderItems.length === 0) {
-      setError('Por favor completa todos los campos requeridos')
+      setError('Elige la ruta, el cliente y al menos un producto.')
       return
     }
 
@@ -216,10 +219,10 @@ export function NewOrderPage() {
       setError(null)
 
       // Convertir los items del formulario al formato de la API
-      const apiItems: OrderItem[] = orderItems.map(item => ({
+      const apiItems: OrderItem[] = orderItems.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        unit_price: item.price
+        unit_price: item.price,
       }))
 
       const orderData = {
@@ -227,14 +230,14 @@ export function NewOrderPage() {
         route_id: parseInt(selectedRoute),
         discount_amount: discount > 0 ? discount : undefined,
         notes: notes || undefined,
-        items: apiItems
+        items: apiItems,
       }
 
       await ordersService.createOrder(orderData)
-      
+
       // Mostrar toast de éxito
-      toast.success('Pedido creado exitosamente')
-      
+      toast.success('Pedido creado')
+
       // Resetear formulario (excepto la ruta seleccionada)
       setSelectedClient('')
       setDiscount(0)
@@ -242,361 +245,100 @@ export function NewOrderPage() {
       setOrderItems([])
       setSelectedProduct('')
       setQuantity(1)
-      
     } catch (_err) {
-      setError('Error al crear la orden')
+      setError(
+        'No se pudo crear el pedido. Revisa los datos e intenta de nuevo.'
+      )
     } finally {
       setLoading(false)
     }
   }
 
   // Preparar opciones para los comboboxes
-  const clientOptions = clients.map(client => ({
+  const clientOptions = clients.map((client) => ({
     value: client.id.toString(),
     label: `${client.name}${client.phone ? ` (${client.phone})` : ''}`,
-    disabled: !client.is_active
+    disabled: !client.is_active,
   }))
 
-  const productOptions = products.map(product => {
+  const productOptions = products.map((product) => {
     const routeId = selectedRoute ? parseInt(selectedRoute) : undefined
     const displayPrice = getProductPrice(product, routeId)
-    const stockText = product.stock > 0 ? `Stock: ${product.stock}` : 'Sin stock'
+    const stockText =
+      product.stock > 0 ? `${product.stock} en stock` : 'sin stock'
     return {
       value: product.id.toString(),
-      label: `${product.name} - Q${displayPrice.toFixed(2)} (${stockText})`,
-      disabled: !product.is_active
+      label: `${product.name}, ${formatCurrency(displayPrice)} (${stockText})`,
+      disabled: !product.is_active,
     }
   })
 
-  const routeOptions = routes.map(route => ({
+  const routeOptions = routes.map((route) => ({
     value: route.id.toString(),
     label: route.name,
-    disabled: !route.is_active
+    disabled: !route.is_active,
   }))
 
   return (
-    <Main>
-      <div className="container mx-auto py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <Link to="/orders">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Nueva Orden</h1>
-              <p className="text-muted-foreground">
-                Crea una nueva orden
-              </p>
-            </div>
-          </div>
-        </div>
+    <Main className='max-md:pb-28'>
+      <Button
+        asChild
+        variant='ghost'
+        size='sm'
+        className='text-muted-foreground -ms-2 mb-2'
+      >
+        <Link to='/orders'>
+          <ArrowLeft aria-hidden='true' />
+          Pedidos
+        </Link>
+      </Button>
+      <PageHeader
+        title='Nuevo pedido'
+        description='Elige la ruta y el cliente, agrega los productos y crea el pedido.'
+      />
 
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-6">
-              <p className="text-red-600">{error}</p>
-            </CardContent>
-          </Card>
-        )}
+      <OrderFormView
+        error={error}
+        routeOptions={routeOptions}
+        clientOptions={clientOptions}
+        productOptions={productOptions}
+        loadingRoutes={loadingRoutes}
+        loadingClients={loadingClients}
+        loadingProducts={loadingProducts}
+        selectedRoute={selectedRoute}
+        selectedClient={selectedClient}
+        selectedProduct={selectedProduct}
+        quantity={quantity}
+        orderItems={orderItems}
+        discount={discount}
+        notes={notes}
+        subtotal={subtotal}
+        total={total}
+        saving={loading}
+        submitLabel='Crear pedido'
+        savingLabel='Creando pedido…'
+        onSubmit={handleSubmit}
+        onRouteChange={(value) => {
+          setSelectedRoute(value)
+          if (value) updatePricesForRoute(parseInt(value))
+        }}
+        onClientChange={setSelectedClient}
+        onNewClient={() => setCreateClientModalOpen(true)}
+        onProductChange={setSelectedProduct}
+        onQuantityChange={setQuantity}
+        onAddItem={addItem}
+        onItemQuantityChange={updateItemQuantity}
+        onRemoveItem={removeItem}
+        onDiscountChange={setDiscount}
+        onNotesChange={setNotes}
+      />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Información del Cliente */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información de la Orden</CardTitle>
-              <CardDescription>
-                Selecciona el cliente y la ruta de entrega para esta orden
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="h-6 flex items-center">
-                    <Label htmlFor="route">Ruta de Entrega *</Label>
-                  </div>
-                  <Combobox
-                    options={routeOptions}
-                    value={selectedRoute}
-                    onValueChange={(value) => {
-                      setSelectedRoute(value)
-                      if (value) {
-                        const routeId = parseInt(value)
-                        updatePricesForRoute(routeId)
-                      }
-                    }}
-                    placeholder="Selecciona una ruta"
-                    searchPlaceholder="Buscar ruta por nombre..."
-                    emptyMessage="No se encontraron rutas."
-                    disabled={loadingRoutes}
-                  />
-                  {loadingRoutes && (
-                    <p className="text-sm text-muted-foreground">Cargando rutas...</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between h-6">
-                    <Label htmlFor="client">Cliente *</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCreateClientModalOpen(true)}
-                      className="h-8 px-2"
-                    >
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      Nuevo
-                    </Button>
-                  </div>
-                  <Combobox
-                    options={clientOptions}
-                    value={selectedClient}
-                    onValueChange={setSelectedClient}
-                    placeholder="Selecciona un cliente"
-                    searchPlaceholder="Buscar cliente por nombre o teléfono..."
-                    emptyMessage="No se encontraron clientes."
-                    disabled={loadingClients}
-                  />
-                  {loadingClients && (
-                    <p className="text-sm text-muted-foreground">Cargando clientes...</p>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="discount">Descuento (Q)</Label>
-                  <Input
-                    id="discount"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="Ej: 50.00"
-                    value={discount || ''}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value)
-                      if (isNaN(value)) {
-                        setDiscount(0)
-                      } else if (value < 0) {
-                        setDiscount(0)
-                      } else {
-                        setDiscount(value)
-                      }
-                    }}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Descuento opcional en monto fijo
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notas</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Notas adicionales de la orden..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Productos de la Orden */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Productos de la Orden</CardTitle>
-              <CardDescription>
-                Agrega los productos a la orden
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Agregar Producto */}
-              <div className="space-y-4">
-                {/* Product and Quantity Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-                    <Label htmlFor="product">Producto</Label>
-                    <Combobox
-                      options={productOptions}
-                      value={selectedProduct}
-                      onValueChange={setSelectedProduct}
-                      placeholder="Selecciona un producto"
-                      searchPlaceholder="Buscar producto por nombre..."
-                      emptyMessage="No se encontraron productos."
-                      disabled={loadingProducts}
-                    />
-                    {loadingProducts && (
-                      <p className="text-sm text-muted-foreground">Cargando productos...</p>
-                    )}
-                    {!selectedRoute && (
-                      <p className="text-sm text-blue-600">Mostrando precios por defecto. Selecciona una ruta para ver precios específicos.</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Cantidad</Label>
-                    <QuantityInput
-                      id="quantity"
-                      value={quantity}
-                      onValueChange={setQuantity}
-                      min={0.01}
-                      allowDecimals={true}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Puedes ingresar cantidades decimales (ej: 1.5, 2.25)
-                    </p>
-                  </div>
-                  <div className="flex items-end sm:col-span-2 lg:col-span-1">
-                    <Button 
-                      type="button" 
-                      onClick={addItem} 
-                      className="w-full"
-                      disabled={!selectedProduct || quantity <= 0}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Agregar
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-
-              {/* Lista de Productos */}
-              {orderItems.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Productos Agregados</Label>
-                  <div className="border rounded-lg">
-                    {orderItems.map((item, index) => (
-                      <div key={index} className="p-4 border-b last:border-b-0">
-                        {/* Desktop Layout */}
-                        <div className="hidden md:flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium">{item.product_name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Q{item.price.toFixed(2)} x {item.quantity}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
-                              <Label htmlFor={`quantity-${index}`} className="text-sm">Cantidad:</Label>
-                              <QuantityInput
-                                id={`quantity-${index}`}
-                                value={item.quantity}
-                                onValueChange={(value) => updateItemQuantity(index, value)}
-                                min={0.01}
-                                allowDecimals={true}
-                                className="w-20"
-                              />
-                            </div>
-                            <div className="font-medium min-w-[80px] text-right">Q{item.subtotal.toFixed(2)}</div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeItem(index)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {/* Mobile Layout */}
-                        <div className="md:hidden space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 pr-4">
-                              <div className="font-medium text-sm leading-5">{item.product_name}</div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                Precio unitario: Q{item.price.toFixed(2)}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-medium text-sm">Q{item.subtotal.toFixed(2)}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center space-x-2">
-                              <Label htmlFor={`quantity-mobile-${index}`} className="text-sm whitespace-nowrap">Cantidad:</Label>
-                              <QuantityInput
-                                id={`quantity-mobile-${index}`}
-                                value={item.quantity}
-                                onValueChange={(value) => updateItemQuantity(index, value)}
-                                min={0.01}
-                                allowDecimals={true}
-                                className="w-16 h-8 text-sm"
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeItem(index)}
-                              className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 h-8 px-3"
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              <span className="text-xs">Eliminar</span>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Resumen del Total */}
-              {orderItems.length > 0 && (
-                <div className="flex justify-end">
-                  <div className="text-right space-y-1 min-w-[200px]">
-                    <div className="flex justify-between text-sm">
-                      <span>Subtotal:</span>
-                      <span>Q{subtotal.toFixed(2)}</span>
-                    </div>
-                    {discount > 0 && (
-                      <div className="flex justify-between text-sm text-green-600">
-                        <span>Descuento:</span>
-                        <span>-Q{discountAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <hr className="my-2" />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total:</span>
-                      <span>Q{total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Botones de Acción */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:space-x-4">
-            <Link to="/orders" className="w-full sm:w-auto">
-              <Button type="button" variant="outline" className="w-full">
-                Cancelar
-              </Button>
-            </Link>
-            <Button 
-              type="submit" 
-              disabled={!selectedClient || !selectedRoute || orderItems.length === 0 || loading || loadingClients || loadingProducts || loadingRoutes}
-              className="w-full sm:w-auto"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Creando...' : 'Crear Orden'}
-            </Button>
-          </div>
-        </form>
-
-        {/* Modal para crear cliente */}
-        <CreateClientModal
-          open={createClientModalOpen}
-          onOpenChange={setCreateClientModalOpen}
-          onClientCreated={handleClientCreated}
-        />
-      </div>
+      {/* Modal para crear cliente */}
+      <CreateClientModal
+        open={createClientModalOpen}
+        onOpenChange={setCreateClientModalOpen}
+        onClientCreated={handleClientCreated}
+      />
     </Main>
   )
-} 
+}

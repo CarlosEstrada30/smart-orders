@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatCurrency } from '@/lib/format'
 import {
   type SortingState,
   type VisibilityState,
@@ -48,7 +49,7 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { type InventoryEntryList } from '../data/schema'
-import { DataTablePagination } from './data-table-pagination'
+import { DataTablePagination } from '@/components/data-table'
 import { DataTableToolbar } from './data-table-toolbar'
 import { inventoryColumns as columns } from './inventory-columns'
 import { inventoryService } from '@/services/inventory'
@@ -289,7 +290,7 @@ export function InventoryTable({
                       key={action.id}
                       onClick={() => openConfirmationDialog(action, entry)}
                       disabled={isLoading}
-                      className={action.variant === 'destructive' ? 'text-red-600' : ''}
+                      className={action.variant === 'destructive' ? 'text-destructive' : ''}
                     >
                       <IconComponent className="mr-2 h-4 w-4" />
                       {action.label}
@@ -302,7 +303,7 @@ export function InventoryTable({
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      className="text-red-600"
+                      className="text-destructive"
                       onClick={() => onDeleteEntry?.(entry)}
                       disabled={isLoading}
                     >
@@ -347,18 +348,18 @@ export function InventoryTable({
   return (
     <div className='space-y-4 max-sm:has-[div[role="toolbar"]]:mb-16'>
       <DataTableToolbar table={table} />
-      <div className='overflow-hidden rounded-md border'>
+      <div className='overflow-x-auto rounded-lg border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='group/row'>
+              <TableRow key={headerGroup.id} className='bg-muted/50 hover:bg-muted/50 [&>th]:text-muted-foreground'>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
                       key={header.id}
                       colSpan={header.colSpan}
                       className={cn(
-                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                        '',
                         header.column.columnDef.meta?.className ?? ''
                       )}
                     >
@@ -386,7 +387,7 @@ export function InventoryTable({
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                        '',
                         cell.column.columnDef.meta?.className ?? ''
                       )}
                     >
@@ -404,7 +405,7 @@ export function InventoryTable({
                   colSpan={columns.length}
                   className='h-24 text-center'
                 >
-                  No hay resultados.
+                  No hay resultados con estos filtros.
                 </TableCell>
               </TableRow>
             )}
@@ -442,18 +443,18 @@ export function InventoryTable({
                         <div><strong>Tipo:</strong> {entryTypeData.label}</div>
                         <div><strong>Estado actual:</strong> {getEntryStatusData(entry.status).label}</div>
                         <div><strong>Items:</strong> {entry.items_count}</div>
-                        <div><strong>Costo total:</strong> Q{entry.total_cost.toFixed(2)}</div>
+                        <div><strong>Costo total:</strong> {formatCurrency(entry.total_cost)}</div>
                       </div>
                     </div>
 
                     {/* Critical action warning */}
                     {action.id === 'complete' && (
-                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <div className="flex items-center space-x-2 text-red-800">
+                      <div className="mt-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                        <div className="flex items-center space-x-2 text-destructive">
                           <CheckCircle2 className="h-5 w-5" />
                           <span className="font-medium">CONFIRMACIÓN FINAL</span>
                         </div>
-                        <div className="text-sm text-red-700 mt-1">
+                        <div className="text-sm text-destructive mt-1">
                           Al completar esta entrada, el stock de todos los productos se actualizará inmediatamente en el sistema.
                         </div>
                       </div>
@@ -473,7 +474,7 @@ export function InventoryTable({
                     onClick={executeWorkflowAction}
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Procesando...' : config.confirmLabel}
+                    {isLoading ? 'Procesando…' : config.confirmLabel}
                   </Button>
                 </DialogFooter>
               </>

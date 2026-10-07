@@ -1,37 +1,21 @@
 import { useState, useEffect } from 'react'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { paymentsService } from '@/services/payments'
-import type { PaymentSummary, OrderPaymentStatus } from '@/services/payments'
+import type { PaymentSummary } from '@/services/payments'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { Loader2, DollarSign, Plus } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { StatusBadge } from '@/components/status-badge'
+import { getPaymentStatusData } from '../data/data'
 import { CreatePaymentModal } from './create-payment-modal'
-import { cn } from '@/lib/utils'
 
 interface PaymentSummaryCardProps {
   orderId: number
   orderNumber?: string
   totalAmount: number
   onPaymentCreated?: () => void
-}
-
-const PAYMENT_STATUS_CONFIG: Record<
-  OrderPaymentStatus,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className?: string }
-> = {
-  unpaid: { 
-    label: 'Sin Pagar', 
-    variant: 'outline',
-    className: 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
-  },
-  partial: { label: 'Pago Parcial', variant: 'secondary' },
-  paid: { label: 'Pagado', variant: 'default' },
 }
 
 export function PaymentSummaryCard({
@@ -47,12 +31,11 @@ export function PaymentSummaryCard({
   const loadSummary = async () => {
     try {
       setLoading(true)
-      const paymentSummary = await paymentsService.getOrderPaymentSummary(
-        orderId
-      )
+      const paymentSummary =
+        await paymentsService.getOrderPaymentSummary(orderId)
       setSummary(paymentSummary)
     } catch (error) {
-      toast.error('Error al cargar el resumen de pagos')
+      toast.error('No se pudo cargar el cobro del pedido')
       console.error('Error loading payment summary:', error)
     } finally {
       setLoading(false)
@@ -74,15 +57,12 @@ export function PaymentSummaryCard({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Resumen de Pagos
-          </CardTitle>
+          <CardTitle className='font-display text-lg'>Cobro</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
+        <CardContent className='space-y-3'>
+          <Skeleton className='h-2 w-full rounded-full' />
+          <Skeleton className='h-5 w-2/3' />
+          <Skeleton className='h-9 w-full' />
         </CardContent>
       </Card>
     )
@@ -92,76 +72,60 @@ export function PaymentSummaryCard({
     return null
   }
 
-  const statusConfig =
-    PAYMENT_STATUS_CONFIG[summary.payment_status] ||
-    PAYMENT_STATUS_CONFIG.unpaid
-
+  const payment = getPaymentStatusData(summary.payment_status)
   const canCreatePayment =
     summary.payment_status !== 'paid' && summary.balance_due > 0
+  const paidPercent =
+    summary.total_amount > 0
+      ? Math.min(
+          100,
+          Math.round((summary.paid_amount / summary.total_amount) * 100)
+        )
+      : 0
 
   return (
     <>
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Resumen de Pagos
-            </CardTitle>
-            {canCreatePayment && (
-              <Button
-                size="sm"
-                onClick={() => setCreateModalOpen(true)}
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Registrar Pago
-              </Button>
-            )}
-          </div>
+        <CardHeader className='flex flex-row items-center justify-between gap-2'>
+          <CardTitle className='font-display text-lg'>Cobro</CardTitle>
+          <StatusBadge tone={payment.tone}>{payment.label}</StatusBadge>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Total de la Orden</p>
-              <p className="text-2xl font-bold">Q{summary.total_amount.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Monto Pagado</p>
-              <p className="text-2xl font-bold text-green-600">
-                Q{summary.paid_amount.toFixed(2)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Saldo Pendiente</p>
-              <p
-                className={`text-2xl font-bold ${
-                  summary.balance_due > 0
-                    ? 'text-orange-600'
-                    : 'text-green-600'
-                }`}
-              >
-                Q{summary.balance_due.toFixed(2)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Estado de Pago</p>
-              <div className="mt-1">
-                <Badge 
-                  variant={statusConfig.variant}
-                  className={cn(statusConfig.className)}
-                >
-                  {statusConfig.label}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground mb-2">
-              Número de Pagos: <strong>{summary.payment_count}</strong>
+        <CardContent className='tabular space-y-4'>
+          <div>
+            <p className='text-muted-foreground text-sm'>Saldo pendiente</p>
+            <p className='font-display text-2xl font-semibold'>
+              {formatCurrency(summary.balance_due)}
             </p>
           </div>
+
+          <div className='space-y-1.5'>
+            <div
+              className='bg-muted h-2 overflow-hidden rounded-full'
+              role='progressbar'
+              aria-label='Porcentaje cobrado'
+              aria-valuenow={paidPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className='bg-success h-full rounded-full transition-[width]'
+                style={{ width: `${paidPercent}%` }}
+              />
+            </div>
+            <p className='text-muted-foreground text-sm'>
+              Cobrado {formatCurrency(summary.paid_amount)} de{' '}
+              {formatCurrency(summary.total_amount)}
+              {summary.payment_count > 0 &&
+                ` en ${summary.payment_count} ${summary.payment_count === 1 ? 'pago' : 'pagos'}`}
+            </p>
+          </div>
+
+          {canCreatePayment && (
+            <Button className='w-full' onClick={() => setCreateModalOpen(true)}>
+              <Plus aria-hidden='true' />
+              Registrar pago
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -177,5 +141,3 @@ export function PaymentSummaryCard({
     </>
   )
 }
-
-

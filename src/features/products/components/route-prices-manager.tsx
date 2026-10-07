@@ -230,7 +230,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
         </Button>
         <div className="h-4 w-px bg-border" />
         <h3 className="font-semibold text-foreground">
-          {currentView === 'add' ? 'Agregar Precio por Ruta' : 'Editar Precio por Ruta'}
+          {currentView === 'add' ? 'Agregar precio por ruta' : 'Editar Precio por ruta'}
         </h3>
       </div>
 
@@ -262,7 +262,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
                 value={selectedRouteId}
                 onValueChange={setSelectedRouteId}
                 placeholder="Selecciona una ruta"
-                searchPlaceholder="Buscar ruta..."
+                searchPlaceholder="Buscar ruta…"
                 emptyMessage="No hay rutas disponibles para agregar precios."
               />
             )}
@@ -283,8 +283,8 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
           </div>
           
           {formError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-600 text-sm">{formError}</p>
+            <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+              <p className="text-destructive text-sm">{formError}</p>
             </div>
           )}
         </CardContent>
@@ -317,7 +317,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
-            <CardTitle className="text-lg">Precios por Ruta</CardTitle>
+            <CardTitle className="text-lg">Precios por ruta</CardTitle>
             <CardDescription>
               {routePrices.length} {routePrices.length === 1 ? 'ruta con precio' : 'rutas con precios'} específico{routePrices.length !== 1 ? 's' : ''}
             </CardDescription>
@@ -328,7 +328,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Agregar Precio
+            Agregar precio
           </Button>
         </CardHeader>
         <CardContent>
@@ -373,8 +373,8 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
                             variant={priceDifference > 0 ? "default" : "secondary"} 
                             className={
                               priceDifference > 0 
-                                ? "text-green-700 bg-green-50 border-green-200" 
-                                : "text-red-700 bg-red-50 border-red-200"
+                                ? "text-success bg-success/10 border-success/30" 
+                                : "text-destructive bg-destructive/10 border-destructive/30"
                             }
                           >
                             {priceDifference > 0 ? '+' : ''}Q{priceDifference.toFixed(2)}
@@ -399,7 +399,7 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeletePrice(routePrice)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -438,11 +438,11 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
   const getModalTitle = () => {
     switch (currentView) {
       case 'add':
-        return 'Agregar Precio por Ruta'
+        return 'Agregar precio por ruta'
       case 'edit':
-        return 'Editar Precio por Ruta'
+        return 'Editar Precio por ruta'
       default:
-        return 'Gestión de Precios por Ruta'
+        return 'Gestión de Precios por ruta'
     }
   }
 
@@ -465,12 +465,12 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Cargando datos...</p>
+                <p className="text-muted-foreground">Cargando datos…</p>
               </div>
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-destructive mb-4">{error}</p>
               <Button onClick={loadData} variant="outline">
                 Reintentar
               </Button>
@@ -491,12 +491,12 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
                   {formSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {currentView === 'add' ? 'Creando...' : 'Guardando...'}
+                      {currentView === 'add' ? 'Creando…' : 'Guardando…'}
                     </>
                   ) : (
                     <>
                       <Save className="h-4 w-4 mr-2" />
-                      {currentView === 'add' ? 'Crear Precio' : 'Guardar Cambios'}
+                      {currentView === 'add' ? 'Crear Precio' : 'Guardar cambios'}
                     </>
                   )}
                 </Button>
@@ -528,12 +528,12 @@ export function RoutePricesManager({ product, isOpen, onClose }: RoutePricesMana
             <AlertDialogAction 
               onClick={confirmDeletePrice}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive"
             >
               {deleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Eliminando...
+                  Eliminando…
                 </>
               ) : (
                 'Eliminar'

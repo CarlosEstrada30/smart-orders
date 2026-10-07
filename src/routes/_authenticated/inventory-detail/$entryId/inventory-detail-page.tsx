@@ -28,8 +28,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Main } from '@/components/layout/main'
+import { PageHeader } from '@/components/page-header'
+import { EmptyState } from '@/components/empty-state'
+import { LoadingState } from '@/components/loading-state'
+import { cn } from '@/lib/utils'
 import { 
   ArrowLeft, 
   Trash2, 
@@ -40,7 +43,8 @@ import {
   XCircle,
   Edit,
   AlertTriangle,
-  FileText
+  FileText,
+  PackageX,
 } from 'lucide-react'
 import { inventoryService, type InventoryEntry, type EntryStatus } from '@/services/inventory'
 import { toast } from 'sonner'
@@ -123,23 +127,6 @@ export function InventoryDetailPage() {
     }
   }
 
-  const getStatusBadgeVariant = (status: EntryStatus) => {
-    switch (status) {
-      case 'draft':
-        return 'secondary'
-      case 'pending':
-        return 'outline'
-      case 'approved':
-        return 'default'
-      case 'completed':
-        return 'default'
-      case 'cancelled':
-        return 'destructive'
-      default:
-        return 'outline'
-    }
-  }
-
   const getStatusIcon = (status: EntryStatus) => {
     switch (status) {
       case 'draft':
@@ -187,7 +174,7 @@ export function InventoryDetailPage() {
       case 'return':
         return 'Devolución'
       case 'initial':
-        return 'Inventario Inicial'
+        return 'Inventario inicial'
       default:
         return type
     }
@@ -201,14 +188,7 @@ export function InventoryDetailPage() {
   if (loading) {
     return (
       <Main>
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2">Cargando entrada...</p>
-            </div>
-          </div>
-        </div>
+        <LoadingState variant="detail" label="Cargando entrada…" />
       </Main>
     )
   }
@@ -216,125 +196,126 @@ export function InventoryDetailPage() {
   if (error || !entry) {
     return (
       <Main>
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <p className="text-red-600">{error || 'Entrada no encontrada'}</p>
-              <Link to="/inventory">
-                <Button className="mt-4">Volver a inventario</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <EmptyState
+          icon={PackageX}
+          title={error || 'No encontramos esta entrada'}
+          description="Puede que se haya eliminado o que el enlace sea incorrecto."
+          action={
+            <Button asChild variant="outline">
+              <Link to="/inventory">Volver a inventario</Link>
+            </Button>
+          }
+        />
       </Main>
     )
   }
 
+  const statusData = getEntryStatusData(entry.status ?? 'draft')
+
   return (
     <Main>
-      <div className="container mx-auto py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div className="space-y-6">
+        <div>
+          <Button asChild variant="ghost" size="sm" className="text-muted-foreground -ms-2 mb-2">
             <Link to="/inventory">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver
-              </Button>
+              <ArrowLeft aria-hidden="true" />
+              Inventario
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Entrada #{entry.entry_number}
-              </h1>
-              <p className="text-muted-foreground">
-                Detalles de la entrada de inventario
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant={getStatusBadgeVariant(entry.status)}>
-              <div className="flex items-center space-x-1">
-                {getStatusIcon(entry.status)}
-                <span>{getStatusLabel(entry.status)}</span>
-              </div>
-            </Badge>
-            
-            {/* Action buttons based on status */}
-            {entry.status === 'pending' && (
-              <Button
-                variant="outline"
-                onClick={() => openStatusActionDialog('approve')}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Aprobar
-              </Button>
-            )}
-
-            {entry.status === 'approved' && (
-              <Button
-                variant="outline"
-                onClick={() => openStatusActionDialog('complete')}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Completar
-              </Button>
-            )}
-
-            {(entry.status === 'draft' || entry.status === 'pending') && (
-              <Button
-                variant="destructive"
-                onClick={() => openStatusActionDialog('cancel')}
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Cancelar
-              </Button>
-            )}
-
-            {entry.status === 'draft' && (
-              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Eliminar
+          </Button>
+          <PageHeader
+            className="mb-0"
+            title={
+              <span className="flex flex-wrap items-center gap-3">
+                Entrada {entry.entry_number}
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-sans text-xs font-medium',
+                    statusData.color
+                  )}
+                >
+                  {getStatusIcon(entry.status ?? 'draft')}
+                  {getStatusLabel(entry.status ?? 'draft')}
+                </span>
+              </span>
+            }
+            description={getEntryTypeLabel(entry.entry_type)}
+            actions={
+              <>
+                {entry.status === 'pending' && (
+                  <Button onClick={() => openStatusActionDialog('approve')}>
+                    <CheckCircle aria-hidden="true" />
+                    Aprobar
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>¿Eliminar entrada?</DialogTitle>
-                    <DialogDescription>
-                      Esta acción no se puede deshacer. La entrada será eliminada permanentemente.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete}>
-                      Eliminar
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
+                )}
+
+                {entry.status === 'approved' && (
+                  <Button onClick={() => openStatusActionDialog('complete')}>
+                    <CheckCircle aria-hidden="true" />
+                    Completar
+                  </Button>
+                )}
+
+                {(entry.status === 'draft' || entry.status === 'pending') && (
+                  <Button
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => openStatusActionDialog('cancel')}
+                  >
+                    <XCircle aria-hidden="true" />
+                    Cancelar entrada
+                  </Button>
+                )}
+
+                {entry.status === 'draft' && (
+                  <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 aria-hidden="true" />
+                        Eliminar
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>¿Eliminar esta entrada?</DialogTitle>
+                        <DialogDescription>
+                          Se eliminará el borrador. Esta acción no se puede deshacer.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                          Volver
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                          Eliminar entrada
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </>
+            }
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Información de la Entrada */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Información General */}
+            {/* Información general */}
             <Card>
               <CardHeader>
-                <CardTitle>Información General</CardTitle>
+                <CardTitle>Información general</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Número de Entrada</Label>
+                    <Label>Número de entrada</Label>
                     <Input value={entry.entry_number} disabled />
                   </div>
                   <div className="space-y-2">
-                    <Label>Tipo de Entrada</Label>
+                    <Label>Tipo de entrada</Label>
                     <Input value={getEntryTypeLabel(entry.entry_type)} disabled />
                   </div>
                   <div className="space-y-2">
@@ -378,7 +359,7 @@ export function InventoryDetailPage() {
             {/* Items de la Entrada */}
             <Card>
               <CardHeader>
-                <CardTitle>Items de la Entrada</CardTitle>
+                <CardTitle>Productos</CardTitle>
               </CardHeader>
               <CardContent>
                 {entry.items && entry.items.length > 0 ? (
@@ -387,7 +368,7 @@ export function InventoryDetailPage() {
                       <TableRow>
                         <TableHead>Producto</TableHead>
                         <TableHead className="text-center">Cantidad</TableHead>
-                        <TableHead className="text-right">Costo Unitario</TableHead>
+                        <TableHead className="text-right">Costo unitario</TableHead>
                         <TableHead className="text-right">Total</TableHead>
                         <TableHead>Lote</TableHead>
                         <TableHead>Vencimiento</TableHead>
@@ -425,7 +406,7 @@ export function InventoryDetailPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Resumen de la Entrada</CardTitle>
+                <CardTitle>Resumen</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
@@ -440,7 +421,7 @@ export function InventoryDetailPage() {
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
-                    <span>Costo Total:</span>
+                    <span>Costo total:</span>
                     <span>Q{entry.total_cost?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>

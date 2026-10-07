@@ -2,8 +2,8 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { DataTableFacetedFilter } from './data-table-faceted-filter'
-import { DataTableViewOptions } from './data-table-view-options'
+import { DataTableFacetedFilter } from '@/components/data-table'
+import { DataTableViewOptions } from '@/components/data-table'
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>
@@ -15,19 +15,19 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
-      <div className='flex flex-1 flex-col gap-4'>
+    <div className='flex flex-wrap items-center justify-between gap-2'>
+      <div className='flex flex-1 flex-wrap items-center gap-2'>
         {/* Search input */}
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+        <div className='flex w-full items-center gap-2 sm:w-auto'>
           <Input
-            placeholder='Buscar rutas...'
+            placeholder='Buscar rutas…'
             value={
               (table.getColumn('name')?.getFilterValue() as string) ?? ''
             }
             onChange={(event) =>
               table.getColumn('name')?.setFilterValue(event.target.value)
             }
-            className='h-8 w-full sm:w-[200px] lg:w-[300px]'
+            className='bg-card h-9 w-full sm:w-72'
           />
           {isFiltered && (
             <Button
@@ -40,7 +40,7 @@ export function DataTableToolbar<TData>({
             </Button>
           )}
         </div>
-        
+
         {/* Filters row */}
         <div className='flex flex-wrap gap-2'>
           {table.getColumn('status') && (

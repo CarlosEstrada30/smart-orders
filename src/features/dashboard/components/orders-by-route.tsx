@@ -23,14 +23,14 @@ const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
 
 // Palette that works in both light and dark mode via opacity on the primary
 const COLORS = [
-  'hsl(221, 83%, 53%)',
-  'hsl(142, 71%, 45%)',
-  'hsl(38, 92%, 50%)',
-  'hsl(0, 84%, 60%)',
-  'hsl(271, 91%, 65%)',
-  'hsl(199, 89%, 48%)',
-  'hsl(330, 81%, 60%)',
-  'hsl(160, 84%, 39%)',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'color-mix(in oklch, var(--chart-1) 55%, var(--card))',
+  'color-mix(in oklch, var(--chart-2) 55%, var(--card))',
+  'color-mix(in oklch, var(--chart-3) 55%, var(--card))',
 ]
 
 interface RouteOrderData {
@@ -94,7 +94,7 @@ export function OrdersByRoute() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Pedidos por Ruta</h2>
+          <h2 className="font-display text-lg font-semibold">Pedidos por ruta</h2>
           <p className="text-sm text-muted-foreground">
             {totalOrders > 0 ? `${totalOrders} pedidos en total` : 'Distribución por ruta de entrega'}
           </p>

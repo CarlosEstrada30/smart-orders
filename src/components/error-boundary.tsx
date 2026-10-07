@@ -53,7 +53,7 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
 
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
-          <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
           <h2 className="text-xl font-semibold mb-2">¡Algo salió mal!</h2>
           <p className="text-muted-foreground text-center mb-4 max-w-md">
             Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.

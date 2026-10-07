@@ -58,7 +58,7 @@ export function RoutesCreateDialog({ open, onOpenChange, onRouteCreated }: Route
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Crear Nueva Ruta</DialogTitle>
+          <DialogTitle>Crear Nueva ruta</DialogTitle>
           <DialogDescription>
             Ingresa el nombre para crear una nueva ruta en el sistema.
           </DialogDescription>
@@ -70,7 +70,7 @@ export function RoutesCreateDialog({ open, onOpenChange, onRouteCreated }: Route
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Ej: Ruta Norte, Ruta Centro..."
+              placeholder="Ej: Ruta Norte, Ruta Centro…"
               required
             />
           </div>
@@ -81,7 +81,7 @@ export function RoutesCreateDialog({ open, onOpenChange, onRouteCreated }: Route
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Crear Ruta
+              Crear ruta
             </Button>
           </DialogFooter>
         </form>

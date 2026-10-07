@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatCurrency } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NumericInput } from '@/components/ui/numeric-input'
@@ -130,7 +131,7 @@ export function CreatePaymentModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Registrar Pago</DialogTitle>
+          <DialogTitle>Registrar pago</DialogTitle>
           <DialogDescription>
             Registra un pago para la orden{' '}
             {orderNumber || `#${orderId}`}
@@ -160,13 +161,13 @@ export function CreatePaymentModal({
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground">
-              Saldo pendiente: Q{balanceDue.toFixed(2)} | Total orden: Q
+              Saldo pendiente: {formatCurrency(balanceDue)} | Total orden: Q
               {totalAmount.toFixed(2)}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="payment_method">Método de Pago *</Label>
+            <Label htmlFor="payment_method">Método de pago</Label>
             <Select
               value={formData.payment_method}
               onValueChange={(value) =>

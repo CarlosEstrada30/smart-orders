@@ -12,12 +12,14 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
+import { palettes } from '@/config/palettes'
 import { sidebarData } from './layout/data/sidebar-data'
+import { PaletteSwatch } from './theme-switch'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
   const navigate = useNavigate()
-  const { setTheme } = useTheme()
+  const { setTheme, setPalette } = useTheme()
   const { open, setOpen } = useSearch()
 
   const runCommand = React.useCallback(
@@ -30,10 +32,10 @@ export function CommandMenu() {
 
   return (
     <CommandDialog modal open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder='Type a command or search...' />
+      <CommandInput placeholder='Busca una página o acción…' />
       <CommandList>
         <ScrollArea type='hover' className='h-72 pe-1'>
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty>Sin resultados.</CommandEmpty>
           {sidebarData.navGroups.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
               {group.items.map((navItem, i) => {
@@ -71,18 +73,31 @@ export function CommandMenu() {
             </CommandGroup>
           ))}
           <CommandSeparator />
-          <CommandGroup heading='Theme'>
+          <CommandGroup heading='Tema'>
             <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
-              <Sun /> <span>Light</span>
+              <Sun /> <span>Claro</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
               <Moon className='scale-90' />
-              <span>Dark</span>
+              <span>Oscuro</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
               <Laptop />
-              <span>System</span>
+              <span>Sistema</span>
             </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading='Color'>
+            {palettes.map((p) => (
+              <CommandItem
+                key={p.value}
+                value={`Color ${p.label}`}
+                onSelect={() => runCommand(() => setPalette(p.value))}
+              >
+                <PaletteSwatch sidebar={p.sidebar.light} accent={p.accent} className='size-4' />
+                <span>{p.label}</span>
+              </CommandItem>
+            ))}
           </CommandGroup>
         </ScrollArea>
       </CommandList>

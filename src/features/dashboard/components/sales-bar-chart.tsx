@@ -76,8 +76,8 @@ export function SalesBarChart({ routeId }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Resumen de Ventas</h2>
-          <p className="text-sm text-muted-foreground">Órdenes entregadas por mes</p>
+          <h2 className="font-display text-lg font-semibold">Ventas entregadas por mes</h2>
+          <p className="text-sm text-muted-foreground">Monto de los pedidos entregados en el año</p>
         </div>
         <Select
           value={String(selectedYear)}
@@ -116,14 +116,14 @@ export function SalesBarChart({ routeId }: Props) {
           <BarChart data={chartData}>
             <XAxis
               dataKey="month"
-              stroke="#888888"
+              stroke="var(--muted-foreground)"
               fontSize={11}
               tickLine={false}
               axisLine={false}
               interval={0}
             />
             <YAxis
-              stroke="#888888"
+              stroke="var(--muted-foreground)"
               fontSize={12}
               tickLine={false}
               axisLine={false}

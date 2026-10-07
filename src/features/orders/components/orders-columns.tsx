@@ -1,25 +1,18 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { StickyNote } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { User, Route, MoreHorizontal, Eye, Trash2, StickyNote, DollarSign } from 'lucide-react'
+import { DataTableColumnHeader } from '@/components/data-table'
+import { OrderStatusRoute } from '@/components/order-status-route'
+import { StatusBadge } from '@/components/status-badge'
+import { getPaymentStatusData } from '../data/data'
 import { type Order } from '../data/schema'
-import { getOrderStatusData } from '../data/data'
-import { DataTableColumnHeader } from '@/features/users/components/data-table-column-header'
 
 // Helper para formatear fechas en formato DD/MM/YYYY
 const formatDate = (date: Date) => {
@@ -60,25 +53,26 @@ export const ordersColumns: ColumnDef<Order>[] = [
   {
     accessorKey: 'order_number',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Número de Orden' />
+      <DataTableColumnHeader column={column} title='Pedido' />
     ),
     cell: ({ row }) => {
-      const orderNumber = row.getValue('order_number') as string || `#${row.original.id}`
+      const orderNumber =
+        (row.getValue('order_number') as string) || `#${row.original.id}`
       const notes = row.original.notes
       const hasNotes = notes && notes.trim().length > 0
-      
+
       return (
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-medium">
+        <div className='flex items-center gap-2'>
+          <span className='tabular font-medium whitespace-nowrap'>
             {orderNumber}
           </span>
           {hasNotes && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <StickyNote className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                <StickyNote className='text-muted-foreground hover:text-foreground h-4 w-4 transition-colors' />
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="whitespace-pre-wrap">{notes}</p>
+              <TooltipContent className='max-w-xs'>
+                <p className='whitespace-pre-wrap'>{notes}</p>
               </TooltipContent>
             </Tooltip>
           )}
@@ -98,23 +92,18 @@ export const ordersColumns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       const { client, client_id } = row.original
       return (
-        <div className="flex items-center space-x-2">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <div>
-            <div className="font-medium">
-              {client?.name || `Cliente #${client_id}`}
-            </div>
-            {client?.phone && (
-              <div className="text-sm text-muted-foreground">
-                {client.phone}
-              </div>
-            )}
-            {client && !client.is_active && (
-              <Badge variant="secondary" className="text-xs mt-1">
-                Inactivo
-              </Badge>
-            )}
+        <div className='min-w-0'>
+          <div className='truncate font-medium'>
+            {client?.name || `Cliente #${client_id}`}
           </div>
+          {client?.phone && (
+            <div className='text-muted-foreground tabular text-xs'>
+              {client.phone}
+            </div>
+          )}
+          {client && !client.is_active && (
+            <StatusBadge className='mt-1'>Inactivo</StatusBadge>
+          )}
         </div>
       )
     },
@@ -128,22 +117,17 @@ export const ordersColumns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       const { route } = row.original
       return route ? (
-        <div className="flex items-center space-x-2">
-          <Route className="h-4 w-4 text-muted-foreground" />
-          <div>
-            <div className="font-medium">{route.name}</div>
-            {!route.is_active && (
-              <Badge variant="secondary" className="text-xs mt-1">
-                Inactiva
-              </Badge>
-            )}
-          </div>
+        <div>
+          <div className='whitespace-nowrap'>{route.name}</div>
+          {!route.is_active && (
+            <StatusBadge className='mt-1'>Inactiva</StatusBadge>
+          )}
         </div>
       ) : (
-        <span className="text-sm text-muted-foreground">Sin ruta asignada</span>
+        <span className='text-muted-foreground text-sm'>Sin ruta asignada</span>
       )
     },
-    accessorFn: (row) => row.route ? row.route.id.toString() : 'null',
+    accessorFn: (row) => (row.route ? row.route.id.toString() : 'null'),
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
@@ -152,17 +136,18 @@ export const ordersColumns: ColumnDef<Order>[] = [
   {
     id: 'items_count',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Items' />
+      <DataTableColumnHeader column={column} title='Productos' />
     ),
     cell: ({ row }) => {
       const { items } = row.original
       const itemsCount = items?.length || 0
-      const totalQuantity = items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-      
+      const totalQuantity =
+        items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+
       return (
-        <div className="text-center">
-          <span className="font-medium">{itemsCount}</span>
-          <div className="text-xs text-muted-foreground">
+        <div className='tabular'>
+          <span className='font-medium'>{itemsCount}</span>
+          <div className='text-muted-foreground text-xs whitespace-nowrap'>
             {totalQuantity} unidades
           </div>
         </div>
@@ -176,15 +161,15 @@ export const ordersColumns: ColumnDef<Order>[] = [
       <DataTableColumnHeader column={column} title='Descuento' />
     ),
     cell: ({ row }) => {
-      const discount = row.getValue('discount_amount') as number || 0
+      const discount = (row.getValue('discount_amount') as number) || 0
       if (discount > 0) {
         return (
-          <Badge variant="secondary" className="text-green-700 bg-green-50 border-green-200">
-            Q{discount.toFixed(2)}
-          </Badge>
+          <span className='text-success tabular whitespace-nowrap'>
+            −{formatCurrency(discount)}
+          </span>
         )
       }
-      return <span className="text-xs text-muted-foreground">-</span>
+      return <span className='text-muted-foreground'>—</span>
     },
     enableSorting: false,
   },
@@ -194,14 +179,18 @@ export const ordersColumns: ColumnDef<Order>[] = [
       <DataTableColumnHeader column={column} title='Total' />
     ),
     cell: ({ row }) => {
-      const amount = row.getValue('total_amount') as number || 0
-      return <div className="font-medium">Q{amount.toFixed(2)}</div>
+      const amount = (row.getValue('total_amount') as number) || 0
+      return (
+        <div className='tabular font-semibold whitespace-nowrap'>
+          {formatCurrency(amount)}
+        </div>
+      )
     },
   },
   {
     id: 'payment_status',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado de Pago' />
+      <DataTableColumnHeader column={column} title='Pago' />
     ),
     cell: ({ row }) => {
       const order = row.original
@@ -209,61 +198,39 @@ export const ordersColumns: ColumnDef<Order>[] = [
       const paidAmount = order.paid_amount || 0
       const totalAmount = order.total_amount || 0
       // Usar nullish coalescing para que 0 no se trate como falsy
-      const balanceDue = order.balance_due ?? (totalAmount - paidAmount)
+      const balanceDue = order.balance_due ?? totalAmount - paidAmount
 
-      const paymentStatusConfig = {
-        unpaid: {
-          label: 'Sin Pagar',
-          variant: 'outline' as const,
-          className: 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100',
-          icon: DollarSign,
-        },
-        partial: {
-          label: 'Pago Parcial',
-          variant: 'secondary' as const,
-          className: '',
-          icon: DollarSign,
-        },
-        paid: {
-          label: 'Pagado',
-          variant: 'default' as const,
-          className: '',
-          icon: DollarSign,
-        },
-      }
-
-      const config = paymentStatusConfig[paymentStatus] || paymentStatusConfig.unpaid
-      const Icon = config.icon
+      const config = getPaymentStatusData(paymentStatus)
 
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge 
-              variant={config.variant} 
-              className={cn("cursor-help", config.className)}
+            <StatusBadge
+              tone={config.tone}
+              className='cursor-help'
+              tabIndex={0}
             >
-              <Icon className="h-3 w-3 mr-1" />
               {config.label}
-            </Badge>
+            </StatusBadge>
           </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1 text-sm">
-              <div className="font-semibold">Información de Pagos</div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total:</span>
-                <span className="font-medium">Q{totalAmount.toFixed(2)}</span>
+          <TooltipContent className='max-w-xs'>
+            <div className='min-w-40 space-y-1 text-sm'>
+              <div className='flex justify-between gap-4'>
+                <span className='opacity-75'>Total</span>
+                <span className='tabular font-medium'>
+                  {formatCurrency(totalAmount)}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Pagado:</span>
-                <span className="font-medium text-green-600">Q{paidAmount.toFixed(2)}</span>
+              <div className='flex justify-between gap-4'>
+                <span className='opacity-75'>Pagado</span>
+                <span className='tabular font-medium'>
+                  {formatCurrency(paidAmount)}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Saldo Pendiente:</span>
-                <span className={cn(
-                  "font-medium",
-                  balanceDue > 0 ? "text-orange-600" : "text-green-600"
-                )}>
-                  Q{balanceDue.toFixed(2)}
+              <div className='flex justify-between gap-4'>
+                <span className='opacity-75'>Saldo</span>
+                <span className='tabular font-semibold'>
+                  {formatCurrency(balanceDue)}
                 </span>
               </div>
             </div>
@@ -284,16 +251,7 @@ export const ordersColumns: ColumnDef<Order>[] = [
     ),
     cell: ({ row }) => {
       const status = row.getValue('status') as string
-      const statusData = getOrderStatusData(status)
-      
-      return (
-        <Badge variant="outline" className={cn('capitalize', statusData.color)}>
-          <div className="flex items-center space-x-1">
-            <statusData.icon className="h-4 w-4" />
-            <span>{statusData.label}</span>
-          </div>
-        </Badge>
-      )
+      return <OrderStatusRoute status={status} variant='mini' />
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
@@ -308,68 +266,56 @@ export const ordersColumns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       const createdAt = row.getValue('created_at') as string
       const updatedAt = row.original.updated_at
-      
+
       return (
-        <div className="text-sm">
-          <div>{createdAt ? formatDate(new Date(createdAt)) : '-'}</div>
-          {updatedAt && updatedAt !== createdAt && (
-            <div className="text-xs text-muted-foreground">
-              Actualizado: {formatDate(new Date(updatedAt))}
-            </div>
-          )}
+        <div
+          className='tabular text-sm whitespace-nowrap'
+          title={
+            updatedAt && updatedAt !== createdAt
+              ? `Actualizado el ${formatDate(new Date(updatedAt))}`
+              : undefined
+          }
+        >
+          {createdAt ? formatDate(new Date(createdAt)) : '—'}
         </div>
       )
     },
     filterFn: (row, id, value) => {
       // value es { from: Date, to: Date } | null
       if (!value) return true
-      
+
       const rowDate = new Date(row.getValue(id) as string)
       const { from, to } = value
-      
+
       if (from && to) {
         // Comparar solo la fecha (sin hora)
-        const rowDateOnly = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate())
-        const fromDateOnly = new Date(from.getFullYear(), from.getMonth(), from.getDate())
-        const toDateOnly = new Date(to.getFullYear(), to.getMonth(), to.getDate())
-        
+        const rowDateOnly = new Date(
+          rowDate.getFullYear(),
+          rowDate.getMonth(),
+          rowDate.getDate()
+        )
+        const fromDateOnly = new Date(
+          from.getFullYear(),
+          from.getMonth(),
+          from.getDate()
+        )
+        const toDateOnly = new Date(
+          to.getFullYear(),
+          to.getMonth(),
+          to.getDate()
+        )
+
         return rowDateOnly >= fromDateOnly && rowDateOnly <= toDateOnly
       }
-      
+
       return true
     },
     enableSorting: true,
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
-      const order = row.original
-      
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menú</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Eye className="mr-2 h-4 w-4" />
-              Ver detalles
-            </DropdownMenuItem>
-            {order.status !== 'cancelled' && (
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Cancelar
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    // El menú real se inyecta en orders-table.tsx con los handlers
+    cell: () => null,
+    enableHiding: false,
   },
 ]
-

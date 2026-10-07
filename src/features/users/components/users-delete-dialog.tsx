@@ -51,7 +51,7 @@ export function UsersDeleteDialog({ open, onOpenChange, user, onUserDeleted }: U
           </DialogDescription>
         </DialogHeader>
         
-        <div className="bg-gray-50 p-4 rounded-md">
+        <div className="bg-muted p-4 rounded-md">
           <h4 className="font-medium mb-2">Usuario a eliminar:</h4>
           <div className="text-sm space-y-1">
             <p><strong>Nombre:</strong> {user.full_name}</p>

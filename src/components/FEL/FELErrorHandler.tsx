@@ -244,15 +244,15 @@ export function FELErrorHandler({
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "p-2 rounded-full",
-                    action.priority === 'high' && "bg-red-100",
-                    action.priority === 'medium' && "bg-yellow-100", 
-                    action.priority === 'low' && "bg-gray-100"
+                    action.priority === 'high' && "bg-destructive/15",
+                    action.priority === 'medium' && "bg-warning/20", 
+                    action.priority === 'low' && "bg-muted"
                   )}>
                     <IconComponent className={cn(
                       "h-4 w-4",
-                      action.priority === 'high' && "text-red-600",
-                      action.priority === 'medium' && "text-yellow-600",
-                      action.priority === 'low' && "text-gray-600"
+                      action.priority === 'high' && "text-destructive",
+                      action.priority === 'medium' && "text-warning-foreground dark:text-warning",
+                      action.priority === 'low' && "text-muted-foreground"
                     )} />
                   </div>
                   

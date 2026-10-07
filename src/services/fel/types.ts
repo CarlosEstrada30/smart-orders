@@ -264,12 +264,12 @@ export const FEL_POLLING_CONFIG = {
 
 /** Colores para estados FEL */
 export const FEL_STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  processing: 'bg-blue-100 text-blue-800',
-  authorized: 'bg-green-100 text-green-800', 
-  rejected: 'bg-red-100 text-red-800',
-  error: 'bg-red-100 text-red-800',
-  timeout: 'bg-orange-100 text-orange-800',
+  pending: 'bg-warning/20 text-warning-foreground dark:text-warning',
+  processing: 'bg-info/15 text-info',
+  authorized: 'bg-success/15 text-success', 
+  rejected: 'bg-destructive/15 text-destructive',
+  error: 'bg-destructive/15 text-destructive',
+  timeout: 'bg-warning/20 text-warning-foreground dark:text-warning',
 } as const
 
 /** Iconos para estados FEL */

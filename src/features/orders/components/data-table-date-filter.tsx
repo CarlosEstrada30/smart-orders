@@ -145,9 +145,9 @@ export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilter
         <Button
           variant="outline"
           size="sm"
-          className="h-8 border-dashed"
+          className="bg-card h-9 w-full justify-start sm:w-auto"
         >
-          <Calendar className="mr-2 h-4 w-4" />
+          <Calendar className="h-4 w-4" aria-hidden="true" />
           Fecha
           {dateRange?.from && (
             <>
@@ -160,12 +160,12 @@ export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilter
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="start">
+      <PopoverContent className="w-[min(20rem,calc(100vw-2rem))] p-4" align="start">
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Selección rápida</label>
             <Select value={quickSelect} onValueChange={handleQuickSelect}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar período" />
               </SelectTrigger>
               <SelectContent>
@@ -180,21 +180,30 @@ export function DataTableDateFilter({ onDateRangeChange, dateRange }: DateFilter
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Rango personalizado</label>
-            <div className="flex gap-2">
-              <div className="flex-1">
+            <div className="grid gap-2">
+              <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-2">
+                <label htmlFor="date-from" className="text-muted-foreground text-sm">
+                  Desde
+                </label>
                 <Input
+                  id="date-from"
                   type="date"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  placeholder="Fecha desde"
+                  className="tabular min-w-0"
                 />
               </div>
-              <div className="flex-1">
+              <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-2">
+                <label htmlFor="date-to" className="text-muted-foreground text-sm">
+                  Hasta
+                </label>
                 <Input
+                  id="date-to"
                   type="date"
                   value={toDate}
+                  min={fromDate || undefined}
                   onChange={(e) => setToDate(e.target.value)}
-                  placeholder="Fecha hasta"
+                  className="tabular min-w-0"
                 />
               </div>
             </div>

@@ -1,8 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
+import { EmptyState } from '@/components/empty-state'
+import { LoadingState } from '@/components/loading-state'
+import { StatCard } from '@/components/stat-card'
+import { formatCurrency } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
-import { Plus, Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react'
+import { AlertCircle, Banknote, CheckCircle, Clock, Package, Plus, RefreshCw } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { inventoryService, type InventoryEntryListResponse, type InventoryEntrySummary } from '@/services/inventory'
 import { InventoryTable } from './components/inventory-table'
@@ -88,7 +94,7 @@ export function InventoryPage() {
       
       console.error('Error loading inventory data:', err)
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-      setError(`Error al cargar los datos de inventario: ${errorMessage}`)
+      setError(`Revisa tu conexión e intenta de nuevo (${errorMessage}).`)
       toast.error('Error al cargar los datos de inventario')
     } finally {
       if (isMounted()) {
@@ -120,89 +126,93 @@ export function InventoryPage() {
     loadData()
   }
 
-  if (loading) {
-    return (
-      <Main>
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2">Cargando inventario...</p>
-            </div>
-          </div>
-        </div>
-      </Main>
-    )
-  }
-
-  if (error) {
-    return (
-      <Main>
-        <div className="container mx-auto py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <p className="text-red-600">{error}</p>
-              <Button className="mt-4" onClick={loadData}>
-                Reintentar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Main>
-    )
-  }
-
   return (
     <Main>
-      <div className="container mx-auto py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Inventario</h1>
-            <p className="text-muted-foreground">
-              Gestiona las entradas de inventario y el stock de productos
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button onClick={refreshData} variant="outline">
+      <PageHeader
+        title="Inventario"
+        description="Entradas de producto: producción, compras, devoluciones y ajustes."
+        actions={
+          <>
+            <Button onClick={refreshData} variant="outline" className="bg-card" disabled={loading}>
+              <RefreshCw className={cn(loading && 'animate-spin')} aria-hidden="true" />
               Actualizar
             </Button>
-            {/* Solo mostrar el botón si el usuario puede gestionar inventario */}
             <PermissionGuard inventoryPermission="can_manage">
-              <Link to="/inventory/new-entry">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Entrada
-                </Button>
-              </Link>
+              <Button asChild>
+                <Link to="/inventory/new-entry">
+                  <Plus aria-hidden="true" />
+                  Nueva entrada
+                </Link>
+              </Button>
             </PermissionGuard>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-
-        {/* Inventory Table */}
+      {error ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Entradas de Inventario</CardTitle>
-            <CardDescription>
-              Lista de todas las entradas de inventario registradas
-            </CardDescription>
-          </CardHeader>
           <CardContent>
-            <InventoryTable
-              data={entries}
-              onViewEntry={handleViewEntry}
-              onEditEntry={handleEditEntry}
-              onDeleteEntry={handleDeleteEntry}
-              onSubmitEntry={handleSubmitEntry}
-              onApproveEntry={refreshData}
-              onCompleteEntry={refreshData}
-              onCancelEntry={refreshData}
-              userRole={role || 'employee'} // Usar rol real del usuario
+            <EmptyState
+              icon={AlertCircle}
+              title="No se pudo cargar el inventario"
+              description={error}
+              action={<Button onClick={loadData}>Reintentar</Button>}
             />
           </CardContent>
         </Card>
-      </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+            <StatCard
+              label="Entradas registradas"
+              value={(summary?.total_entries ?? 0).toLocaleString('es-GT')}
+              icon={Package}
+              isLoading={loading}
+            />
+            <StatCard
+              label="Por aprobar"
+              value={(summary?.pending_entries ?? 0).toLocaleString('es-GT')}
+              hint="Pendientes de revisión"
+              icon={Clock}
+              isLoading={loading}
+            />
+            <StatCard
+              label="Completadas hoy"
+              value={(summary?.completed_today ?? 0).toLocaleString('es-GT')}
+              icon={CheckCircle}
+              isLoading={loading}
+            />
+            {canViewCosts && (
+              <StatCard
+                label="Costo total"
+                value={formatCurrency(summary?.total_cost ?? 0)}
+                icon={Banknote}
+                isLoading={loading}
+              />
+            )}
+          </div>
+
+          {loading ? (
+            <LoadingState label="Cargando entradas…" />
+          ) : (
+            <Card className="py-4 sm:py-6">
+              <CardContent className="px-3 sm:px-6">
+                <InventoryTable
+                  data={entries}
+                  onViewEntry={handleViewEntry}
+                  onEditEntry={handleEditEntry}
+                  onDeleteEntry={handleDeleteEntry}
+                  onSubmitEntry={handleSubmitEntry}
+                  onApproveEntry={refreshData}
+                  onCompleteEntry={refreshData}
+                  onCancelEntry={refreshData}
+                  userRole={role || 'employee'} // Usar rol real del usuario
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </Main>
   )
 }

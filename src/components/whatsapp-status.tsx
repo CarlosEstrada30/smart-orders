@@ -85,18 +85,18 @@ export function WhatsAppStatus() {
 
   const getStatusColor = () => {
     if (loading) return 'text-muted-foreground'
-    if (status?.status === 'connected') return 'text-green-500'
+    if (status?.status === 'connected') return 'text-success'
     // Si hay QR disponible, considerar como "connecting" (amarillo)
     if (status?.status === 'connecting' || (status?.status === 'disconnected' && (status?.qr_code || status?.qr_url))) {
-      return 'text-yellow-500'
+      return 'text-warning-foreground dark:text-warning'
     }
-    return 'text-red-500'
+    return 'text-destructive'
   }
 
   const getStatusTooltip = () => {
-    if (loading) return 'Verificando estado de WhatsApp...'
+    if (loading) return 'Verificando estado de WhatsApp…'
     if (status?.status === 'connected') return 'WhatsApp conectado'
-    if (status?.status === 'connecting') return 'Conectando WhatsApp...'
+    if (status?.status === 'connecting') return 'Conectando WhatsApp…'
     return 'WhatsApp desconectado - Click para ver QR'
   }
 
@@ -142,9 +142,9 @@ export function WhatsAppStatus() {
           <span
             className={cn(
               'absolute top-0 right-0 h-2 w-2 rounded-full border-2 border-background',
-              status.status === 'connected' && 'bg-green-500',
-              (status.status === 'connecting' || (status.status === 'disconnected' && (status.qr_code || status.qr_url))) && 'bg-yellow-500',
-              status.status === 'disconnected' && !status.qr_code && !status.qr_url && 'bg-red-500'
+              status.status === 'connected' && 'bg-success',
+              (status.status === 'connecting' || (status.status === 'disconnected' && (status.qr_code || status.qr_url))) && 'bg-warning',
+              status.status === 'disconnected' && !status.qr_code && !status.qr_url && 'bg-destructive'
             )}
           />
         )}
@@ -165,7 +165,7 @@ export function WhatsAppStatus() {
           <div className="flex flex-col items-center gap-4 py-4">
             {getQRImageSrc() ? (
               <>
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <div className="bg-white p-4 rounded-lg border border-border">
                   <img
                     src={getQRImageSrc() || ''}
                     alt="QR Code para conectar WhatsApp"
@@ -184,15 +184,15 @@ export function WhatsAppStatus() {
               <div className="flex flex-col items-center gap-2 py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
-                  {status?.message || 'Obteniendo código QR...'}
+                  {status?.message || 'Obteniendo código QR…'}
                 </p>
               </div>
             )}
 
             {(status?.status === 'connecting' || (status?.status === 'disconnected' && (status?.qr_code || status?.qr_url))) && (
-              <div className="flex items-center gap-2 text-sm text-yellow-600">
+              <div className="flex items-center gap-2 text-sm text-warning-foreground dark:text-warning">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Esperando conexión...</span>
+                <span>Esperando conexión…</span>
               </div>
             )}
           </div>

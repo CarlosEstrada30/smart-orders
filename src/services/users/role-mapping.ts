@@ -17,42 +17,42 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     is_active: true,
     displayName: 'Empleado',
     description: 'Puede crear entradas de inventario en estado borrador',
-    color: 'bg-blue-100 text-blue-800'
+    color: 'bg-info/15 text-info'
   },
   sales: {
     is_superuser: false,
     is_active: true,
     displayName: 'Vendedor',
     description: 'Gestiona pedidos, clientes y productos',
-    color: 'bg-green-100 text-green-800'
+    color: 'bg-success/15 text-success'
   },
   driver: {
     is_superuser: false,
     is_active: true,
     displayName: 'Repartidor',
     description: 'Actualiza estado de entregas y ve rutas asignadas',
-    color: 'bg-yellow-100 text-yellow-800'
+    color: 'bg-warning/20 text-warning-foreground dark:text-warning'
   },
   supervisor: {
     is_superuser: false,
     is_active: true,
     displayName: 'Supervisor',
     description: 'Aprueba inventario, gestiona productos y rutas',
-    color: 'bg-purple-100 text-purple-800'
+    color: 'bg-primary/15 text-primary'
   },
   manager: {
     is_superuser: false,
     is_active: true,
     displayName: 'Gerente',
     description: 'Acceso completo excepto gestión de usuarios',
-    color: 'bg-red-100 text-red-800'
+    color: 'bg-destructive/15 text-destructive'
   },
   admin: {
     is_superuser: true,
     is_active: true,
     displayName: 'Administrador',
     description: 'Superusuario con acceso completo al sistema, puede gestionar todos los módulos y usuarios',
-    color: 'bg-gray-100 text-gray-800'
+    color: 'bg-muted text-foreground'
   }
 }
 

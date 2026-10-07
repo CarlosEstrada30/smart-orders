@@ -87,8 +87,8 @@ export function FELProcessingLoader({
         return {
           title: 'Preparando Factura FEL',
           description: 'Validando datos antes del envío a SAT',
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-50',
+          color: 'text-warning-foreground dark:text-warning',
+          bgColor: 'bg-warning/15',
           icon: Clock,
           showProgress: true,
           showTimer: true
@@ -98,8 +98,8 @@ export function FELProcessingLoader({
         return {
           title: 'Procesando con SAT',
           description: 'Enviando factura para autorización fiscal',
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
+          color: 'text-info',
+          bgColor: 'bg-info/10',
           icon: Loader2,
           showProgress: true,
           showTimer: true,
@@ -110,8 +110,8 @@ export function FELProcessingLoader({
         return {
           title: '¡Factura FEL Autorizada!',
           description: 'La factura fue autorizada exitosamente por SAT',
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
+          color: 'text-success',
+          bgColor: 'bg-success/10',
           icon: CheckCircle,
           showProgress: false,
           showTimer: false
@@ -121,8 +121,8 @@ export function FELProcessingLoader({
         return {
           title: 'Factura FEL Rechazada',
           description: 'SAT rechazó la factura por datos incorrectos',
-          color: 'text-red-600',
-          bgColor: 'bg-red-50',
+          color: 'text-destructive',
+          bgColor: 'bg-destructive/10',
           icon: XCircle,
           showProgress: false,
           showTimer: false
@@ -132,8 +132,8 @@ export function FELProcessingLoader({
         return {
           title: 'Error en Proceso FEL',
           description: 'Ocurrió un error técnico durante el procesamiento',
-          color: 'text-red-600',
-          bgColor: 'bg-red-50',
+          color: 'text-destructive',
+          bgColor: 'bg-destructive/10',
           icon: AlertTriangle,
           showProgress: false,
           showTimer: false
@@ -143,8 +143,8 @@ export function FELProcessingLoader({
         return {
           title: 'Proceso FEL Demorado',
           description: 'El proceso está tomando más tiempo del esperado',
-          color: 'text-orange-600',
-          bgColor: 'bg-orange-50',
+          color: 'text-warning-foreground dark:text-warning',
+          bgColor: 'bg-warning/15',
           icon: Timer,
           showProgress: false,
           showTimer: true
@@ -152,10 +152,10 @@ export function FELProcessingLoader({
 
       default:
         return {
-          title: 'Procesando...',
+          title: 'Procesando…',
           description: 'Iniciando proceso de facturación',
-          color: 'text-gray-600',
-          bgColor: 'bg-gray-50',
+          color: 'text-muted-foreground',
+          bgColor: 'bg-muted',
           icon: Loader2,
           showProgress: true,
           showTimer: true,
@@ -214,7 +214,7 @@ export function FELProcessingLoader({
                 <span className="text-muted-foreground">Progreso</span>
                 <span className="font-medium">{Math.round(progress)}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${Math.min(progress, 100)}%` }}
@@ -241,11 +241,11 @@ export function FELProcessingLoader({
 
           {/* UUID si está autorizada */}
           {isSuccess && fel_uuid && (
-            <Alert className="bg-green-50 border-green-200">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+            <Alert className="bg-success/10 border-success/30">
+              <CheckCircle className="h-4 w-4 text-success" />
               <AlertDescription>
                 <div className="space-y-1">
-                  <div className="font-medium text-green-800">UUID SAT:</div>
+                  <div className="font-medium text-success">UUID SAT:</div>
                   <code className="text-xs bg-white px-2 py-1 rounded border">
                     {fel_uuid}
                   </code>
@@ -267,18 +267,18 @@ export function FELProcessingLoader({
 
           {/* Estados intermedios con información */}
           {status === 'processing' && (
-            <Alert className="bg-blue-50 border-blue-200">
-              <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-              <AlertDescription className="text-blue-800">
+            <Alert className="bg-info/10 border-info/30">
+              <Loader2 className="h-4 w-4 text-info animate-spin" />
+              <AlertDescription className="text-info">
                 La factura está siendo verificada por SAT. Este proceso puede tomar hasta 60 segundos.
               </AlertDescription>
             </Alert>
           )}
 
           {status === 'timeout' && (
-            <Alert className="bg-orange-50 border-orange-200">
-              <Timer className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
+            <Alert className="bg-warning/15 border-warning/50">
+              <Timer className="h-4 w-4 text-warning-foreground dark:text-warning" />
+              <AlertDescription className="text-warning-foreground dark:text-warning">
                 El proceso está tomando más tiempo del esperado. Puede verificar el estado más tarde.
               </AlertDescription>
             </Alert>

@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { type Company } from '../data/schema'
-import { DataTablePagination } from './data-table-pagination'
+import { DataTablePagination } from '@/components/data-table'
 import { DataTableToolbar } from './data-table-toolbar'
 import { companiesColumns as columns } from './companies-columns'
 

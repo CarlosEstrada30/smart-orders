@@ -106,7 +106,7 @@ export function CreateClientModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Nuevo Cliente</DialogTitle>
+          <DialogTitle>Nuevo cliente</DialogTitle>
           <DialogDescription>
             Completa los datos del nuevo cliente
           </DialogDescription>
@@ -193,7 +193,7 @@ export function CreateClientModal({
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Crear Cliente
+              Crear cliente
             </Button>
           </div>
         </form>

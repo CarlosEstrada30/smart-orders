@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { LongText } from '@/components/long-text'
 import { routeStatusTypes, routeStatusLabels } from '../data/data'
 import { type Route } from '../data/schema'
-import { DataTableColumnHeader } from './data-table-column-header'
+import { DataTableColumnHeader } from '@/components/data-table'
 import { DataTableRowActions } from './data-table-row-actions'
 
 export const routesColumns: ColumnDef<Route>[] = [
@@ -81,7 +81,7 @@ export const routesColumns: ColumnDef<Route>[] = [
   {
     accessorKey: 'created_at',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha de Creación' />
+      <DataTableColumnHeader column={column} title='Fecha de creación' />
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue('created_at'))
@@ -102,7 +102,7 @@ export const routesColumns: ColumnDef<Route>[] = [
   {
     accessorKey: 'updated_at',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Última Actualización' />
+      <DataTableColumnHeader column={column} title='Última actualización' />
     ),
     cell: ({ row }) => {
       const updatedAt = row.getValue('updated_at') as string | null

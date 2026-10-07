@@ -70,6 +70,7 @@ function SidebarMenuLink({ item, href }: { item: NavLink; href: string }) {
         asChild
         isActive={checkIsActive(href, item)}
         tooltip={item.title}
+        className='before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:start-0 before:w-[3px] before:rounded-full before:opacity-0 data-[active=true]:before:opacity-100'
       >
         <Link to={item.url} onClick={() => setOpenMobile(false)}>
           {item.icon && <item.icon />}

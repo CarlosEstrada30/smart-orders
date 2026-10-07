@@ -36,9 +36,9 @@ export function ProductsSummaryView({ data, isLoading, isError, productSearch }:
 
   if (isError) {
     return (
-      <Card className="border-red-200 bg-red-50">
+      <Card className="border-destructive/30 bg-destructive/10">
         <CardContent className="pt-6">
-          <p className="text-red-600">Error al cargar el consolidado. Intenta de nuevo.</p>
+          <p className="text-destructive">Error al cargar el consolidado. Intenta de nuevo.</p>
         </CardContent>
       </Card>
     )
@@ -88,7 +88,7 @@ export function ProductsSummaryView({ data, isLoading, isError, productSearch }:
       </Table>
 
       <div className="border-t pt-4 text-sm text-muted-foreground">
-        {data.total_order_count} {data.total_order_count === 1 ? 'orden' : 'órdenes'}
+        {data.total_order_count} {data.total_order_count === 1 ? 'pedido' : 'pedidos'}
       </div>
     </div>
   )

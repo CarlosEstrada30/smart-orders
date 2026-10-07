@@ -7,6 +7,7 @@ import {
   Clock,
   Route,
 } from 'lucide-react'
+import type { StatusTone } from '@/components/status-badge'
 
 // Estados de órdenes con sus íconos y colores
 export const orderStatuses = [
@@ -14,66 +15,75 @@ export const orderStatuses = [
     value: 'pending',
     label: 'Pendiente',
     icon: Clock,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50 border-yellow-200',
+    tone: 'warning' as StatusTone,
+    color: 'text-warning-foreground dark:text-warning',
+    bgColor: 'bg-warning/20 border-warning/50',
   },
   {
     value: 'confirmed',
     label: 'Confirmado',
     icon: ShoppingCart,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 border-blue-200',
+    tone: 'info' as StatusTone,
+    color: 'text-info',
+    bgColor: 'bg-info/10 border-info/25',
   },
   {
     value: 'in_progress',
-    label: 'En Proceso',
+    label: 'En proceso',
     icon: Package,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50 border-orange-200',
+    tone: 'info' as StatusTone,
+    color: 'text-info',
+    bgColor: 'bg-info/10 border-info/25',
   },
   {
     value: 'shipped',
     label: 'Enviado',
     icon: Truck,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 border-purple-200',
+    tone: 'primary' as StatusTone,
+    color: 'text-primary',
+    bgColor: 'bg-primary/10 border-primary/25',
   },
   {
     value: 'delivered',
     label: 'Entregado',
     icon: CheckCircle,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 border-green-200',
+    tone: 'success' as StatusTone,
+    color: 'text-success',
+    bgColor: 'bg-success/10 border-success/25',
   },
   {
     value: 'cancelled',
     label: 'Cancelado',
     icon: X,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 border-red-200',
+    tone: 'danger' as StatusTone,
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10 border-destructive/25',
   },
 ] as const
 
 export const orderStatusMap = new Map(
-  orderStatuses.map(status => [status.value, status])
+  orderStatuses.map((status) => [status.value, status])
 )
 
 // Función para obtener datos de estado
 export const getOrderStatusData = (status: string) => {
-  return orderStatusMap.get(status) || {
-    value: status,
-    label: status,
-    icon: Package,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-50 border-gray-200',
-  }
+  return (
+    orderStatusMap.get(status) || {
+      value: status,
+      label: status,
+      icon: Package,
+      tone: 'neutral' as StatusTone,
+      color: 'text-muted-foreground',
+      bgColor: 'bg-muted border-border',
+    }
+  )
 }
 
 // Función para obtener rutas únicas de una lista de órdenes
 export const getUniqueRoutes = (orders: any[]) => {
   const routes = new Map()
-  
-  orders.forEach(order => {
+
+  orders.forEach((order) => {
     if (order.route && order.route.is_active) {
       routes.set(order.route.id, {
         value: order.route.id.toString(),
@@ -93,3 +103,13 @@ export const getUniqueRoutes = (orders: any[]) => {
   return Array.from(routes.values())
 }
 
+// Estados de pago del pedido (saldo)
+export const paymentStatuses = [
+  { value: 'unpaid', label: 'Sin pagar', tone: 'danger' as StatusTone },
+  { value: 'partial', label: 'Pago parcial', tone: 'warning' as StatusTone },
+  { value: 'paid', label: 'Pagado', tone: 'success' as StatusTone },
+] as const
+
+export const getPaymentStatusData = (status?: string | null) =>
+  paymentStatuses.find((s) => s.value === (status || 'unpaid')) ??
+  paymentStatuses[0]

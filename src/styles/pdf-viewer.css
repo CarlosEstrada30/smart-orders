@@ -9,15 +9,11 @@
 /* Área de documentos */
 .rpv-core__doc-container {
   padding: 16px;
-  background-color: rgb(243 244 246);
+  background-color: var(--muted);
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100%;
-}
-
-.dark .rpv-core__doc-container {
-  background-color: rgb(31 41 55);
 }
 
 /* Páginas del PDF */

@@ -140,7 +140,7 @@ export const ENTRY_TYPE_LABELS: Record<EntryType, string> = {
   production: 'Producción',
   return: 'Devolución',
   adjustment: 'Ajuste',
-  initial: 'Inventario Inicial'
+  initial: 'Inventario inicial'
 }
 
 export const ENTRY_STATUS_LABELS: Record<EntryStatus, string> = {

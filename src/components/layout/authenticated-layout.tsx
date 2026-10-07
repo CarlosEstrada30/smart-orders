@@ -1,12 +1,13 @@
 import { Outlet } from '@tanstack/react-router'
+import { BrandMark } from '@/assets/brand-mark'
+import { useAuthStore } from '@/stores/auth-store'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
-import { useAutoLoadPermissions, usePermissions } from '@/hooks/use-permissions'
-import { PermissionsLoadingCompact } from './permissions-loading'
 import { useCompanySettings } from '@/hooks/use-company-settings'
-import { useAuthStore } from '@/stores/auth-store'
+import { useAutoLoadPermissions, usePermissions } from '@/hooks/use-permissions'
+import { useTokenExpiration } from '@/hooks/use-token-expiration'
 import {
   SidebarContent,
   SidebarFooter,
@@ -16,17 +17,18 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
-import { SkipToMain } from '@/components/skip-to-main'
 import { Header } from '@/components/layout/header'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { SkipToMain } from '@/components/skip-to-main'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { WhatsAppStatus } from '@/components/whatsapp-status'
-import { useFilteredSidebarData } from './protected-sidebar'
+import { MobileTabBar } from './mobile-tab-bar'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
+import { PermissionsLoadingCompact } from './permissions-loading'
+import { useFilteredSidebarData } from './protected-sidebar'
 import { TeamSwitcher } from './team-switcher'
-import { useTokenExpiration } from '@/hooks/use-token-expiration'
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode
@@ -35,40 +37,43 @@ type AuthenticatedLayoutProps = {
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie('sidebar_state') !== 'false'
   const { isLoggingOut } = useAuthStore((state) => state.auth)
-  
+
   // Verificar expiración del token
   useTokenExpiration()
-  
+
   // Cargar permisos automáticamente al montar el layout
   useAutoLoadPermissions()
-  
+
   // Verificar estado de permisos
   const { isLoading: permissionsLoading } = usePermissions()
-  
+
   // Cargar settings de la empresa automáticamente
   useCompanySettings()
-  
+
   // Obtener datos del sidebar filtrados por permisos
-  const { isLoading: sidebarLoading, ...filteredSidebarData } = useFilteredSidebarData()
-  
+  const { isLoading: sidebarLoading, ...filteredSidebarData } =
+    useFilteredSidebarData()
+
   // Mostrar loading durante logout para evitar mostrar "Acceso Denegado"
   if (isLoggingOut) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <h2 className="text-lg font-semibold">Cerrando sesión...</h2>
-          <p className="text-muted-foreground">Por favor espera un momento</p>
+      <div className='bg-background flex min-h-screen items-center justify-center'>
+        <div
+          role='status'
+          className='flex flex-col items-center gap-3 text-center'
+        >
+          <BrandMark className='text-primary size-10 animate-pulse' />
+          <p className='font-medium'>Cerrando sesión…</p>
         </div>
       </div>
     )
   }
-  
+
   // Mostrar loading mientras cargan los permisos iniciales
   if (permissionsLoading) {
     return <PermissionsLoadingCompact />
   }
-  
+
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
@@ -76,7 +81,10 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
           <SkipToMain />
           <AppSidebar>
             <SidebarHeader>
-              <TeamSwitcher teams={filteredSidebarData.teams} isLoading={sidebarLoading} />
+              <TeamSwitcher
+                teams={filteredSidebarData.teams}
+                isLoading={sidebarLoading}
+              />
             </SidebarHeader>
             <SidebarContent>
               {filteredSidebarData.navGroups.map((props) => (
@@ -100,18 +108,24 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               'peer-data-[variant=inset]:has-[[data-layout=fixed]]:h-[calc(100svh-(var(--spacing)*4))]',
 
               // Set content container, so we can use container queries
-              '@container/content'
+              '@container/content',
+
+              // Espacio para la barra inferior en el celular
+              'max-md:pb-20'
             )}
           >
             <Header fixed>
-              <div className='ms-auto flex items-center space-x-4'>
+              <div className='ms-auto flex items-center gap-2 sm:gap-3'>
                 <WhatsAppStatus />
                 <Search />
                 <ThemeSwitch />
-                <ProfileDropdown />
+                <div className='md:hidden'>
+                  <ProfileDropdown />
+                </div>
               </div>
             </Header>
             {children ?? <Outlet />}
+            <MobileTabBar navGroups={filteredSidebarData.navGroups} />
           </SidebarInset>
         </LayoutProvider>
       </SidebarProvider>

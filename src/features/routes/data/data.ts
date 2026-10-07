@@ -2,8 +2,8 @@ import { Route, MapPin, Navigation } from 'lucide-react'
 import { type RouteStatus } from './schema'
 
 export const routeStatusTypes = new Map<RouteStatus, string>([
-  ['active', 'bg-teal-100/30 text-teal-900 dark:text-teal-200 border-teal-200'],
-  ['inactive', 'bg-neutral-300/40 border-neutral-300'],
+  ['active', 'bg-primary/15 text-primary  border-primary/30'],
+  ['inactive', 'bg-muted-foreground border-border'],
 ])
 
 export const routeStatusLabels = new Map<RouteStatus, string>([
