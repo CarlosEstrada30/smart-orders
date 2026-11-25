@@ -219,20 +219,32 @@ const DataTableToolbarComponent = <TData,>({
     try {
       setIsLoadingPreview(true)
 
+      // El reporte siempre se genera con un rango de fechas para no cargar
+      // todo el historial: si falta alguna fecha se completa con la otra,
+      // y si no hay ninguna se usa el día de hoy.
+      const usedTodayAsDefault = !filters.date_from && !filters.date_to
+      const today = formatLocalDate(new Date())
+      const dateFrom = filters.date_from ?? filters.date_to ?? today
+      const dateTo = filters.date_to ?? filters.date_from ?? today
+
       // Preparar parámetros para el reporte (excluyendo skip, limit y payment_status_filter)
       // El filtro de pagos NO se incluye en el reporte
       const reportParams: OrdersQueryParams = {
         status_filter: filters.status_filter,
         route_id: filters.route_id,
-        date_from: filters.date_from,
-        date_to: filters.date_to,
+        date_from: dateFrom,
+        date_to: dateTo,
         search: filters.search,
       }
 
       const url = await ordersService.getOrdersReportPreviewBlob(reportParams)
       setPdfUrl(url)
       setPdfViewerOpen(true)
-      toast.success('Abriendo vista previa del reporte')
+      toast.success(
+        usedTodayAsDefault
+          ? 'Sin fechas seleccionadas: abriendo el reporte de hoy'
+          : 'Abriendo vista previa del reporte'
+      )
     } catch (_error) {
       toast.error('Error al generar vista previa del reporte')
     } finally {
